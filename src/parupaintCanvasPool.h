@@ -3,25 +3,20 @@
 
 #include <QGraphicsScene>
 class ParupaintCanvasBrush;
-class ParupaintCanvasPanvas;
+class ParupaintCanvasObject;
+
 
 class ParupaintCanvasPool : public QGraphicsScene
 {
 Q_OBJECT
 	private:
 	QHash<int, ParupaintCanvasBrush*> Cursors;
-	ParupaintCanvasPanvas * Canvas;
+	ParupaintCanvasObject * Canvas;
 
 //	CurrentFrame
 	public:
 	ParupaintCanvasPool(QObject *parent);
-/*
-	public:
-	QRectF boundingRect() const;
-
-	protected:
-	void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
-*/
+	void ClearCursors();
 };
 
 

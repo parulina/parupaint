@@ -19,7 +19,7 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 	// mouse pointers and canvas itself
 	//
 	
-	//setBackgroundBrush(QColor(255, 0, 0));
+	setBackgroundBrush(QColor(200, 200, 200));
 	viewport()->setMouseTracking(true);
 	viewport()->setCursor(Qt::BlankCursor);
 	CurrentBrush->SetSize(50);
