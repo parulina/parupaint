@@ -33,6 +33,9 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 	viewport()->setMouseTracking(true);
 	viewport()->setCursor(Qt::BlankCursor);
 	CurrentBrush->SetSize(50);
+
+	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	
 	SetZoom(Zoom);
 
