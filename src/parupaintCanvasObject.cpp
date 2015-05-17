@@ -7,6 +7,18 @@
 #include "panvas/parupaintFrame.h"
 
 
+ParupaintCanvasObject::ParupaintCanvasObject()
+{
+	
+}
+
+void ParupaintCanvasObject::Resize(QSize s)
+{
+	QSize old = ParupaintPanvas::GetSize();
+	this->ParupaintPanvas::Resize(s);
+	emit ResizeSignal(old, s);
+}
+
 QRectF ParupaintCanvasObject::boundingRect() const
 {
 	return QRectF(0, 0, GetWidth(), GetHeight());

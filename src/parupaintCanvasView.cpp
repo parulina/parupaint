@@ -9,12 +9,13 @@
 
 #include "parupaintCanvasView.h"
 #include "parupaintCanvasPool.h"
+#include "parupaintCanvasObject.h"
 
 
 //QGraphicsView for canvas view
 
 
-ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(parent),
+ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(parent), CurrentCanvas(nullptr),
 	// Canvas stuff
 	CanvasState(CANVAS_STATUS_IDLE), PenState(PEN_STATE_UP), Zoom(1.0), Drawing(false),
 	// Brush stuff
@@ -33,7 +34,9 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 }
 void ParupaintCanvasView::SetCanvas(ParupaintCanvasPool * canvas)
 {
+	CurrentCanvas = canvas;
 	setScene(canvas);
+	connect(canvas, SIGNAL(UpdateView()), this, SLOT(OnCanvasUpdate()));
 }
 
 // called automatically by Qt's drawForeground.
@@ -163,6 +166,14 @@ bool ParupaintCanvasView::OnKeyUp(QKeyEvent * event)
 		CanvasState = CANVAS_STATUS_IDLE;
 	}
 	return true;
+}
+
+
+// Other events
+
+void ParupaintCanvasView::OnCanvasUpdate()
+{
+	viewport()->update();
 }
 
 

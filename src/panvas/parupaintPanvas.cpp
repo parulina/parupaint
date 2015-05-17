@@ -33,6 +33,7 @@ void ParupaintPanvas::New(QSize dim, _lint l, _fint f)
 
 void ParupaintPanvas::Resize(QSize dim)
 {
+	Info.Dimensions = dim;
 	foreach(auto l, Layers){
 		l->Resize(dim);
 	}
@@ -120,4 +121,9 @@ int ParupaintPanvas::GetWidth() const
 int ParupaintPanvas::GetHeight() const 
 {
 	return Info.Dimensions.height();
+}
+
+QSize ParupaintPanvas::GetSize() const
+{
+	return Info.Dimensions;
 }

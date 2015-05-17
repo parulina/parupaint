@@ -25,6 +25,7 @@ enum CanvasStatus {
 class ParupaintCanvasView : public QGraphicsView {
 Q_OBJECT
 	private:
+	ParupaintCanvasPool *CurrentCanvas;
 	CanvasStatus	CanvasState;
 	PenStatus	PenState;
 	QPointF		OldPosition;
@@ -72,6 +73,10 @@ Q_OBJECT
 	bool OnKeyUp(QKeyEvent * event);
 	// set/reset zoom, rotation, etc...
 //	void UpdateTitle();
+
+public slots:
+	void OnCanvasUpdate();
+
 };
 
 

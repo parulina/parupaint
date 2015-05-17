@@ -8,6 +8,7 @@
 #include "parupaintCanvasBrush.h"
 #include "parupaintCanvasObject.h"
 
+#include "panvas/parupaintPanvas.h"
 #include "panvas/parupaintLayer.h"
 #include "panvas/parupaintFrame.h"
 
@@ -21,9 +22,17 @@ ParupaintCanvasPool::ParupaintCanvasPool(QObject * parent) : QGraphicsScene(pare
 	addItem(Canvas);
 
 	//setItemIndexMethod(NoIndex);
+	connect(Canvas, SIGNAL(ResizeSignal(QSize, QSize)), this, SLOT(OnCanvasResize(QSize, QSize)));
 	
+	Canvas->Resize(QSize(200, 200));
+
 	setBackgroundBrush(QColor(255, 0, 0));
 	ClearCursors();
+}
+
+ParupaintCanvasObject * ParupaintCanvasPool::GetCanvas()
+{
+	return Canvas;
 }
 
 void ParupaintCanvasPool::ClearCursors()
@@ -33,3 +42,17 @@ void ParupaintCanvasPool::ClearCursors()
 	}
 	Cursors.clear();
 }
+
+
+void ParupaintCanvasPool::OnCanvasResize(QSize old_size, QSize new_size)
+{
+	QSize size = new_size - old_size;
+	QRectF bounds = Canvas->boundingRect();
+	const float padding = 200;
+	
+	// Add the padding
+	setSceneRect(bounds.adjusted(-padding, -padding, padding, padding));
+	
+	emit UpdateView();
+}
+

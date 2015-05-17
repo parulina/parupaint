@@ -47,7 +47,6 @@ class ParupaintLayer {
 	
 	_fint GetNumFrames();
 	_fint GetNumRealFrames();
-
 };
 
 
