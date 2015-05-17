@@ -14,12 +14,16 @@ class ParupaintCanvasBrush {
 	public:
 	ParupaintCanvasBrush();
 
-	void SetName(QString & str);
+	void SetName(QString str);
 	void SetSize(float s);
-	void SetColor(QColor &  col);
+	void SetColor(QColor col);
 	QPen ToPen();
 
-	float Size();
+	float GetSize() const;
+	QColor GetColor() const;
+
+	void Paint(QPainter *, QPointF, float);
+
 };
 
 #endif

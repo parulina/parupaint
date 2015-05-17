@@ -6,6 +6,7 @@
 #include <QShortcut>
 #include <QKeySequence>
 #include <QObject>
+#include <cmath>
 
 #include <QDebug>
 
@@ -33,6 +34,7 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 	viewport()->setMouseTracking(true);
 	viewport()->setCursor(Qt::BlankCursor);
 	CurrentBrush->SetSize(50);
+	CurrentBrush->SetColor(QColor(255, 0, 0));
 
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -50,31 +52,7 @@ void ParupaintCanvasView::SetCanvas(ParupaintCanvasPool * canvas)
 // called automatically by Qt's drawForeground.
 void ParupaintCanvasView::DrawBrush(QPainter *painter)
 {
-	auto size = CurrentBrush->Size();
-	
-	painter->save();
-	painter->setRenderHint(QPainter::Antialiasing, false);
-
-	QPen pen(Qt::white), pen_down(Qt::gray);
-	pen.setCosmetic(true);
-	pen_down.setCosmetic(true);
-
-	painter->setPen(pen);
-	painter->setCompositionMode(QPainter::CompositionMode_Exclusion);
-	
-	const QRectF cc((BrushPosition - QPointF(size/2, size/2)), 
-				QSizeF(size, size));
-	const QRectF cp((BrushPosition - QPointF((size*Pressure)/2, (size*Pressure)/2)),
-				QSizeF(size*Pressure, size*Pressure));
-	painter->drawEllipse(cc); // brush width
-
-	if(PenState != PEN_STATE_UP){
-		painter->setPen(pen_down);
-		painter->drawEllipse(cp); // pressure
-	}
-
-	painter->restore();
-	
+	auto size = CurrentBrush->GetSize();
 }
 
 
@@ -138,19 +116,20 @@ void ParupaintCanvasView::OnPenMove(const QPointF &pos, Qt::MouseButtons buttons
 	} else if(CanvasState == CANVAS_STATUS_ZOOMING || CanvasState == CANVAS_STATUS_BRUSH_ZOOMING) {
 		auto dif = ((OriginPosition - pos).y());
 		auto hd = float(dif) / float( viewport()->height());
+
+
+		auto zdl = 0.0;
 		if(CanvasState == CANVAS_STATUS_ZOOMING) {
-			auto zdl = 0.0;
-			if(hd < 0) { // zoom out
-				zdl = ((OriginZoom) * (hd));
-			} else {
-				zdl = (8 * hd);
-			}
-			if(zdl != 0.0) {
-				auto ez = OriginZoom + zdl;
-				SetZoom(ez);
-			}
-			viewport()->update();
+			if(hd > 0) 	zdl = OriginZoom + (8 * hd);
+			else 		zdl = OriginZoom + ((OriginZoom * 0.9) * hd);
+			SetZoom(zdl);
+
+		} else if (CanvasState == CANVAS_STATUS_BRUSH_ZOOMING) {
+			if(hd > 0)	zdl = OriginZoom + floor(30 * hd);
+			else		zdl = OriginZoom + floor((OriginZoom * 0.9) * hd);
+			CurrentBrush->SetSize(zdl);
 		}
+		viewport()->update();
 	}
 
 	Pressure = pressure;
@@ -168,7 +147,7 @@ bool ParupaintCanvasView::OnScroll(const QPointF & pos, Qt::KeyboardModifiers mo
 		AddZoom(actual_zoom * 0.2);
 		
 	} else {
-		float new_size = CurrentBrush->Size() + (actual_zoom*4);
+		float new_size = CurrentBrush->GetSize() + (actual_zoom*4);
 		CurrentBrush->SetSize(new_size);
 
 	}
@@ -181,6 +160,14 @@ bool ParupaintCanvasView::OnKeyDown(QKeyEvent * event)
 {
 	if(event->key() == Qt::Key_Space){
 		if((event->modifiers() & Qt::ControlModifier) &&
+			(event->modifiers() & Qt::ShiftModifier) &&
+			CanvasState != CANVAS_STATUS_BRUSH_ZOOMING){
+			
+			CanvasState = CANVAS_STATUS_BRUSH_ZOOMING;
+			OriginZoom = CurrentBrush->GetSize();
+			OriginPosition = OldPosition;
+
+		} else if((event->modifiers() & Qt::ControlModifier) &&
 			CanvasState != CANVAS_STATUS_ZOOMING) {
 
 			CanvasState = CANVAS_STATUS_ZOOMING;
@@ -251,7 +238,29 @@ QPointF ParupaintCanvasView::RealPosition(const QPointF &pos)
 
 void ParupaintCanvasView::drawForeground(QPainter *painter, const QRectF & rect)
 {
-	DrawBrush(painter);
+	if(CurrentBrush != nullptr) {
+		CurrentBrush->Paint(painter, BrushPosition, Pressure);
+	}
+	if(CanvasState == CANVAS_STATUS_BRUSH_ZOOMING){
+		auto ww = CurrentBrush->GetSize();
+		auto cc = CurrentBrush->GetColor();
+
+		painter->save();
+
+		auto tt = QColor(cc.red(), cc.green(), cc.blue(), 70);
+		QPen pen(	QBrush(tt), 		ww, Qt::SolidLine, Qt::RoundCap);
+		QPen pen_small(	QBrush(QColor(0, 0, 0)), 1,  Qt::SolidLine, Qt::RoundCap);
+		
+		pen_small.setCosmetic(true);
+		
+		painter->setPen(pen);
+		painter->drawLine(BrushPosition, RealPosition(OriginPosition));
+		painter->setPen(pen_small);
+		painter->drawLine(BrushPosition, RealPosition(OriginPosition));
+
+		painter->restore();
+
+	}
 }
 
 bool ParupaintCanvasView::viewportEvent(QEvent * event)
