@@ -15,23 +15,39 @@ enum PenStatus {
 	PEN_STATE_MOUSE_DOWN,
 	PEN_STATE_TABLET_DOWN
 };
+enum CanvasStatus {
+	CANVAS_STATUS_IDLE,
+	CANVAS_STATUS_MOVING,
+	CANVAS_STATUS_ZOOMING,
+	CANVAS_STATUS_BRUSH_ZOOMING
+};
 
 class ParupaintCanvasView : public QGraphicsView {
 Q_OBJECT
 	private:
+	CanvasStatus	CanvasState;
+	PenStatus	PenState;
+	QPointF		OldPosition;
+	float		Zoom;
+	bool		Drawing;
+
 	ParupaintCanvasBrush brush;
 	ParupaintCanvasBrush * CurrentBrush;
-	
 	QPointF 	BrushPosition;
 	float		Pressure;
-	PenStatus	PenState;
-	bool		Drawing;
+
+	Qt::MouseButton DrawButton;
+	Qt::MouseButton MoveButton;
+	Qt::MouseButton SwitchButton;
 
 
 	protected:
 	void mousePressEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent* event);
+	void keyPressEvent(QKeyEvent * event);
+	void keyReleaseEvent(QKeyEvent * event);
+
 	void wheelEvent(QWheelEvent* event);
 	void drawForeground(QPainter *painter, const QRectF& rect);
 	bool viewportEvent(QEvent *event);
@@ -41,14 +57,19 @@ Q_OBJECT
 	void SetCanvas(ParupaintCanvasPool * canvas);
 	void DrawBrush(QPainter *painter);
 
+	float GetZoom() const;
+	void SetZoom(float z);
+	void AddZoom(float z);
+
 
 	QPointF RealPosition(const QPointF &pos);
 
-	void OnScroll(const QPointF & pos, Qt::KeyboardModifiers modifiers, QPoint delta);
+	bool OnScroll(const QPointF & pos, Qt::KeyboardModifiers modifiers, QPoint delta);
 	void OnPenDown(const QPointF &pos, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, float pressure);
 	void OnPenUp(const QPointF &pos, Qt::MouseButtons buttons);
 	void OnPenMove(const QPointF &pos, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, float pressure);
-
+	bool OnKeyDown(QKeyEvent * event);
+	bool OnKeyUp(QKeyEvent * event);
 	// set/reset zoom, rotation, etc...
 //	void UpdateTitle();
 };
