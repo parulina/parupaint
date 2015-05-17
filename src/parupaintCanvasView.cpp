@@ -49,10 +49,9 @@ void ParupaintCanvasView::SetCanvas(ParupaintCanvasPool * canvas)
 {
 	CurrentCanvas = canvas;
 	setScene(canvas);
-	canvas->addItem(CurrentBrush);
+	canvas->AddCursor("", CurrentBrush);
 
 	connect(canvas, SIGNAL(UpdateView()), this, SLOT(OnCanvasUpdate()));
-
 }
 
 float ParupaintCanvasView::GetZoom() const

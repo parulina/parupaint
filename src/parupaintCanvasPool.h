@@ -1,23 +1,23 @@
 #ifndef PARUPAINTCANVASPOOL_H
 #define PARUPAINTCANVASPOOL_H
 
+#include "parupaintCursorPool.h"
 #include <QGraphicsScene>
 #include <QHash>
 class ParupaintCanvasObject;
-class ParupaintCanvasBrush;
+class ParupaintCursor;
 
-class ParupaintCanvasPool : public QGraphicsScene
+class ParupaintCanvasPool : public QGraphicsScene, public ParupaintCursorPool
 {
 Q_OBJECT
 	private:
-	QHash<int, ParupaintCanvasBrush*> Cursors;
 	ParupaintCanvasObject * Canvas;
 
-//	CurrentFrame
 	public:
 	ParupaintCanvasPool(QObject *parent);
-	void ClearCursors();
 	ParupaintCanvasObject * GetCanvas();
+
+	virtual void AddCursor(QString, ParupaintCursor *);
 
 	private slots:
 	void OnCanvasResize(QSize old_size, QSize new_size);

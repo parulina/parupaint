@@ -1,7 +1,7 @@
 #ifndef PARUPAINTCANVASVIEW_H
 #define PARUPAINTCANVASVIEW_H
 
-#include "parupaintCanvasBrush.h"
+#include "parupaintCursor.h"
 
 #include <QGraphicsView>
 class QWidget;
@@ -35,8 +35,8 @@ Q_OBJECT
 	float		Zoom;
 	bool		Drawing;
 
-	ParupaintCanvasBrush brush;
-	ParupaintCanvasBrush * CurrentBrush;
+	ParupaintCursor brush;
+	ParupaintCursor * CurrentBrush;
 
 	Qt::MouseButton DrawButton;
 	Qt::MouseButton MoveButton;

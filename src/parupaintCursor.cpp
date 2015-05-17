@@ -1,21 +1,21 @@
 
 #include <QPainter>
 #include <QPen>
-#include "parupaintCanvasBrush.h"
+#include "parupaintCursor.h"
 
 
-ParupaintCanvasBrush::ParupaintCanvasBrush()
+ParupaintCursor::ParupaintCursor()
 {
 
 }
 
-void ParupaintCanvasBrush::SetPosition(QPointF pos)
+void ParupaintCursor::SetPosition(QPointF pos)
 {
 	ParupaintBrush::SetPosition(pos);
 	setPos(pos);
 }
 
-QPen ParupaintCanvasBrush::ToPen()
+QPen ParupaintCursor::ToPen()
 {
 	QPen pen(GetColor());
 	pen.setWidth(GetWidth());
@@ -23,7 +23,7 @@ QPen ParupaintCanvasBrush::ToPen()
 	pen.setJoinStyle(Qt::RoundJoin);
 	return pen;
 }
-void ParupaintCanvasBrush::Paint(QPainter * painter)
+void ParupaintCursor::Paint(QPainter * painter)
 {
 	painter->save();
 
@@ -55,13 +55,13 @@ void ParupaintCanvasBrush::Paint(QPainter * painter)
 }
 
 
-QRectF ParupaintCanvasBrush::boundingRect() const
+QRectF ParupaintCursor::boundingRect() const
 {
 	const float w = GetWidth();
 	return QRectF(-w/2.0, -w/2.0, w, w);
 }
 
-void ParupaintCanvasBrush::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget*)
+void ParupaintCursor::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget*)
 {
 	painter->save();
 

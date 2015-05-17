@@ -3,14 +3,13 @@
 //
 
 #include "parupaintCanvasPool.h"
-#include "parupaintCanvasBrush.h"
 #include "parupaintCanvasObject.h"
+#include "parupaintCursor.h"
 
 #include "panvas/parupaintPanvas.h"
 #include "panvas/parupaintLayer.h"
 #include "panvas/parupaintFrame.h"
 
-#include <QDebug>
 
 ParupaintCanvasPool::ParupaintCanvasPool(QObject * parent) : QGraphicsScene(parent)
 {
@@ -33,14 +32,11 @@ ParupaintCanvasObject * ParupaintCanvasPool::GetCanvas()
 	return Canvas;
 }
 
-void ParupaintCanvasPool::ClearCursors()
+void ParupaintCanvasPool::AddCursor(QString str, ParupaintCursor * c)
 {
-	foreach(auto *i, Cursors){
-		delete i;
-	}
-	Cursors.clear();
+	ParupaintCursorPool::AddCursor(str, c);
+	addItem(c);
 }
-
 
 void ParupaintCanvasPool::OnCanvasResize(QSize old_size, QSize new_size)
 {

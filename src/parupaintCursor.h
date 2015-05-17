@@ -8,10 +8,10 @@
 #include <QGraphicsItem>
 
 // todo: extends ParupaintBrush?
-class ParupaintCanvasBrush : public QGraphicsItem, public ParupaintBrush 
+class ParupaintCursor : public QGraphicsItem, public ParupaintBrush 
 {
 	public:
-	ParupaintCanvasBrush();
+	ParupaintCursor();
 
 	QPen ToPen();
 	void Paint(QPainter *);
