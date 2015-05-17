@@ -13,6 +13,7 @@ ParupaintCanvasPool::ParupaintCanvasPool(QObject * parent) : QGraphicsScene(pare
 {
 	//Canvas = new ParupaintPanvas();
 	Canvas = new ParupaintCanvasObject();
+	Canvas->New(QSize(500, 500), 1, 1);
 	addItem(Canvas);
 
 	//setItemIndexMethod(NoIndex);

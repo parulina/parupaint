@@ -113,11 +113,11 @@ QList<QImage> ParupaintPanvas::GetImageFrames()
 	return QList<QImage>();
 }
 
-int ParupaintPanvas::GetWidth()
+int ParupaintPanvas::GetWidth() const
 {
 	return Info.Dimensions.width();
 }
-int ParupaintPanvas::GetHeight()
+int ParupaintPanvas::GetHeight() const 
 {
 	return Info.Dimensions.height();
 }

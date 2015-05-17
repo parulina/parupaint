@@ -1,20 +1,17 @@
 #ifndef PARUPAINTCANVASOBJECT_H
 #define PARUPAINTCANVASOBJECT_H
 
+#include "panvas/parupaintPanvas.h"
+
 #include <QGraphicsObject>
 
-class ParupaintPanvas;
+// Now put together Panvas and GraphicsObject.
+// Is it a good idea?
 
-class ParupaintCanvasObject : public QGraphicsObject
+
+class ParupaintCanvasObject : public QGraphicsObject, public ParupaintPanvas
 {
 Q_OBJECT
-	private:
-	ParupaintPanvas * Canvas;
-
-	public:
-	ParupaintCanvasObject(QGraphicsItem *parent=0);
-	
-	
 	public:
 	QRectF boundingRect() const;
 
