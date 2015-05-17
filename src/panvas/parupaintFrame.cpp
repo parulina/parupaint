@@ -34,12 +34,13 @@ void ParupaintFrame::ClearColor(QColor col)
 }
 
 
-void ParupaintFrame::DrawStep(float x, float y, float x2, float y2, float width, QColor & color)
+void ParupaintFrame::DrawStep(float x, float y, float x2, float y2, float width, QColor color)
 {
-	QPainter painter;
+	QPainter painter(&Frame);
 	QPen pen(color);
 	pen.setWidthF(width);
 	painter.setPen(pen);
+
 	painter.drawLine(x, y, x2, y2);
 	painter.end();
 }

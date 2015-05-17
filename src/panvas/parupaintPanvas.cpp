@@ -50,9 +50,9 @@ void ParupaintPanvas::SetLayers(_lint l, _fint f)
 {
 	auto diff = l - GetNumLayers();
 	while(diff != 0){
-		if(Layers.isEmpty()) break;
 
 		if(diff < 0) {
+			if(Layers.isEmpty()) break;
 			Layers.removeLast();
 			diff ++;
 		} else {

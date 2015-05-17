@@ -38,9 +38,9 @@ void ParupaintLayer::SetFrames(_fint f)
 {
 	auto diff = f - GetNumFrames();
 	while(diff != 0){
-		if(Frames.isEmpty()) break;
 
 		if(diff < 0) {
+			if(Frames.isEmpty()) break;
 			Frames.removeLast();
 			diff ++;
 		} else {
