@@ -3,6 +3,9 @@
 #include <QMouseEvent>
 #include <QTabletEvent>
 #include <QBitmap>
+#include <QShortcut>
+#include <QKeySequence>
+#include <QObject>
 
 #include <QDebug>
 
@@ -25,12 +28,14 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 	// mouse pointers and canvas itself
 	//
 	
+
 	setBackgroundBrush(QColor(200, 200, 200));
 	viewport()->setMouseTracking(true);
 	viewport()->setCursor(Qt::BlankCursor);
 	CurrentBrush->SetSize(50);
 	
 	SetZoom(Zoom);
+
 }
 void ParupaintCanvasView::SetCanvas(ParupaintCanvasPool * canvas)
 {
@@ -126,6 +131,23 @@ void ParupaintCanvasView::OnPenMove(const QPointF &pos, Qt::MouseButtons buttons
 		auto dif = OldPosition - pos;
 		hor->setSliderPosition(hor->sliderPosition() + dif.x());
 		ver->setSliderPosition(ver->sliderPosition() + dif.y());
+
+	} else if(CanvasState == CANVAS_STATUS_ZOOMING || CanvasState == CANVAS_STATUS_BRUSH_ZOOMING) {
+		auto dif = ((OriginPosition - pos).y());
+		auto hd = float(dif) / float( viewport()->height());
+		if(CanvasState == CANVAS_STATUS_ZOOMING) {
+			auto zdl = 0.0;
+			if(hd < 0) { // zoom out
+				zdl = ((OriginZoom) * (hd));
+			} else {
+				zdl = (8 * hd);
+			}
+			if(zdl != 0.0) {
+				auto ez = OriginZoom + zdl;
+				SetZoom(ez);
+			}
+			viewport()->update();
+		}
 	}
 
 	Pressure = pressure;
@@ -136,9 +158,9 @@ void ParupaintCanvasView::OnPenMove(const QPointF &pos, Qt::MouseButtons buttons
 	viewport()->update();
 }
 
-bool ParupaintCanvasView::OnScroll(const QPointF & pos, Qt::KeyboardModifiers modifiers, QPoint delta)
+bool ParupaintCanvasView::OnScroll(const QPointF & pos, Qt::KeyboardModifiers modifiers, float delta_y)
 {
-	float actual_zoom = delta.y() / 120.0;
+	float actual_zoom = delta_y / 120.0;
 	if((modifiers & Qt::ControlModifier) || CanvasState == CANVAS_STATUS_MOVING){
 		AddZoom(actual_zoom * 0.2);
 		
@@ -154,17 +176,40 @@ bool ParupaintCanvasView::OnScroll(const QPointF & pos, Qt::KeyboardModifiers mo
 
 bool ParupaintCanvasView::OnKeyDown(QKeyEvent * event)
 {
-	if(event->key() == Qt::Key_Space && CanvasState != CANVAS_STATUS_MOVING){
-		CanvasState = CANVAS_STATUS_MOVING;
+	if(event->key() == Qt::Key_Space){
+		if((event->modifiers() & Qt::ControlModifier) &&
+			CanvasState != CANVAS_STATUS_ZOOMING) {
+
+			CanvasState = CANVAS_STATUS_ZOOMING;
+			OriginZoom = GetZoom();
+			OriginPosition = OldPosition;
+
+		} else if(CanvasState != CANVAS_STATUS_MOVING){
+			CanvasState = CANVAS_STATUS_MOVING;
+		}
 	}
 	return true;
 }
 
 bool ParupaintCanvasView::OnKeyUp(QKeyEvent * event)
 {
-	if(event->key() == Qt::Key_Space && CanvasState == CANVAS_STATUS_MOVING){
+	if(event->key() == Qt::Key_Space && 
+		(CanvasState != CANVAS_STATUS_IDLE)){
 		CanvasState = CANVAS_STATUS_IDLE;
 	}
+	// Mini-rant.
+	// Okay, so Qt seems to fire the key events while you're holding it.
+	// That's fine by me, because it has a flag for auto repeat. But for some 
+	// reason the flag sometimes flips around, seemingly randomly?! ?!?!?!
+	// I've tried really hard to find out the reason, but i have
+	// not found it. I've only found one or two obscure forum posts, and
+	// i'm not even sure if this is the thing they're talking about.
+	// I tried different Qt version as well, but they all seem to have the
+	// same problem.... Tried Qt5 and 4, same problems.
+	//
+	// Whatever.
+	// Just gotta optimize this for that... 'bug'.
+	OriginPosition = OldPosition;
 	return true;
 }
 
@@ -213,47 +258,51 @@ bool ParupaintCanvasView::viewportEvent(QEvent * event)
 
 		PenState = PEN_STATE_TABLET_DOWN;
 		tevent->accept();
-		OnPenDown(tevent->posF(),
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
+			OnPenDown(tevent->posF(),
 			tevent->buttons(),
 #else
+			OnPenDown(tevent->pos(),
 			Qt::NoButton,
 #endif
 			tevent->modifiers(),
 			tevent->pressure()
 		);
-
+		return true;
 
 	} else if(event->type() == QEvent::TabletRelease){
 		QTabletEvent *tevent = static_cast<QTabletEvent*>(event);
 		PenState = PEN_STATE_UP;
 
-		OnPenUp(tevent->posF(),
+		OnPenUp(
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
+			tevent->posF(),
 			tevent->buttons()
 #else
+			tevent->pos(),
 			Qt::NoButton
 #endif
 		);
-	
+		return true;
 
 	} else if(event->type() == QEvent::TabletMove) {
 		QTabletEvent *tevent = static_cast<QTabletEvent*>(event);
 
 		tevent->accept();
-		OnPenMove(tevent->posF(),
+		OnPenMove(
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
+				tevent->posF(),
 				tevent->buttons(),
 #else
+				tevent->pos(),
 				Qt::NoButton,
 #endif
 				tevent->modifiers(),
 				tevent->pressure()
 				);
-	} else {
-		return QGraphicsView::viewportEvent(event);
+		return true;
 	}
-	return true;
+	return QGraphicsView::viewportEvent(event);
 }
 
 void ParupaintCanvasView::mouseMoveEvent(QMouseEvent * event)
@@ -261,6 +310,7 @@ void ParupaintCanvasView::mouseMoveEvent(QMouseEvent * event)
 	if(PenState != PEN_STATE_TABLET_DOWN){
 		OnPenMove(event->pos(), event->buttons(), event->modifiers(), 1.0);
 	}
+	QGraphicsView::mouseMoveEvent(event);
 }
 
 void ParupaintCanvasView::mousePressEvent(QMouseEvent * event)
@@ -282,20 +332,28 @@ void ParupaintCanvasView::mouseReleaseEvent(QMouseEvent * event)
 
 void ParupaintCanvasView::wheelEvent(QWheelEvent * event)
 {
-	if(OnScroll(event->pos(), event->modifiers(), event->angleDelta())){
-		QGraphicsView::wheelEvent(event);
+	auto angle = 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
+		event->angleDelta().y();
+#else
+		event->delta();
+#endif
+	if(!OnScroll(event->pos(), event->modifiers(), angle)){
+		event->ignore();	
 	}
 }
 
 void ParupaintCanvasView::keyPressEvent(QKeyEvent * event)
 {
-	if(OnKeyDown(event)){
-		QGraphicsView::keyPressEvent(event);
+	if(!event->isAutoRepeat() && OnKeyDown(event)){
+		return;
 	}
+	QGraphicsView::keyPressEvent(event);
 }
 void ParupaintCanvasView::keyReleaseEvent(QKeyEvent * event)
 {
-	if(OnKeyUp(event)){
-		QGraphicsView::keyReleaseEvent(event);
+	if(!event->isAutoRepeat() && OnKeyUp(event)){
+		return;
 	}
+	QGraphicsView::keyReleaseEvent(event);
 }

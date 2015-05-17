@@ -14,7 +14,10 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 	setOrganizationName("paru");
 	setOrganizationDomain("sqnya.se");
 	setApplicationName("parupaint");
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
 	setApplicationDisplayName("parupaint");
+#endif
 
 	// Set default username
 	QSettings cfg;

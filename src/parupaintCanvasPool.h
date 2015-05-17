@@ -2,8 +2,9 @@
 #define PARUPAINTCANVASPOOL_H
 
 #include <QGraphicsScene>
-class ParupaintCanvasBrush;
+#include <QHash>
 class ParupaintCanvasObject;
+class ParupaintCanvasBrush;
 
 class ParupaintCanvasPool : public QGraphicsScene
 {

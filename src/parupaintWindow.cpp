@@ -1,4 +1,8 @@
 
+#include <QKeyEvent>
+#include <QEvent>
+#include <QDebug>
+
 #include "parupaintWindow.h"
 #include "parupaintCanvasView.h"
 #include "parupaintCanvasPool.h"
@@ -27,3 +31,4 @@ void ParupaintWindow::UpdateTitle()
 {
 	setWindowTitle(QString("parupaint"));
 }
+

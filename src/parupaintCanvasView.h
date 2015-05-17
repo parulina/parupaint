@@ -29,6 +29,9 @@ Q_OBJECT
 	CanvasStatus	CanvasState;
 	PenStatus	PenState;
 	QPointF		OldPosition;
+	QPointF		OriginPosition; // origin for zoom/bzoom
+	float		OriginZoom;
+
 	float		Zoom;
 	bool		Drawing;
 
@@ -65,7 +68,7 @@ Q_OBJECT
 
 	QPointF RealPosition(const QPointF &pos);
 
-	bool OnScroll(const QPointF & pos, Qt::KeyboardModifiers modifiers, QPoint delta);
+	bool OnScroll(const QPointF & pos, Qt::KeyboardModifiers modifiers, float);
 	void OnPenDown(const QPointF &pos, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, float pressure);
 	void OnPenUp(const QPointF &pos, Qt::MouseButtons buttons);
 	void OnPenMove(const QPointF &pos, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, float pressure);

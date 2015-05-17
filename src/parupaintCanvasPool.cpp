@@ -2,8 +2,6 @@
 // Other users as well as the actual canvas.
 //
 
-#include <QDebug>
-
 #include "parupaintCanvasPool.h"
 #include "parupaintCanvasBrush.h"
 #include "parupaintCanvasObject.h"

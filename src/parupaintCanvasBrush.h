@@ -2,6 +2,7 @@
 #define PARUPAINTCANVASBRUSH_H
 
 #include <QColor>
+#include <QPen>
 
 // todo: extends ParupaintBrush?
 class ParupaintCanvasBrush {
