@@ -9,41 +9,21 @@ ParupaintCanvasBrush::ParupaintCanvasBrush()
 
 }
 
-void ParupaintCanvasBrush::SetName(QString str)
+void ParupaintCanvasBrush::SetPosition(QPointF pos)
 {
-	name = str;
+	ParupaintBrush::SetPosition(pos);
+	setPos(pos);
 }
 
-void ParupaintCanvasBrush::SetSize(float s)
-{
-	if(s <= 0) s = 0.1;
-	else if(s >= 512) s = 512;
-	size = s;
-}
-void ParupaintCanvasBrush::SetColor(QColor col)
-{
-	color = col;
-}
 QPen ParupaintCanvasBrush::ToPen()
 {
-	QPen pen(color);
-	pen.setWidth(size);
+	QPen pen(GetColor());
+	pen.setWidth(GetWidth());
 	pen.setCapStyle(Qt::RoundCap);
 	pen.setJoinStyle(Qt::RoundJoin);
 	return pen;
 }
-
-float ParupaintCanvasBrush::GetSize() const
-{
-	return size;
-}
-
-QColor ParupaintCanvasBrush::GetColor() const
-{
-	return color;
-}
-
-void ParupaintCanvasBrush::Paint(QPainter * painter, QPointF pos, float pressure)
+void ParupaintCanvasBrush::Paint(QPainter * painter)
 {
 	painter->save();
 
@@ -55,12 +35,14 @@ void ParupaintCanvasBrush::Paint(QPainter * painter, QPointF pos, float pressure
 	painter->setPen(pen);
 	painter->setCompositionMode(QPainter::CompositionMode_Exclusion);
 	
-	const QRectF cc((pos - QPointF(size/2, size/2)), QSizeF(size, size));
-	const QRectF cp((pos - QPointF((size*pressure)/2, (size*pressure)/2)),
-				QSizeF(size*pressure, size*pressure));
+	const auto w = GetWidth();
+	const auto p = GetPressure();
+
+	const QRectF cc((-QPointF(w/2, w/2)), 		QSizeF(w, w));
+	const QRectF cp((-QPointF((w*p)/2, (w*p)/2)),	QSizeF(w*p, w*p));
 	painter->drawEllipse(cc); // brush width
 
-	if(pressure > 0){
+	if(p > 0){
 		QPen pen_inner(GetColor());
 		pen_inner.setCosmetic(true);
 		pen_inner.setWidthF(2);
@@ -69,5 +51,25 @@ void ParupaintCanvasBrush::Paint(QPainter * painter, QPointF pos, float pressure
 		painter->drawEllipse(cp); // pressure
 	}
 
+	painter->restore();
+}
+
+
+QRectF ParupaintCanvasBrush::boundingRect() const
+{
+	const float w = GetWidth();
+	return QRectF(-w/2.0, -w/2.0, w, w);
+}
+
+void ParupaintCanvasBrush::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget*)
+{
+	painter->save();
+
+	Paint(painter);
+	
+	painter->setRenderHint(QPainter::Antialiasing, false);
+	painter->setPen(Qt::black);
+	painter->drawText(boundingRect(), Qt::AlignCenter, GetName());
+	
 	painter->restore();
 }

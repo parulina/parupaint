@@ -37,8 +37,6 @@ Q_OBJECT
 
 	ParupaintCanvasBrush brush;
 	ParupaintCanvasBrush * CurrentBrush;
-	QPointF 	BrushPosition;
-	float		Pressure;
 
 	Qt::MouseButton DrawButton;
 	Qt::MouseButton MoveButton;
@@ -59,7 +57,6 @@ Q_OBJECT
 	public:
 	ParupaintCanvasView(QWidget* parent);
 	void SetCanvas(ParupaintCanvasPool * canvas);
-	void DrawBrush(QPainter *painter);
 
 	float GetZoom() const;
 	void SetZoom(float z);

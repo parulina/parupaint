@@ -9,7 +9,7 @@
 #include <cmath>
 
 #include <QDebug>
-
+#include <QTimer>
 
 #include "parupaintCanvasView.h"
 #include "parupaintCanvasPool.h"
@@ -23,7 +23,8 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 	// Canvas stuff
 	CanvasState(CANVAS_STATUS_IDLE), PenState(PEN_STATE_UP), Zoom(1.0), Drawing(false),
 	// Brush stuff
-	CurrentBrush(&brush), BrushPosition(0, 0), Pressure(1.0),
+	CurrentBrush(&brush),
+	// Button stuff
 	DrawButton(Qt::LeftButton), MoveButton(Qt::MiddleButton), SwitchButton(Qt::RightButton)
 {
 	// mouse pointers and canvas itself
@@ -33,7 +34,8 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 	setBackgroundBrush(QColor(200, 200, 200));
 	viewport()->setMouseTracking(true);
 	viewport()->setCursor(Qt::BlankCursor);
-	CurrentBrush->SetSize(50);
+
+	CurrentBrush->SetWidth(50);
 	CurrentBrush->SetColor(QColor(255, 0, 0));
 
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -41,20 +43,17 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 	
 	SetZoom(Zoom);
 
+
 }
 void ParupaintCanvasView::SetCanvas(ParupaintCanvasPool * canvas)
 {
 	CurrentCanvas = canvas;
 	setScene(canvas);
+	canvas->addItem(CurrentBrush);
+
 	connect(canvas, SIGNAL(UpdateView()), this, SLOT(OnCanvasUpdate()));
-}
 
-// called automatically by Qt's drawForeground.
-void ParupaintCanvasView::DrawBrush(QPainter *painter)
-{
-	auto size = CurrentBrush->GetSize();
 }
-
 
 float ParupaintCanvasView::GetZoom() const
 {
@@ -81,7 +80,8 @@ void ParupaintCanvasView::AddZoom(float z)
 
 void ParupaintCanvasView::OnPenDown(const QPointF &pos, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, float pressure)
 {
-	BrushPosition = RealPosition(pos);
+	CurrentBrush->SetPosition(RealPosition(pos));
+
 	if(buttons == DrawButton && !Drawing){
 		Drawing = true;
 
@@ -93,7 +93,7 @@ void ParupaintCanvasView::OnPenDown(const QPointF &pos, Qt::MouseButtons buttons
 
 void ParupaintCanvasView::OnPenUp(const QPointF &pos, Qt::MouseButtons buttons)
 {
-	BrushPosition = RealPosition(pos);
+	CurrentBrush->SetPosition(RealPosition(pos));
 	if(buttons == DrawButton && Drawing){
 		Drawing = false;
 	}
@@ -127,15 +127,14 @@ void ParupaintCanvasView::OnPenMove(const QPointF &pos, Qt::MouseButtons buttons
 		} else if (CanvasState == CANVAS_STATUS_BRUSH_ZOOMING) {
 			if(hd > 0)	zdl = OriginZoom + floor(30 * hd);
 			else		zdl = OriginZoom + floor((OriginZoom * 0.9) * hd);
-			CurrentBrush->SetSize(zdl);
+			CurrentBrush->SetWidth(zdl);
 		}
 		viewport()->update();
 	}
 
-	Pressure = pressure;
 	OldPosition = pos;
-	BrushPosition = RealPosition(OldPosition);
-	
+	CurrentBrush->SetPosition(RealPosition(pos));
+	CurrentBrush->SetPressure(pressure);
 
 	viewport()->update();
 }
@@ -147,11 +146,11 @@ bool ParupaintCanvasView::OnScroll(const QPointF & pos, Qt::KeyboardModifiers mo
 		AddZoom(actual_zoom * 0.2);
 		
 	} else {
-		float new_size = CurrentBrush->GetSize() + (actual_zoom*4);
-		CurrentBrush->SetSize(new_size);
+		float new_size = CurrentBrush->GetWidth() + (actual_zoom*4);
+		CurrentBrush->SetWidth(new_size);
 
 	}
-	BrushPosition = RealPosition(pos);
+	CurrentBrush->SetPosition(RealPosition(OldPosition));
 	viewport()->update();
 	return false;
 }
@@ -164,7 +163,7 @@ bool ParupaintCanvasView::OnKeyDown(QKeyEvent * event)
 			CanvasState != CANVAS_STATUS_BRUSH_ZOOMING){
 			
 			CanvasState = CANVAS_STATUS_BRUSH_ZOOMING;
-			OriginZoom = CurrentBrush->GetSize();
+			OriginZoom = CurrentBrush->GetWidth();
 			OriginPosition = OldPosition;
 
 		} else if((event->modifiers() & Qt::ControlModifier) &&
@@ -238,11 +237,8 @@ QPointF ParupaintCanvasView::RealPosition(const QPointF &pos)
 
 void ParupaintCanvasView::drawForeground(QPainter *painter, const QRectF & rect)
 {
-	if(CurrentBrush != nullptr) {
-		CurrentBrush->Paint(painter, BrushPosition, Pressure);
-	}
 	if(CanvasState == CANVAS_STATUS_BRUSH_ZOOMING){
-		auto ww = CurrentBrush->GetSize();
+		auto ww = CurrentBrush->GetWidth();
 		auto cc = CurrentBrush->GetColor();
 
 		painter->save();
@@ -254,9 +250,9 @@ void ParupaintCanvasView::drawForeground(QPainter *painter, const QRectF & rect)
 		pen_small.setCosmetic(true);
 		
 		painter->setPen(pen);
-		painter->drawLine(BrushPosition, RealPosition(OriginPosition));
+		painter->drawLine(CurrentBrush->GetPosition(), RealPosition(OriginPosition));
 		painter->setPen(pen_small);
-		painter->drawLine(BrushPosition, RealPosition(OriginPosition));
+		painter->drawLine(CurrentBrush->GetPosition(), RealPosition(OriginPosition));
 
 		painter->restore();
 

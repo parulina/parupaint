@@ -4,25 +4,23 @@
 #include <QColor>
 #include <QPen>
 
-// todo: extends ParupaintBrush?
-class ParupaintCanvasBrush {
-	private:
-	QColor 	color;
-	float 	size;
-	QString	name;
+#include "parupaintBrush.h"
+#include <QGraphicsItem>
 
+// todo: extends ParupaintBrush?
+class ParupaintCanvasBrush : public QGraphicsItem, public ParupaintBrush 
+{
 	public:
 	ParupaintCanvasBrush();
 
-	void SetName(QString str);
-	void SetSize(float s);
-	void SetColor(QColor col);
 	QPen ToPen();
+	void Paint(QPainter *);
 
-	float GetSize() const;
-	QColor GetColor() const;
+	void SetPosition(QPointF);
 
-	void Paint(QPainter *, QPointF, float);
+	private:
+	QRectF boundingRect() const;
+	void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
 
 };
 
