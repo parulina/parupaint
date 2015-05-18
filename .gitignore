@@ -3,3 +3,4 @@ bin/
 junk/
 Makefile
 .*
+qrc_*
