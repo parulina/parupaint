@@ -28,7 +28,7 @@ ParupaintFlayerFrame * ParupaintFlayerLayer::NewFrame()
 ParupaintFlayerFrame * ParupaintFlayerLayer::AddFrame(int index) { return AddFrame(index, NewFrame()); }
 ParupaintFlayerFrame * ParupaintFlayerLayer::AddFrame(int index, ParupaintFlayerFrame * frame)
 {
-	connect(frame, SIGNAL(toggled(bool)), this, SLOT(FrameChecked(bool)));
+	connect(frame, SIGNAL(clicked()), this, SLOT(FrameChange()));
 	Frames.insert(index, frame);
 	box->insertWidget(index, frame);
 	return frame;	
@@ -68,13 +68,10 @@ void ParupaintFlayerLayer::ClearChecked()
 		i->setChecked(false);
 	}
 }
-void ParupaintFlayerLayer::FrameChecked(bool c)
+void ParupaintFlayerLayer::FrameChange()
 {
 	ParupaintFlayerFrame* button = static_cast<ParupaintFlayerFrame*>(sender());
-	if(c) {
-		emit frameCheck(button);
-		foreach(auto *i, Frames){
-			if(i != button) i->setChecked(false);
-		}
-	}
+	this->ClearChecked();
+	emit frameCheck(button);
+	button->setChecked(true);
 }

@@ -23,6 +23,12 @@ Q_OBJECT
 	QKeySequence OverlayKeyShow;
 	QKeySequence OverlayKeyHide;
 	bool OverlayButtonDown;
+	QTimer * OverlayButtonTimer;
+	QTimer * OverlayTimer;
+	
+	
+	QKeySequence CanvasKeyNextFrame;
+	QKeySequence CanvasKeyPreviousFrame;
 
 	void UpdateOverlay();
 	
@@ -45,8 +51,14 @@ Q_OBJECT
 	void UpdateTitle();
 
 	private slots:
+	void TabTimeout();
+	void OverlayTimeout();
+
 	void OverlayKey();
+	void CanvasFrameKey();
+
 	void SelectFrame(int, int);
+	void ChangedFrame(int, int);
 };
 
 

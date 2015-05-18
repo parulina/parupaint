@@ -17,15 +17,6 @@ ParupaintFlayerList::ParupaintFlayerList(QWidget * parent) : QWidget(parent)
 	box->setMargin(2);
 
 	this->setLayout(box);
-	
-	for(auto i = 0; i < 3; i++) {
-		auto *l = NewLayer();
-		l->AddFrame(0);
-		l->AddFrame(0);
-		l->AddFrame(0);
-		l->AddFrame(0);
-		AddLayer(0, l);
-	}
 }
 
 ParupaintFlayerLayer * ParupaintFlayerList::NewLayer()
@@ -71,6 +62,13 @@ void ParupaintFlayerList::Clear()
 	Layers.clear();
 }
 
+
+void ParupaintFlayerList::ClearAllChecked()
+{
+	foreach(auto *i, Layers){
+		i->ClearChecked();
+	}
+}
 
 void ParupaintFlayerList::FrameChecked(ParupaintFlayerFrame*b)
 {

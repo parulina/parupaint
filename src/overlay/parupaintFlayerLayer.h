@@ -29,7 +29,7 @@ Q_OBJECT
 	void ClearChecked();
 
 	private slots:
-	void FrameChecked(bool);
+	void FrameChange();
 
 	signals:
 	void frameCheck(ParupaintFlayerFrame*);

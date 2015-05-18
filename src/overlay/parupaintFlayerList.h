@@ -26,6 +26,7 @@ Q_OBJECT
 	ParupaintFlayerLayer * GetLayer(int);
 
 	void Clear();
+	void ClearAllChecked();
 	QVBoxLayout * NewBox();
 
 	private slots:

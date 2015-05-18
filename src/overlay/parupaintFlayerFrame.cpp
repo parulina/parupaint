@@ -11,5 +11,4 @@ ParupaintFlayerFrame::ParupaintFlayerFrame(QWidget * parent) : QPushButton(paren
 	this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 
 	this->setCheckable(true);
-
 }

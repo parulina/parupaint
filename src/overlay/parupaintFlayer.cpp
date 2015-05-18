@@ -54,6 +54,17 @@ void ParupaintFlayer::UpdateFromCanvas(ParupaintCanvasObject * canvas)
 		}
 	}
 }
+void ParupaintFlayer::SetMarkedLayerFrame(int layer, int frame)
+{
+	list->ClearAllChecked();
+	auto *l = list->GetLayer(layer);
+	if(l) {
+		auto *f = l->GetFrame(frame);
+		if(f) {
+			f->setChecked(true);
+		}
+	}
+}
 
 
 

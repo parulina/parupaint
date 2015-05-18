@@ -24,6 +24,7 @@ class ParupaintFlayer : public QScrollArea
 	ParupaintFlayerList * GetList();
 
 	void UpdateFromCanvas(ParupaintCanvasObject *);
+	void SetMarkedLayerFrame(int, int);
 
 	protected:
 	void enterEvent(QEvent * );
