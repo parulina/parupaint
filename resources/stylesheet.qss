@@ -1,0 +1,39 @@
+
+
+
+QScrollBar {
+	border: 2px solid grey;
+	background: #32CC99;
+}
+QScrollBar::handle {
+	background:white;
+}
+
+
+QScrollBar:vertical {
+	width: 5px;
+	margin: 22px 0 22px 0;
+}
+QScrollBar::handle:vertical {
+	background: white;
+}
+
+QScrollBar::add-page,
+QScrollBar::sub-page {
+	background: black;
+}
+
+QScrollBar::add-line,
+QScrollBar::sub-line {
+	background:none;
+}
+QScrollBar::up-arrow, 
+QScrollBar::down-arrow {
+	background:none;
+}
+
+
+
+ParupaintOverlayWidget {
+	background: white;
+}

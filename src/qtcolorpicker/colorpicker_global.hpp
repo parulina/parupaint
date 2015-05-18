@@ -1,0 +1,6 @@
+#ifndef QT_COLOR_PICKER_GLOBAL_H
+#define QT_COLOR_PICKER_GLOBAL_H
+
+#define QCP_EXPORT
+
+#endif

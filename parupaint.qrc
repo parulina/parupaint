@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>resources/stylesheet.qss</file>
+    <file>resources/chat.css</file>
+</qresource>
+</RCC>

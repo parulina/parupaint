@@ -2,6 +2,7 @@
 //
 
 #include <QSettings>
+#include <QFile>
 
 #include "parupaintWindow.h"
 #include "parupaintApp.h"
@@ -33,10 +34,15 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 		cfg.setValue("username", uname);
 	}
 	cfg.endGroup();
-	//cfg.beginGroup("canvas");
-	// TODO w, h
+
 	
+
 	auto * win = new ParupaintWindow;
-	win;
+	QFile file(":resources/stylesheet.qss");
+	if(file.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		this->setStyleSheet(file.readAll());
+		file.close();
+	}
 
 }
