@@ -44,6 +44,8 @@ Q_OBJECT
 
 
 	protected:
+	void enterEvent(QEvent * event);
+	void leaveEvent(QEvent * event);
 	void mousePressEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent* event);

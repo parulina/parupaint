@@ -364,3 +364,12 @@ void ParupaintCanvasView::keyReleaseEvent(QKeyEvent * event)
 	}
 	QGraphicsView::keyReleaseEvent(event);
 }
+
+void ParupaintCanvasView::enterEvent(QEvent * event)
+{
+	QGraphicsView::enterEvent(event);
+}
+void ParupaintCanvasView::leaveEvent(QEvent * event)
+{
+	QGraphicsView::leaveEvent(event);
+}

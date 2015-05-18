@@ -6,8 +6,15 @@
 class ParupaintCanvasPool;
 
 class ParupaintChat;
-class ParupaintFlayerList;
+class ParupaintFlayer;
 class ParupaintColorPicker;
+class ParupaintInfoBar;
+
+enum OverlayStatus {
+	OVERLAY_STATUS_HIDDEN,
+	OVERLAY_STATUS_SHOWN_SMALL,
+	OVERLAY_STATUS_SHOWN_NORMAL
+};
 
 
 class ParupaintWindow : public QMainWindow {
@@ -17,10 +24,13 @@ Q_OBJECT
 	QKeySequence OverlayKeyHide;
 	bool OverlayButtonDown;
 
-
+	void UpdateOverlay();
+	
+	OverlayStatus	OverlayState;
 	ParupaintChat * chat;
-	ParupaintFlayerList * flayer;
+	ParupaintFlayer * flayer;
 	ParupaintColorPicker * picker;
+	ParupaintInfoBar * infobar;
 
 	void closeEvent(QCloseEvent * event);
 	void resizeEvent(QResizeEvent * event);
@@ -34,8 +44,9 @@ Q_OBJECT
 
 	void UpdateTitle();
 
-	public slots:
+	private slots:
 	void OverlayKey();
+	void SelectFrame(int, int);
 };
 
 
