@@ -13,6 +13,12 @@ ParupaintCanvasObject::ParupaintCanvasObject() :
 	
 }
 
+void ParupaintCanvasObject::New(QSize s, _lint l, _fint f)
+{
+	QSize old = ParupaintPanvas::GetSize();
+	this->ParupaintPanvas::New(s, l, f);
+	emit ResizeSignal(old, s);
+}
 void ParupaintCanvasObject::Resize(QSize s)
 {
 	QSize old = ParupaintPanvas::GetSize();

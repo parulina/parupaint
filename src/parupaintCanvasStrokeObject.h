@@ -2,22 +2,21 @@
 #define PARUPAINTCANVASSTROKEOBJECT_H
 
 #include "stroke/parupaintStroke.h"
-#include <QGraphicsItem>
+#include <QPixmap>
+#include <QGraphicsPixmapItem>
 
-class ParupaintCanvasObject;
+class ParupaintCanvasPool;
 
-class ParupaintCanvasStrokeObject : public QGraphicsItem, public ParupaintStroke
+class ParupaintCanvasStrokeObject : public QGraphicsPixmapItem, public ParupaintStroke
 {
 	private:
-	QRectF canvasRectangle;
+	QRectF region_limit;
+	QRectF region;
 
 	public:
-	ParupaintCanvasStrokeObject(ParupaintCanvasObject * = nullptr);
-
-
-	private:
-	QRectF boundingRect() const;
-	void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
+	ParupaintCanvasStrokeObject(QRectF);
+	void SetRegionLimit(QRectF);
+	virtual void AddStroke(ParupaintStrokeStep *);
 };
 
 #endif

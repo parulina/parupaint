@@ -5,6 +5,7 @@ class ParupaintBrush;
 class ParupaintStrokeStep;
 
 #include "../panvas/panvasTypedefs.h"
+#include <QPixmap>
 #include <QList>
 
 class ParupaintStroke
@@ -20,7 +21,7 @@ class ParupaintStroke
 	public:
 	ParupaintStroke();
 
-	void AddStroke(ParupaintStrokeStep *);
+	virtual void AddStroke(ParupaintStrokeStep *);
 	void SetLayerFrame(_lint, _fint);
 	void SetBrush(ParupaintBrush * brush);
 	// NOTE! ! THIS DOESNT RETURN THE STROKE BRUSH USED, 

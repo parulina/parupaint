@@ -15,6 +15,7 @@ Q_OBJECT
 
 	public:
 	ParupaintCanvasObject();
+	virtual void New(QSize s, _lint l, _fint f);
 	virtual void Resize(QSize);
 	void SetLayerFrame(_lint, _fint =0);
 	void AddLayerFrame(int, int);

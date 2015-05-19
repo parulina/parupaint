@@ -15,16 +15,17 @@
 ParupaintCanvasPool::ParupaintCanvasPool(QObject * parent) : QGraphicsScene(parent)
 {
 	Canvas = new ParupaintCanvasObject();
+	// Need to be here to trigger resize
+	connect(Canvas, SIGNAL(ResizeSignal(QSize, QSize)), this, SLOT(OnCanvasResize(QSize, QSize)));
+
+
 	Canvas->New(QSize(500, 500), 1, 1);
 	Canvas->GetLayer(0)->GetFrame(0)->DrawStep(0, 0, 500, 500, 2, QColor(0, 0, 0));
 	addItem(Canvas);
 
 	//setItemIndexMethod(NoIndex);
-	connect(Canvas, SIGNAL(ResizeSignal(QSize, QSize)), this, SLOT(OnCanvasResize(QSize, QSize)));
 	connect(Canvas, SIGNAL(CurrentSignal(int, int)), this, SLOT(CurrentChange(int,int)));
 	
-	Canvas->Resize(QSize(200, 200));
-
 	setBackgroundBrush(QColor(255, 0, 0));
 	ClearCursors();
 }
@@ -58,6 +59,10 @@ void ParupaintCanvasPool::OnCanvasResize(QSize old_size, QSize new_size)
 	// Add the padding
 	setSceneRect(bounds.adjusted(-padding, -padding, padding, padding));
 	
+	foreach(auto i, strokes){
+		i->SetRegionLimit(bounds);
+	}
+
 	emit UpdateView();
 }
 
@@ -67,7 +72,7 @@ void ParupaintCanvasPool::OnCanvasResize(QSize old_size, QSize new_size)
 // client brush strokes
 ParupaintCanvasStrokeObject * ParupaintCanvasPool::NewBrushStroke(ParupaintBrush * brush)
 {
-	ParupaintCanvasStrokeObject * stroke = new ParupaintCanvasStrokeObject(this->GetCanvas());
+	ParupaintCanvasStrokeObject * stroke = new ParupaintCanvasStrokeObject(Canvas->boundingRect());
 	brush->SetCurrentStroke(stroke);
 	stroke->SetBrush(brush);
 	stroke->SetLayerFrame(Canvas->GetCurrentLayer(), Canvas->GetCurrentFrame());

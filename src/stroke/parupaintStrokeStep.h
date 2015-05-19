@@ -18,7 +18,8 @@ class ParupaintStrokeStep : public ParupaintBrush
 	ParupaintStrokeStep(ParupaintBrush b) : ParupaintStrokeStep()
 	{
 		this->SetPosition(b.GetPosition());
-		this->SetWidth(b.GetWidth() * b.GetPressure());
+		this->SetWidth(b.GetWidth());
+		this->SetPressure(b.GetPressure());
 		this->SetColor(b.GetColor());
 	}
 };

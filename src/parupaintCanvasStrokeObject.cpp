@@ -2,50 +2,43 @@
 #include "stroke/parupaintStrokeStep.h"
 #include "parupaintCanvasStrokeObject.h"
 
-#include "parupaintCanvasObject.h"
+#include "parupaintCanvasPool.h"
 
 #include <QStyleOptionGraphicsItem>
 #include <QPainter>
 #include <QRectF>
 #include <QLineF>
 
-// this is always at 0,0 and has the bounding rect of canvas
-
-ParupaintCanvasStrokeObject::ParupaintCanvasStrokeObject(ParupaintCanvasObject* canvas)
+ParupaintCanvasStrokeObject::ParupaintCanvasStrokeObject(QRectF limit)
 {
-	this->canvasRectangle = QRectF(0, 0, canvas->GetWidth(), canvas->GetHeight());
+	SetRegionLimit(limit);
 }
 
-
-QRectF ParupaintCanvasStrokeObject::boundingRect() const
+void ParupaintCanvasStrokeObject::SetRegionLimit(QRectF rect)
 {
-	return this->canvasRectangle;
+	region_limit = rect;
+	QPixmap pix(region_limit.width(), region_limit.height());
+	pix.fill(Qt::transparent);
+	if(!this->pixmap().isNull()) pix = this->pixmap().copy(region_limit.toRect());
+	
+	this->setPixmap(pix);
 }
 
-
-void ParupaintCanvasStrokeObject::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget*)
+void ParupaintCanvasStrokeObject::AddStroke(ParupaintStrokeStep *ss)
 {
-	if(strokes.isEmpty()) return;
-
-	QRect exposed = option->exposedRect.adjusted(-1, -1, 1, 1).toAlignedRect();
-	QPointF pos1 = strokes.first()->GetPosition();
+	if(this->pixmap().isNull()) return;
 
 
-	foreach(auto *i, strokes){
-		QPen pen(i->GetColor(), i->GetWidth(), Qt::SolidLine, Qt::RoundCap);
-		
-		painter->save();
-		
-		painter->setClipRect(exposed);
-		painter->setPen(pen);
-		painter->drawLine(QLineF(pos1, i->GetPosition()));
+	auto pos1 = ss->GetPosition();
+	if(!strokes.isEmpty()) pos1 = strokes.last()->GetPosition();
+	ParupaintStroke::AddStroke(ss);
 
-		painter->restore();
+	
+	QPixmap pix(this->pixmap());
+ 	QPainter paint(&pix);
 
-		pos1 = i->GetPosition();
-	}
+	paint.setPen(QPen(ss->GetColor(), ss->GetWidth() * ss->GetPressure(), Qt::SolidLine, Qt::RoundCap));
+	paint.drawLine(QLineF(pos1, ss->GetPosition()));
+
+ 	this->setPixmap(pix);
 }
-
-
-
-
