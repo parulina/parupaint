@@ -12,13 +12,10 @@ ParupaintChat::ParupaintChat(QWidget * parent) : ParupaintOverlayWidget(parent)
 
 	const auto lh = 25;
 	
-	// TODO auto height and stuff...
-
 	line = new QLineEdit(this);
 	line->resize(this->width(), lh);
 	line->move(0, this->height() - line->height());
-	// hmm.. that didn't work...
-	line->setStyleSheet("background-color:black;");
+	line->setObjectName("ChatEntry");
 	
 	chat = new ParupaintChatContent(this);
 	chat->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);

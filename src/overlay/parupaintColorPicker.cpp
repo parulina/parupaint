@@ -7,6 +7,7 @@
 ParupaintColorPicker::ParupaintColorPicker(QWidget * parent) : ParupaintOverlayWidget(parent)
 {
 	// TODO better this?
+	this->setObjectName("ColorPicker");
 	resize(200, 200);
 
 	wheel = new Color_Wheel(this);

@@ -3,6 +3,21 @@
 	background:black;
 }
 
+#Flayer,
+#ColorPicker {
+	background:rgba(0, 0, 0, 0.6);
+}
+
+#Chat {
+}
+
+#ChatEntry {
+	margin:0;
+	padding:0;
+	color:black;
+	background-color:black;
+	font-family:Monospace;
+}
 
 #FlayerList {
 	background:lightblue;
