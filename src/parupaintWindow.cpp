@@ -32,6 +32,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	OverlayKeyShow(Qt::Key_Tab), OverlayKeyHide(Qt::Key_Tab + Qt::SHIFT), 
 	OverlayButtonDown(false), 
 	// general keys
+	CanvasKeySquash(Qt::Key_Space),
 	CanvasKeyNextLayer(Qt::Key_D), CanvasKeyPreviousLayer(Qt::Key_S),
 	CanvasKeyNextFrame(Qt::Key_F), CanvasKeyPreviousFrame(Qt::Key_A),
 	//internal stuff?
@@ -73,10 +74,6 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	connect(flayer->GetList(), SIGNAL(clickFrame(int, int)), this, SLOT(SelectFrame(int, int)));
 
 
-	OverlayKeyShow = QKeySequence(Qt::Key_Tab);
-	OverlayKeyHide = QKeySequence(Qt::Key_Tab + Qt::SHIFT);
-
-
 	OverlayButtonTimer = new QTimer(this);
 	OverlayButtonTimer->setSingleShot(true);
 	connect(OverlayButtonTimer, SIGNAL(timeout()), this, SLOT(TabTimeout()));
@@ -85,7 +82,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	OverlayTimer->setSingleShot(true);
 	connect(OverlayTimer, SIGNAL(timeout()), this, SLOT(OverlayTimeout()));
 
-
+	
 	QShortcut * TabKey = new QShortcut(OverlayKeyShow, this);
 	QShortcut * TabKeyShift = new QShortcut(OverlayKeyHide, this);
 	connect(TabKey, SIGNAL(activated()), this, SLOT(OverlayKey()));
@@ -153,6 +150,7 @@ void ParupaintWindow::OverlayTimeout()
 	HideOverlay();
 }
 
+
 void ParupaintWindow::OverlayKey()
 {
 	QShortcut* shortcut = qobject_cast<QShortcut*>(sender());
@@ -162,7 +160,7 @@ void ParupaintWindow::OverlayKey()
 	if(seq == OverlayKeyShow){
 
 		if(!OverlayButtonDown) {
-			OverlayButtonTimer->start(100);
+			OverlayButtonTimer->start(200);
 			OverlayButtonDown = true;
 			OverlayState = OVERLAY_STATUS_SHOWN_SMALL;
 
@@ -236,6 +234,17 @@ void ParupaintWindow::UpdateOverlay()
 	auto h2 = this->height() - flayer->height();
 	flayer->move(0, h2);
 	flayer->resize(this->width(), flayer->height());
+}
+
+void ParupaintWindow::keyPressEvent(QKeyEvent * event)
+{
+	if(event->key() == Qt::Key_Space && !event->isAutoRepeat()){
+		if(OverlayButtonDown){
+			canvas->ClearStrokes();
+			return;
+		}
+	}
+	return QMainWindow::keyPressEvent(event);
 }
 
 void ParupaintWindow::closeEvent(QCloseEvent *)

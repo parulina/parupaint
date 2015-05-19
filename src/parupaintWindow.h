@@ -29,6 +29,7 @@ Q_OBJECT
 	QTimer * OverlayTimer;
 	
 	
+	QKeySequence CanvasKeySquash;
 	QKeySequence CanvasKeyNextLayer;
 	QKeySequence CanvasKeyPreviousLayer;
 	QKeySequence CanvasKeyNextFrame;
@@ -46,6 +47,7 @@ Q_OBJECT
 	ParupaintInfoBar * infobar;
 
 	void closeEvent(QCloseEvent * event);
+	void keyPressEvent(QKeyEvent * event);
 	void resizeEvent(QResizeEvent * event);
 	ParupaintCanvasPool * canvas;
 

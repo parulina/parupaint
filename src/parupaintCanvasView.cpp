@@ -214,6 +214,7 @@ bool ParupaintCanvasView::OnKeyDown(QKeyEvent * event)
 
 		} else if(CanvasState != CANVAS_STATUS_MOVING){
 			CanvasState = CANVAS_STATUS_MOVING;
+			return false;
 		}
 	}
 	return true;
