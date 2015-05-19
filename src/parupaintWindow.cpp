@@ -28,6 +28,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	OverlayKeyShow(Qt::Key_Tab), OverlayKeyHide(Qt::Key_Tab + Qt::SHIFT), 
 	OverlayButtonDown(false), 
 	// general keys
+	CanvasKeyNextLayer(Qt::Key_F), CanvasKeyPreviousLayer(Qt::Key_D),
 	CanvasKeyNextFrame(Qt::Key_S), CanvasKeyPreviousFrame(Qt::Key_A),
 	//internal stuff?
 	OverlayState(OVERLAY_STATUS_HIDDEN)
@@ -75,10 +76,16 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	connect(TabKey, SIGNAL(activated()), this, SLOT(OverlayKey()));
 	connect(TabKeyShift, SIGNAL(activated()), this, SLOT(OverlayKey()));
 
-	QShortcut * NextFrameKey = new QShortcut(CanvasKeyNextFrame, this);
-	QShortcut * PreviousFrameKey = new QShortcut(CanvasKeyPreviousFrame, this);
-	connect(NextFrameKey, SIGNAL(activated()), this, SLOT(CanvasFrameKey()));
-	connect(PreviousFrameKey, SIGNAL(activated()), this, SLOT(CanvasFrameKey()));
+
+	QShortcut * NextFrameKey = 	new QShortcut(CanvasKeyNextFrame, this);
+	QShortcut * PreviousFrameKey = 	new QShortcut(CanvasKeyPreviousFrame, this);
+	QShortcut * NextLayerKey = 	new QShortcut(CanvasKeyNextLayer, this);
+	QShortcut * PreviousLayerKey =	new QShortcut(CanvasKeyPreviousLayer, this);
+
+	connect(NextLayerKey, SIGNAL(activated()), this, SLOT(CanvasChangeKey()));
+	connect(PreviousLayerKey, SIGNAL(activated()), this, SLOT(CanvasChangeKey()));
+	connect(NextFrameKey, SIGNAL(activated()), this, SLOT(CanvasChangeKey()));
+	connect(PreviousFrameKey, SIGNAL(activated()), this, SLOT(CanvasChangeKey()));
 
 
 	UpdateTitle();
@@ -141,17 +148,24 @@ void ParupaintWindow::OverlayKey()
 	}
 }
 
-void ParupaintWindow::CanvasFrameKey()
+void ParupaintWindow::CanvasChangeKey()
 {
 	QShortcut* shortcut = qobject_cast<QShortcut*>(sender());
 	QKeySequence seq = shortcut->key();
 
+	int ll = 0, ff = 0;
 	if(seq == CanvasKeyNextFrame){
-		canvas->GetCanvas()->AddLayerFrame(0, 1);
+		ff ++;
 	} else if(seq == CanvasKeyPreviousFrame){
-		canvas->GetCanvas()->AddLayerFrame(0, -1);
+		ff --;
+
+	} else if(seq == CanvasKeyNextLayer){
+		ll++;
+	} else if(seq == CanvasKeyPreviousLayer){
+		ll--;
 	}
 
+	canvas->GetCanvas()->AddLayerFrame(ll, ff);
 	canvas->UpdateView();
 }
 

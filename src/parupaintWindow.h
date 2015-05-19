@@ -27,6 +27,8 @@ Q_OBJECT
 	QTimer * OverlayTimer;
 	
 	
+	QKeySequence CanvasKeyNextLayer;
+	QKeySequence CanvasKeyPreviousLayer;
 	QKeySequence CanvasKeyNextFrame;
 	QKeySequence CanvasKeyPreviousFrame;
 
@@ -55,7 +57,7 @@ Q_OBJECT
 	void OverlayTimeout();
 
 	void OverlayKey();
-	void CanvasFrameKey();
+	void CanvasChangeKey();
 
 	void SelectFrame(int, int);
 	void ChangedFrame(int, int);
