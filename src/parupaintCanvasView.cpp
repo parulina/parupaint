@@ -83,6 +83,7 @@ void ParupaintCanvasView::OnPenDown(const QPointF &pos, Qt::MouseButtons buttons
 
 	if(buttons == DrawButton && !Drawing){
 		Drawing = true;
+		emit PenDrawStart(CurrentBrush);
 
 	} else if(buttons == MoveButton && CanvasState != CANVAS_STATUS_MOVING){
 		CanvasState = CANVAS_STATUS_MOVING;
@@ -95,6 +96,7 @@ void ParupaintCanvasView::OnPenUp(const QPointF &pos, Qt::MouseButtons buttons)
 	CurrentBrush->SetPosition(RealPosition(pos));
 	if(buttons == DrawButton && Drawing){
 		Drawing = false;
+		emit PenDrawStop(CurrentBrush);
 	}
 	if(buttons == MoveButton && CanvasState == CANVAS_STATUS_MOVING){
 		CanvasState = CANVAS_STATUS_IDLE;
@@ -129,12 +131,18 @@ void ParupaintCanvasView::OnPenMove(const QPointF &pos, Qt::MouseButtons buttons
 			CurrentBrush->SetWidth(zdl);
 		}
 		viewport()->update();
-	}
 
-	OldPosition = pos;
+	} else 
+
 	CurrentBrush->SetPosition(RealPosition(pos));
 	CurrentBrush->SetPressure(pressure);
+	if(Drawing){
 
+		emit PenDraw(RealPosition(OldPosition), CurrentBrush);
+	}
+
+
+	OldPosition = pos;
 	viewport()->update();
 }
 

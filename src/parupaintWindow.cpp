@@ -7,6 +7,9 @@
 
 #include "parupaintWindow.h"
 
+#include "stroke/parupaintStrokeStep.h"
+#include "parupaintBrush.h"
+
 #include "parupaintCanvasView.h"
 #include "parupaintCanvasPool.h"
 #include "parupaintCanvasObject.h"
@@ -21,6 +24,7 @@
 #include "overlay/parupaintUserList.h"
 #include "overlay/parupaintInfoBar.h"
 
+
 #include <QDebug>
 
 ParupaintWindow::ParupaintWindow() : QMainWindow(), 
@@ -28,16 +32,23 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	OverlayKeyShow(Qt::Key_Tab), OverlayKeyHide(Qt::Key_Tab + Qt::SHIFT), 
 	OverlayButtonDown(false), 
 	// general keys
-	CanvasKeyNextLayer(Qt::Key_F), CanvasKeyPreviousLayer(Qt::Key_D),
-	CanvasKeyNextFrame(Qt::Key_S), CanvasKeyPreviousFrame(Qt::Key_A),
+	CanvasKeyNextLayer(Qt::Key_D), CanvasKeyPreviousLayer(Qt::Key_S),
+	CanvasKeyNextFrame(Qt::Key_F), CanvasKeyPreviousFrame(Qt::Key_A),
 	//internal stuff?
 	OverlayState(OVERLAY_STATUS_HIDDEN)
 
 {
+
+
+
 	auto * view = new ParupaintCanvasView(this);
+	connect(view, SIGNAL(PenDraw(QPointF, ParupaintBrush*)), this, SLOT(PenDraw(QPointF, ParupaintBrush*)));
+	connect(view, SIGNAL(PenDrawStart(ParupaintBrush*)), this, SLOT(PenDrawStart(ParupaintBrush*)));
+	connect(view, SIGNAL(PenDrawStop(ParupaintBrush*)), this, SLOT(PenDrawStop(ParupaintBrush*)));
 	setCentralWidget(view);
 
 	canvas = new ParupaintCanvasPool(view);
+
 	view->SetCanvas(canvas);
 	canvas->GetCanvas()->AddLayers(1, 2); // add 2 layers at pos 1
 	canvas->GetCanvas()->GetLayer(1)->SetFrames(10);
@@ -97,6 +108,25 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 
 	show();
 }
+
+
+void ParupaintWindow::PenDrawStart(ParupaintBrush* brush){
+	canvas->NewBrushStroke(brush);
+}
+
+void ParupaintWindow::PenDraw(QPointF pos, ParupaintBrush* brush){
+	auto *stroke = brush->GetCurrentStroke();
+	if(stroke != nullptr){
+		stroke->AddStroke(new ParupaintStrokeStep(*brush));
+	}
+}
+
+void ParupaintWindow::PenDrawStop(ParupaintBrush* brush){
+	canvas->EndBrushStroke(brush);
+}
+
+
+
 
 void ParupaintWindow::ChangedFrame(int l, int f)
 {

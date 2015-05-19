@@ -6,7 +6,7 @@
 
 ParupaintCursor::ParupaintCursor()
 {
-
+	this->setZValue(1);
 }
 
 void ParupaintCursor::SetPosition(QPointF pos)

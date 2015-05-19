@@ -5,6 +5,7 @@
 
 class ParupaintCanvasPool;
 
+class ParupaintBrush;
 class ParupaintChat;
 class ParupaintFlayer;
 class ParupaintColorPicker;
@@ -59,12 +60,13 @@ Q_OBJECT
 	void OverlayKey();
 	void CanvasChangeKey();
 
+	void PenDrawStart(ParupaintBrush*);
+	void PenDraw(QPointF, ParupaintBrush*);
+	void PenDrawStop(ParupaintBrush*);
+
 	void SelectFrame(int, int);
 	void ChangedFrame(int, int);
 };
-
-
-
 
 
 #endif

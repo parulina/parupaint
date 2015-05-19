@@ -76,6 +76,12 @@ Q_OBJECT
 	// set/reset zoom, rotation, etc...
 //	void UpdateTitle();
 
+
+	signals:
+	void PenDrawStart(ParupaintBrush *);
+	void PenDraw(QPointF, ParupaintBrush *);
+	void PenDrawStop(ParupaintBrush *);
+
 public slots:
 	void OnCanvasUpdate();
 

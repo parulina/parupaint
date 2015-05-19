@@ -50,3 +50,44 @@ void ParupaintCanvasPool::OnCanvasResize(QSize old_size, QSize new_size)
 	emit UpdateView();
 }
 
+
+
+
+// client brush strokes
+ParupaintCanvasStrokeObject * ParupaintCanvasPool::NewBrushStroke(ParupaintBrush * brush)
+{
+	ParupaintCanvasStrokeObject * stroke = new ParupaintCanvasStrokeObject(this->GetCanvas());
+	brush->SetCurrentStroke(stroke);
+	stroke->SetBrush(brush);
+	
+	strokes.insert(brush, stroke);
+	addItem(stroke);
+	return stroke;
+}
+
+void ParupaintCanvasPool::EndBrushStroke(ParupaintBrush * brush)
+{
+// 	brush->SetCurrentStroke(nullptr);
+}
+
+int ParupaintCanvasPool::GetNumBrushStrokes(ParupaintBrush * brush)
+{
+	return strokes.values(brush).length();
+}
+int ParupaintCanvasPool::GetTotalStrokes()
+{
+	int i = 0;
+	for(auto i = strokes.begin(); i != strokes.end(); ++i){
+		i += GetNumBrushStrokes(i.key());
+	}
+	return i;
+}
+
+void ParupaintCanvasPool::ClearStrokes()
+{
+	foreach(auto i, strokes){
+		delete i;
+	}
+	strokes.clear();
+	
+}

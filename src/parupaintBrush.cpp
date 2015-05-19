@@ -31,10 +31,20 @@ void ParupaintBrush::SetColor(QColor col)
 {
 	color = col;
 }
+void ParupaintBrush::SetPosition(float x, float y)
+{
+	position = QPointF(x, y);
+}
 void ParupaintBrush::SetPosition(QPointF pos)
 {
 	position = pos;
 }
+
+void ParupaintBrush::SetCurrentStroke(ParupaintStroke * s)
+{
+	CurrentStroke = s;
+}
+
 
 float ParupaintBrush::GetWidth() const
 {
@@ -58,4 +68,9 @@ QString ParupaintBrush::GetName() const
 QPointF ParupaintBrush::GetPosition() const
 {
 	return position;
+}
+
+ParupaintStroke * ParupaintBrush::GetCurrentStroke() const
+{
+	return CurrentStroke;
 }
