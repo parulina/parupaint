@@ -119,9 +119,8 @@ void ParupaintCanvasView::OnPenUp(const QPointF &pos, Qt::MouseButtons buttons)
 {
 	if(CurrentBrush == nullptr) return;
 
-
 	CurrentBrush->SetPosition(RealPosition(pos));
-	if(buttons == DrawButton && Drawing){
+	if(Drawing){
 		Drawing = false;
 		emit PenDrawStop(CurrentBrush->GetBrush());
 	}

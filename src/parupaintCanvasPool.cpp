@@ -4,13 +4,13 @@
 
 #include "parupaintCanvasPool.h"
 #include "parupaintCanvasObject.h"
+#include "parupaintCanvasStrokeObject.h"
 #include "parupaintCursor.h"
 #include "parupaintBrush.h"
 
 #include "panvas/parupaintPanvas.h"
 #include "panvas/parupaintLayer.h"
 #include "panvas/parupaintFrame.h"
-
 
 ParupaintCanvasPool::ParupaintCanvasPool(QObject * parent) : QGraphicsScene(parent)
 {
@@ -21,6 +21,7 @@ ParupaintCanvasPool::ParupaintCanvasPool(QObject * parent) : QGraphicsScene(pare
 
 	//setItemIndexMethod(NoIndex);
 	connect(Canvas, SIGNAL(ResizeSignal(QSize, QSize)), this, SLOT(OnCanvasResize(QSize, QSize)));
+	connect(Canvas, SIGNAL(CurrentSignal(int, int)), this, SLOT(CurrentChange(int,int)));
 	
 	Canvas->Resize(QSize(200, 200));
 
@@ -69,6 +70,7 @@ ParupaintCanvasStrokeObject * ParupaintCanvasPool::NewBrushStroke(ParupaintBrush
 	ParupaintCanvasStrokeObject * stroke = new ParupaintCanvasStrokeObject(this->GetCanvas());
 	brush->SetCurrentStroke(stroke);
 	stroke->SetBrush(brush);
+	stroke->SetLayerFrame(Canvas->GetCurrentLayer(), Canvas->GetCurrentFrame());
 	
 	strokes.insert(brush, stroke);
 	addItem(stroke);
@@ -77,7 +79,7 @@ ParupaintCanvasStrokeObject * ParupaintCanvasPool::NewBrushStroke(ParupaintBrush
 
 void ParupaintCanvasPool::EndBrushStroke(ParupaintBrush * brush)
 {
-// 	brush->SetCurrentStroke(nullptr);
+	brush->SetCurrentStroke(nullptr);
 }
 
 int ParupaintCanvasPool::GetNumBrushStrokes(ParupaintBrush * brush)
@@ -100,4 +102,14 @@ void ParupaintCanvasPool::ClearStrokes()
 	}
 	strokes.clear();
 	
+}
+
+void ParupaintCanvasPool::CurrentChange(int l, int f)
+{
+	foreach(auto i, strokes){
+		i->hide();
+		if(i->GetLayer() == l && i->GetFrame() == f){
+			i->show();
+		}
+	}
 }

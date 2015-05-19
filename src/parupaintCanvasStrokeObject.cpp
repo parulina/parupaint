@@ -14,7 +14,6 @@
 ParupaintCanvasStrokeObject::ParupaintCanvasStrokeObject(ParupaintCanvasObject* canvas)
 {
 	this->canvasRectangle = QRectF(0, 0, canvas->GetWidth(), canvas->GetHeight());
-	this->setZValue(0);
 }
 
 
