@@ -4,19 +4,32 @@
 #include <QColor>
 #include <QPen>
 
-#include "parupaintBrush.h"
 #include <QGraphicsItem>
 
+class ParupaintBrush;
+
 // todo: extends ParupaintBrush?
-class ParupaintCursor : public QGraphicsItem, public ParupaintBrush 
+class ParupaintCursor : public QGraphicsItem 
 {
+	private:
+	ParupaintBrush * brush;
 	public:
-	ParupaintCursor();
+	ParupaintCursor(ParupaintBrush *);
 
 	QPen ToPen();
 	void Paint(QPainter *);
 
 	void SetPosition(QPointF);
+	void SetWidth(float);
+	void SetPressure(float);
+	void SetColor(QColor);
+
+	QPointF GetPosition() const;
+	float GetWidth() const;
+	float GetPressure() const;
+	QColor GetColor() const;
+
+	ParupaintBrush * GetBrush() const;
 
 	private:
 	QRectF boundingRect() const;

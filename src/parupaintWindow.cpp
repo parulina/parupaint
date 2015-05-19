@@ -42,6 +42,8 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 
 
 	auto * view = new ParupaintCanvasView(this);
+	view->SetCurrentBrush(&brush);
+
 	connect(view, SIGNAL(PenDraw(QPointF, ParupaintBrush*)), this, SLOT(PenDraw(QPointF, ParupaintBrush*)));
 	connect(view, SIGNAL(PenDrawStart(ParupaintBrush*)), this, SLOT(PenDrawStart(ParupaintBrush*)));
 	connect(view, SIGNAL(PenDrawStop(ParupaintBrush*)), this, SLOT(PenDrawStop(ParupaintBrush*)));
@@ -59,6 +61,8 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 				i, Qt::black);
 	}
 	// canvas->GetCanvas() returns Panvas.
+
+
 
 	chat =	  new ParupaintChat(this);
 	flayer =  new ParupaintFlayer(this);

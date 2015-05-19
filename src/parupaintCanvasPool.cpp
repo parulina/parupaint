@@ -5,6 +5,7 @@
 #include "parupaintCanvasPool.h"
 #include "parupaintCanvasObject.h"
 #include "parupaintCursor.h"
+#include "parupaintBrush.h"
 
 #include "panvas/parupaintPanvas.h"
 #include "panvas/parupaintLayer.h"
@@ -32,11 +33,20 @@ ParupaintCanvasObject * ParupaintCanvasPool::GetCanvas()
 	return Canvas;
 }
 
+
+
 void ParupaintCanvasPool::AddCursor(QString str, ParupaintCursor * c)
 {
 	ParupaintCursorPool::AddCursor(str, c);
 	addItem(c);
 }
+void ParupaintCanvasPool::RemoveCursor(ParupaintCursor * c)
+{
+	ParupaintCursorPool::RemoveCursor(c);
+	removeItem(c);
+}
+
+
 
 void ParupaintCanvasPool::OnCanvasResize(QSize old_size, QSize new_size)
 {

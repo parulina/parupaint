@@ -1,11 +1,12 @@
 #ifndef PARUPAINTWINDOW_H
 #define PARUPAINTWINDOW_H
 
+#include "parupaintBrush.h"
+
 #include <QMainWindow>
 
 class ParupaintCanvasPool;
 
-class ParupaintBrush;
 class ParupaintChat;
 class ParupaintFlayer;
 class ParupaintColorPicker;
@@ -33,9 +34,12 @@ Q_OBJECT
 	QKeySequence CanvasKeyNextFrame;
 	QKeySequence CanvasKeyPreviousFrame;
 
+
 	void UpdateOverlay();
 	
 	OverlayStatus	OverlayState;
+	ParupaintBrush 	brush;
+
 	ParupaintChat * chat;
 	ParupaintFlayer * flayer;
 	ParupaintColorPicker * picker;

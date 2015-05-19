@@ -1,13 +1,13 @@
 #ifndef PARUPAINTCANVASVIEW_H
 #define PARUPAINTCANVASVIEW_H
 
-#include "parupaintCursor.h"
-
 #include <QGraphicsView>
 class QWidget;
 class QPainter;
 
+class ParupaintBrush;
 class ParupaintCanvasPool;
+class ParupaintCursor;
 
 
 enum PenStatus {
@@ -35,8 +35,7 @@ Q_OBJECT
 	float		Zoom;
 	bool		Drawing;
 
-	ParupaintCursor brush;
-	ParupaintCursor * CurrentBrush;
+	ParupaintCursor* CurrentBrush;
 
 	Qt::MouseButton DrawButton;
 	Qt::MouseButton MoveButton;
@@ -59,6 +58,7 @@ Q_OBJECT
 	public:
 	ParupaintCanvasView(QWidget* parent);
 	void SetCanvas(ParupaintCanvasPool * canvas);
+	void SetCurrentBrush(ParupaintBrush * brush);
 
 	float GetZoom() const;
 	void SetZoom(float z);

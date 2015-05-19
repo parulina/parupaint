@@ -21,6 +21,7 @@ Q_OBJECT
 	ParupaintCanvasObject * GetCanvas();
 
 	virtual void AddCursor(QString, ParupaintCursor *);
+	virtual void RemoveCursor(ParupaintCursor *);
 
 
 	ParupaintCanvasStrokeObject * NewBrushStroke(ParupaintBrush * brush);

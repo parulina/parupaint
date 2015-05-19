@@ -11,10 +11,13 @@
 #include <QDebug>
 #include <QTimer>
 
+#include "parupaintCursor.h"
+#include "parupaintBrush.h"
+
 #include "parupaintCanvasView.h"
 #include "parupaintCanvasPool.h"
+#include "parupaintCursorPool.h"
 #include "parupaintCanvasObject.h"
-
 
 //QGraphicsView for canvas view
 
@@ -23,33 +26,52 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 	// Canvas stuff
 	CanvasState(CANVAS_STATUS_IDLE), PenState(PEN_STATE_UP), Zoom(1.0), Drawing(false),
 	// Brush stuff
-	CurrentBrush(&brush),
+	CurrentBrush(nullptr),
 	// Button stuff
 	DrawButton(Qt::LeftButton), MoveButton(Qt::MiddleButton), SwitchButton(Qt::RightButton)
 {
 	// mouse pointers and canvas itself
 	//
 	
-
 	setBackgroundBrush(QColor(200, 200, 200));
 	viewport()->setMouseTracking(true);
-	viewport()->setCursor(Qt::BlankCursor);
-
-	CurrentBrush->SetWidth(50);
-	CurrentBrush->SetColor(QColor(255, 0, 0));
-
-	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	
 	SetZoom(Zoom);
-
-
 }
+
+
+
+void ParupaintCanvasView::SetCurrentBrush(ParupaintBrush * brush)
+{
+	
+	if(CurrentBrush && CurrentCanvas) {
+		CurrentCanvas->RemoveCursor(CurrentBrush);
+
+		delete CurrentBrush;
+	}
+
+	if(brush) {
+		ParupaintCursor * cursor = new ParupaintCursor(brush);
+		viewport()->setCursor(Qt::BlankCursor);
+		if(CurrentCanvas) {
+			CurrentCanvas->AddCursor(" ", cursor);
+		}
+		CurrentBrush = cursor;
+	} else {
+		viewport()->setCursor(Qt::ArrowCursor);
+		CurrentBrush = nullptr;
+	}
+
+} 
+
 void ParupaintCanvasView::SetCanvas(ParupaintCanvasPool * canvas)
 {
 	CurrentCanvas = canvas;
 	setScene(canvas);
-	canvas->AddCursor("", CurrentBrush);
+	
+	if(CurrentBrush) {
+ 		canvas->AddCursor(" ", CurrentBrush);
+	}
 
 	connect(canvas, SIGNAL(UpdateView()), this, SLOT(OnCanvasUpdate()));
 }
@@ -79,11 +101,13 @@ void ParupaintCanvasView::AddZoom(float z)
 
 void ParupaintCanvasView::OnPenDown(const QPointF &pos, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, float pressure)
 {
+	if(CurrentBrush == nullptr) return;
+
 	CurrentBrush->SetPosition(RealPosition(pos));
 
 	if(buttons == DrawButton && !Drawing){
 		Drawing = true;
-		emit PenDrawStart(CurrentBrush);
+		emit PenDrawStart(CurrentBrush->GetBrush());
 
 	} else if(buttons == MoveButton && CanvasState != CANVAS_STATUS_MOVING){
 		CanvasState = CANVAS_STATUS_MOVING;
@@ -93,10 +117,13 @@ void ParupaintCanvasView::OnPenDown(const QPointF &pos, Qt::MouseButtons buttons
 
 void ParupaintCanvasView::OnPenUp(const QPointF &pos, Qt::MouseButtons buttons)
 {
+	if(CurrentBrush == nullptr) return;
+
+
 	CurrentBrush->SetPosition(RealPosition(pos));
 	if(buttons == DrawButton && Drawing){
 		Drawing = false;
-		emit PenDrawStop(CurrentBrush);
+		emit PenDrawStop(CurrentBrush->GetBrush());
 	}
 	if(buttons == MoveButton && CanvasState == CANVAS_STATUS_MOVING){
 		CanvasState = CANVAS_STATUS_IDLE;
@@ -107,6 +134,8 @@ void ParupaintCanvasView::OnPenUp(const QPointF &pos, Qt::MouseButtons buttons)
 
 void ParupaintCanvasView::OnPenMove(const QPointF &pos, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, float pressure)
 {
+	if(CurrentBrush == nullptr) return;
+
 	if(CanvasState == CANVAS_STATUS_MOVING){
 		QScrollBar *ver = verticalScrollBar();
 		QScrollBar *hor = horizontalScrollBar();
@@ -138,7 +167,7 @@ void ParupaintCanvasView::OnPenMove(const QPointF &pos, Qt::MouseButtons buttons
 	CurrentBrush->SetPressure(pressure);
 	if(Drawing){
 
-		emit PenDraw(RealPosition(OldPosition), CurrentBrush);
+		emit PenDraw(RealPosition(OldPosition), CurrentBrush->GetBrush());
 	}
 
 
@@ -148,6 +177,8 @@ void ParupaintCanvasView::OnPenMove(const QPointF &pos, Qt::MouseButtons buttons
 
 bool ParupaintCanvasView::OnScroll(const QPointF & pos, Qt::KeyboardModifiers modifiers, float delta_y)
 {
+	if(CurrentBrush == nullptr) return false;
+
 	float actual_zoom = delta_y / 120.0;
 	if((modifiers & Qt::ControlModifier) || CanvasState == CANVAS_STATUS_MOVING){
 		AddZoom(actual_zoom * 0.2);
@@ -164,6 +195,8 @@ bool ParupaintCanvasView::OnScroll(const QPointF & pos, Qt::KeyboardModifiers mo
 
 bool ParupaintCanvasView::OnKeyDown(QKeyEvent * event)
 {
+	if(CurrentBrush == nullptr) return true;
+
 	if(event->key() == Qt::Key_Space){
 		if((event->modifiers() & Qt::ControlModifier) &&
 			(event->modifiers() & Qt::ShiftModifier) &&
@@ -189,6 +222,8 @@ bool ParupaintCanvasView::OnKeyDown(QKeyEvent * event)
 
 bool ParupaintCanvasView::OnKeyUp(QKeyEvent * event)
 {
+	if(CurrentBrush == nullptr) return true;
+
 	if(event->key() == Qt::Key_Space && 
 		(CanvasState != CANVAS_STATUS_IDLE)){
 		CanvasState = CANVAS_STATUS_IDLE;
@@ -242,8 +277,10 @@ QPointF ParupaintCanvasView::RealPosition(const QPointF &pos)
 // Qt events
 
 
-void ParupaintCanvasView::drawForeground(QPainter *painter, const QRectF & rect)
+void ParupaintCanvasView::drawForeground(QPainter *painter, const QRectF & )
 {
+	if(CurrentBrush == nullptr) return;
+
 	if(CanvasState == CANVAS_STATUS_BRUSH_ZOOMING){
 		auto ww = CurrentBrush->GetWidth();
 		auto cc = CurrentBrush->GetColor();

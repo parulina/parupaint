@@ -1,6 +1,6 @@
 
 #include "parupaintCursorPool.h"
-
+#include "parupaintCursor.h"
 
 ParupaintCursorPool::ParupaintCursorPool()
 {
@@ -15,6 +15,22 @@ void ParupaintCursorPool::AddCursor(QString str, ParupaintCursor * c)
 void ParupaintCursorPool::RemoveCursor(QString str)
 {
 	Cursors.remove(str);
+}
+void ParupaintCursorPool::RemoveCursor(ParupaintCursor * c)
+{
+	foreach(auto i, Cursors.keys(c)){
+		Cursors.remove(i);
+	}
+}
+
+ParupaintCursor * ParupaintCursorPool::GetCursor(ParupaintBrush * brush)
+{
+	foreach(auto i, Cursors){
+		if(i->GetBrush() == brush){
+			return i;
+		}
+	}
+	return nullptr;
 }
 
 ParupaintCursor * ParupaintCursorPool::GetCursor(QString str)

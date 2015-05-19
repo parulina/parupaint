@@ -5,6 +5,7 @@
 #include <QString>
 #include <QHash>
 class ParupaintCursor;
+class ParupaintBrush;
 
 class ParupaintCursorPool
 {
@@ -15,7 +16,10 @@ class ParupaintCursorPool
 	ParupaintCursorPool();
 	void AddCursor(QString, ParupaintCursor*);
 	void RemoveCursor(QString);
-	ParupaintCursor * GetCursor(QString str);
+	void RemoveCursor(ParupaintCursor*);
+
+	ParupaintCursor * GetCursor(QString);
+	ParupaintCursor * GetCursor(ParupaintBrush*);
 	void ClearCursors();
 };
 
