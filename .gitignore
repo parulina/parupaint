@@ -4,3 +4,4 @@ junk/
 Makefile
 .*
 qrc_*
+*.tar.gz
