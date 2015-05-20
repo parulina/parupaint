@@ -51,6 +51,7 @@ void ParupaintFlayer::UpdateFromCanvas(ParupaintCanvasObject * canvas)
 			auto * nframe = nlayer->AddFrame(f);
 			nframe->Index = f;
 			nframe->Extended = frame->IsExtended();
+			if(nframe->Extended) nframe->setObjectName("FlayerFrameExtended");
 		}
 	}
 }

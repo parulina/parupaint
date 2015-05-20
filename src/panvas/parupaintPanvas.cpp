@@ -123,6 +123,10 @@ int ParupaintPanvas::GetHeight() const
 	return Info.Dimensions.height();
 }
 
+QSize ParupaintPanvas::GetDimensions() const
+{
+	return Info.Dimensions;
+}
 QSize ParupaintPanvas::GetSize() const
 {
 	return Info.Dimensions;

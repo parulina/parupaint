@@ -17,6 +17,7 @@ class ParupaintFrame {
 	void New(QSize);
 	void Resize(QSize);
 	QImage GetImage() const;
+	void LoadFromData(const QByteArray&);
 	
 	void ClearColor(QColor);
 	//void DrawStep(ParupaintStep * step);

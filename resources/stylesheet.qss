@@ -27,13 +27,20 @@
 	background:gray;
 }
 
+
+#FlayerFrameExtended {
+	background:rgb(200, 50, 50);
+	border:none;
+	border-left:2px solid black;
+}
 #FlayerFrame {
 	background:white;
 	border:none;
 }
 
 
-#FlayerFrame:checked {
+#FlayerFrame:checked,
+#FlayerFrameExtended:checked{
 	background:black;
 }
 

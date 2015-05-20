@@ -34,9 +34,21 @@ QRectF ParupaintCanvasObject::boundingRect() const
 void ParupaintCanvasObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
 	QRect exposed = option->exposedRect.adjusted(-1, -1, 1, 1).toAlignedRect();
-	painter->fillRect(exposed, QColor(255,255,255));
 
 	auto layer = GetLayer(CurrentLayer);
+
+
+
+	for(auto i = 0; i < CurrentLayer; i++){
+		// draw previous frames
+		auto layer2 = GetLayer(i);
+		if(layer2 && CurrentFrame < layer2->GetNumFrames()){
+			auto frame2 = layer2->GetFrame(CurrentFrame);
+			if(frame2){
+				painter->drawImage(exposed, frame2->GetImage());
+			}
+		}
+	}
 	if(layer != nullptr){
 		auto frame = layer->GetFrame(CurrentFrame);
 		if(frame != nullptr) {
@@ -61,8 +73,8 @@ void ParupaintCanvasObject::AddLayerFrame(int layer, int frame)
 	if(int(CurrentLayer) + layer < 0) layer = 0;
 	if(int(CurrentFrame) + frame < 0) frame = 0;
 
-	if(int(CurrentLayer) + layer >= GetNumLayers()) layer = 0;
-	if(int(CurrentFrame) + frame >= GetLayer(CurrentLayer)->GetNumFrames()) frame = 0;
+	if(int(CurrentLayer) + layer >= GetNumLayers()) layer = -(GetNumLayers()-1);
+	if(int(CurrentFrame) + frame >= GetLayer(CurrentLayer)->GetNumFrames()) frame = -(GetLayer(CurrentLayer)->GetNumFrames()-1);
 	SetLayerFrame(CurrentLayer+layer, CurrentFrame+frame);
 }
 

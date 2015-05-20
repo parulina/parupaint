@@ -83,6 +83,7 @@ void ParupaintLayer::ExtendFrame(_fint f, _fint n)
 	if(f > GetNumFrames()) f = GetNumFrames()-1;
 	else if(f < 0) f = 0;
 
+	Frames.at(f)->SetExtended(true);
 	while(n > 0){
 		Frames.insert(f, Frames.at(f));
 		n--;
@@ -108,6 +109,9 @@ void ParupaintLayer::RedactFrame(_fint f, _fint n)
 			}
 		}
 		break;
+	}
+	if(!IsFrameExtended(f)){
+		Frames.at(f)->SetExtended(false);
 	}
 }
 

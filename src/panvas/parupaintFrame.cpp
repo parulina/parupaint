@@ -13,6 +13,10 @@ ParupaintFrame::ParupaintFrame(QSize s, float opacity) : ParupaintFrame()
 	SetOpacity(opacity);
 	New(s);
 }
+void ParupaintFrame::LoadFromData(const QByteArray& ba)
+{
+	Frame.loadFromData(ba);	
+}
 
 void ParupaintFrame::New(QSize s)
 {

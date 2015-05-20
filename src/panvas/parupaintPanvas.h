@@ -42,6 +42,7 @@ class ParupaintPanvas {
 
 	QList<QImage> GetImageFrames();
 
+	QSize GetDimensions() const;
 	QSize GetSize() const;
 	int GetWidth() const;
 	int GetHeight() const;

@@ -6,6 +6,7 @@
 #include <QTimer>
 
 #include "parupaintWindow.h"
+#include "panvas/parupaintPanvasReader.h"
 
 #include "stroke/parupaintStrokeStep.h"
 #include "parupaintBrush.h"
@@ -63,6 +64,11 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	}
 	// canvas->GetCanvas() returns Panvas.
 
+	ParupaintPanvasReader reader(canvas->GetCanvas());
+	if(!reader.LoadParupaintArchive("animushin.tar.gz")){
+		qDebug() << "Something went wrong loading.";
+	}
+	canvas->GetCanvas()->Resize(canvas->GetCanvas()->GetDimensions());
 
 
 	chat =	  new ParupaintChat(this);
