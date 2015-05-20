@@ -160,7 +160,7 @@ void ParupaintCanvasView::OnPenMove(const QPointF &pos, Qt::MouseButtons buttons
 		}
 		viewport()->update();
 
-	} else 
+	}
 
 	CurrentBrush->SetPosition(RealPosition(pos));
 	CurrentBrush->SetPressure(pressure);
