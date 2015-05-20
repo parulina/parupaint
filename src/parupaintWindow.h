@@ -36,6 +36,10 @@ Q_OBJECT
 	QKeySequence CanvasKeyPreviousFrame;
 
 
+	QKeySequence BrushKeyUndo;
+	QKeySequence BrushKeyRedo;
+
+
 	void UpdateOverlay();
 	
 	OverlayStatus	OverlayState;
@@ -63,6 +67,7 @@ Q_OBJECT
 	void TabTimeout();
 	void OverlayTimeout();
 
+	void UndoRedoKey();
 	void OverlayKey();
 	void CanvasChangeKey();
 

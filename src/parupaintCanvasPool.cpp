@@ -69,22 +69,86 @@ void ParupaintCanvasPool::OnCanvasResize(QSize old_size, QSize new_size)
 
 
 
-// client brush strokes
 ParupaintCanvasStrokeObject * ParupaintCanvasPool::NewBrushStroke(ParupaintBrush * brush)
 {
+	if(!strokes.isEmpty()){
+		while(brush->GetLastStroke() != strokes.first()){
+			delete strokes.first();
+			strokes.remove(strokes.firstKey(), strokes.first());
+
+			if(strokes.isEmpty()) break;
+		}
+	} else {
+		// add a dummy first thing
+		// otherwise on undo it'll set 0x00 and forget
+		// about the next stroke
+		strokes.insert(brush, new ParupaintCanvasStrokeObject());
+	}
+
 	ParupaintCanvasStrokeObject * stroke = new ParupaintCanvasStrokeObject(Canvas->boundingRect());
 	brush->SetCurrentStroke(stroke);
 	stroke->SetBrush(brush);
+
+
+	stroke->SetPreviousStroke(nullptr); // grumble grumble..
+
+	// put next/prev pointers
+	strokes.first()->SetNextStroke(stroke);
+	stroke->SetPreviousStroke(strokes.first());
+
 	stroke->SetLayerFrame(Canvas->GetCurrentLayer(), Canvas->GetCurrentFrame());
 	
 	strokes.insert(brush, stroke);
+	// first = new, last = 0
+	// begin = new, end = 0
+
 	addItem(stroke);
 	return stroke;
 }
 
 void ParupaintCanvasPool::EndBrushStroke(ParupaintBrush * brush)
 {
+	if(brush->GetCurrentStroke()){
+		brush->SetLastStroke(brush->GetCurrentStroke());
+	}
 	brush->SetCurrentStroke(nullptr);
+}
+
+void ParupaintCanvasPool::UpdateBrushStrokes(ParupaintBrush * brush)
+{
+	bool passed = false;
+	for(auto i = strokes.begin(); i != strokes.end(); ++i){
+		auto *scene_item = *i;
+		
+		if(brush->GetLastStroke() == dynamic_cast<ParupaintStroke*>(scene_item)) passed = true;
+		
+		if(scene_item){
+			if(!passed && scene_item->isVisible()) {
+				scene_item->hide();
+
+			} else if(passed && !scene_item->isVisible()) {
+				scene_item->show();
+			}
+		}
+	}
+}
+
+void ParupaintCanvasPool::UndoBrushStroke(ParupaintBrush * brush)
+{
+	auto * stroke = brush->GetLastStroke();
+	if(stroke && stroke->GetPreviousStroke()) {
+		brush->SetLastStroke(stroke->GetPreviousStroke());
+		UpdateBrushStrokes(brush);
+	}
+}
+
+void ParupaintCanvasPool::RedoBrushStroke(ParupaintBrush * brush)
+{
+	auto * stroke = brush->GetLastStroke();
+	if(stroke && stroke->GetNextStroke()) {
+		brush->SetLastStroke(stroke->GetNextStroke());
+		UpdateBrushStrokes(brush);
+	}
 }
 
 int ParupaintCanvasPool::GetNumBrushStrokes(ParupaintBrush * brush)

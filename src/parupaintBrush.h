@@ -16,6 +16,7 @@ class ParupaintBrush {
 	float   pressure;
 
 	ParupaintStroke * CurrentStroke;
+	ParupaintStroke * LastStroke;
 	
 
 	public:
@@ -28,6 +29,7 @@ class ParupaintBrush {
 	void SetWidth(float);
 	void SetPressure(float);
 	void SetCurrentStroke(ParupaintStroke *);
+	void SetLastStroke(ParupaintStroke *);
 
 	QColor GetColor() const;
 	QPointF GetPosition() const;
@@ -35,6 +37,7 @@ class ParupaintBrush {
 	float GetWidth() const;
 	float GetPressure() const;
 	ParupaintStroke * GetCurrentStroke() const;
+	ParupaintStroke * GetLastStroke() const;
 
 
 };

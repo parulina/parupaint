@@ -6,9 +6,11 @@
 
 ParupaintBrush::ParupaintBrush()
 {
-	SetName("Null");
+	SetName("");
 	SetPressure(0.0);
-	SetWidth(10);
+	SetWidth(1);
+	SetCurrentStroke(nullptr);
+	SetLastStroke(nullptr);
 }
 
 void ParupaintBrush::SetName(QString str)
@@ -44,6 +46,10 @@ void ParupaintBrush::SetCurrentStroke(ParupaintStroke * s)
 {
 	CurrentStroke = s;
 }
+void ParupaintBrush::SetLastStroke(ParupaintStroke * s)
+{
+	LastStroke = s;
+}
 
 
 float ParupaintBrush::GetWidth() const
@@ -73,4 +79,8 @@ QPointF ParupaintBrush::GetPosition() const
 ParupaintStroke * ParupaintBrush::GetCurrentStroke() const
 {
 	return CurrentStroke;
+}
+ParupaintStroke * ParupaintBrush::GetLastStroke() const
+{
+	return LastStroke;
 }

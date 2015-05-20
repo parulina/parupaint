@@ -36,6 +36,8 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	CanvasKeySquash(Qt::Key_Space),
 	CanvasKeyNextLayer(Qt::Key_D), CanvasKeyPreviousLayer(Qt::Key_S),
 	CanvasKeyNextFrame(Qt::Key_F), CanvasKeyPreviousFrame(Qt::Key_A),
+	// brush keys
+	BrushKeyUndo(Qt::Key_Z), BrushKeyRedo(Qt::SHIFT + Qt::Key_Z),
 	//internal stuff?
 	OverlayState(OVERLAY_STATUS_HIDDEN)
 
@@ -105,6 +107,10 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	connect(NextFrameKey, SIGNAL(activated()), this, SLOT(CanvasChangeKey()));
 	connect(PreviousFrameKey, SIGNAL(activated()), this, SLOT(CanvasChangeKey()));
 
+	QShortcut * UndoKey = 	new QShortcut(BrushKeyUndo, this);
+	QShortcut * RedoKey = 	new QShortcut(BrushKeyRedo, this);
+	connect(UndoKey, SIGNAL(activated()), this, SLOT(UndoRedoKey()));
+	connect(RedoKey, SIGNAL(activated()), this, SLOT(UndoRedoKey()));
 
 	UpdateTitle();
 	flayer->UpdateFromCanvas(canvas->GetCanvas());
@@ -129,6 +135,12 @@ void ParupaintWindow::PenDraw(QPointF pos, ParupaintBrush* brush){
 }
 
 void ParupaintWindow::PenDrawStop(ParupaintBrush* brush){
+	/*
+	auto *stroke = brush->GetCurrentStroke();
+	if(stroke){
+		qDebug() << stroke->GetPreviousStroke();
+	}
+	*/
 	canvas->EndBrushStroke(brush);
 }
 
@@ -205,6 +217,20 @@ void ParupaintWindow::CanvasChangeKey()
 
 	canvas->GetCanvas()->AddLayerFrame(ll, ff);
 	canvas->UpdateView();
+}
+
+void ParupaintWindow::UndoRedoKey()
+{
+	QShortcut* shortcut = qobject_cast<QShortcut*>(sender());
+	QKeySequence seq = shortcut->key();
+	
+	if(seq == BrushKeyUndo){
+		canvas->UndoBrushStroke(&brush);
+
+	} else if(seq == BrushKeyRedo) {
+		canvas->RedoBrushStroke(&brush);
+	}
+
 }
 
 void ParupaintWindow::ShowOverlay(bool permanent)

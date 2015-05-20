@@ -12,6 +12,8 @@ class ParupaintStroke
 {
 	protected:
 	ParupaintBrush * brush;
+	ParupaintStroke * previousStroke;
+	ParupaintStroke * nextStroke;
 	QList<ParupaintStrokeStep *> strokes;
 	_lint layer;
 	_fint frame;
@@ -24,6 +26,13 @@ class ParupaintStroke
 	virtual void AddStroke(ParupaintStrokeStep *);
 	void SetLayerFrame(_lint, _fint);
 	void SetBrush(ParupaintBrush * brush);
+
+
+	void SetPreviousStroke(ParupaintStroke *);
+	ParupaintStroke* GetPreviousStroke();
+	void SetNextStroke(ParupaintStroke *);
+	ParupaintStroke* GetNextStroke();
+	
 	// NOTE! ! THIS DOESNT RETURN THE STROKE BRUSH USED, 
 	// THIS RETURNS THE PARENT!!
 	ParupaintBrush * GetBrush() const;

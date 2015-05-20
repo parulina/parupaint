@@ -4,12 +4,12 @@
 class ParupaintBrush;
 class ParupaintStroke;
 
-#include <QMultiHash>
+#include <QMultiMap>
 
 class ParupaintBrushStrokes
 {
 	private:
-	QMultiHash<ParupaintBrush *, ParupaintStroke *> strokes;
+	QMultiMap<ParupaintBrush *, ParupaintStroke *> strokes;
 
 	public:
 	ParupaintBrushStrokes();

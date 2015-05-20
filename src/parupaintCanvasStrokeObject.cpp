@@ -9,7 +9,11 @@
 #include <QRectF>
 #include <QLineF>
 
-ParupaintCanvasStrokeObject::ParupaintCanvasStrokeObject(QRectF limit)
+ParupaintCanvasStrokeObject::ParupaintCanvasStrokeObject()
+{
+}
+
+ParupaintCanvasStrokeObject::ParupaintCanvasStrokeObject(QRectF limit) : ParupaintCanvasStrokeObject()
 {
 	SetRegionLimit(limit);
 }
@@ -27,7 +31,6 @@ void ParupaintCanvasStrokeObject::SetRegionLimit(QRectF rect)
 void ParupaintCanvasStrokeObject::AddStroke(ParupaintStrokeStep *ss)
 {
 	if(this->pixmap().isNull()) return;
-
 
 	auto pos1 = ss->GetPosition();
 	if(!strokes.isEmpty()) pos1 = strokes.last()->GetPosition();

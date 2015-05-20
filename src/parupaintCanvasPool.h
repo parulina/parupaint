@@ -4,7 +4,7 @@
 #include "parupaintCursorPool.h"
 #include "parupaintCanvasStrokeObject.h"
 #include <QGraphicsScene>
-#include <QMultiHash>
+#include <QMultiMap>
 
 class ParupaintCanvasObject;
 class ParupaintCursor;
@@ -14,7 +14,7 @@ class ParupaintCanvasPool : public QGraphicsScene, public ParupaintCursorPool
 Q_OBJECT
 	private:
 	ParupaintCanvasObject * Canvas;
-	QMultiHash<ParupaintBrush *, ParupaintCanvasStrokeObject*> strokes;
+	QMultiMap<ParupaintBrush *, ParupaintCanvasStrokeObject*> strokes;
 
 	public:
 	ParupaintCanvasPool(QObject *parent);
@@ -26,7 +26,12 @@ Q_OBJECT
 
 	ParupaintCanvasStrokeObject * NewBrushStroke(ParupaintBrush * brush);
 	void EndBrushStroke(ParupaintBrush * brush);
-	int GetNumBrushStrokes(ParupaintBrush * brush);
+
+	void UpdateBrushStrokes(ParupaintBrush *);
+	void UndoBrushStroke(ParupaintBrush *);
+	void RedoBrushStroke(ParupaintBrush *);
+
+	int GetNumBrushStrokes(ParupaintBrush * );
 	int GetTotalStrokes();
 	void ClearStrokes();
 

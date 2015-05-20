@@ -14,6 +14,7 @@ ParupaintStroke* ParupaintBrushStrokes::NewBrushStroke(ParupaintBrush * brush)
 	ParupaintStroke * stroke = new ParupaintStroke();
 	brush->SetCurrentStroke(stroke);
 	stroke->SetBrush(brush);
+	if(!strokes.isEmpty()) stroke->SetPreviousStroke(strokes.last());
 
 	strokes.insert(brush, stroke);
 	// connect them together

@@ -14,6 +14,7 @@ class ParupaintCanvasStrokeObject : public QGraphicsPixmapItem, public Parupaint
 	QRectF region;
 
 	public:
+	ParupaintCanvasStrokeObject();
 	ParupaintCanvasStrokeObject(QRectF);
 	void SetRegionLimit(QRectF);
 	virtual void AddStroke(ParupaintStrokeStep *);
