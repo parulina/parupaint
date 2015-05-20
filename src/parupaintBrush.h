@@ -22,6 +22,9 @@ class ParupaintBrush {
 	public:
 	ParupaintBrush();
 
+	QPen ToPen();
+
+
 	void SetName(QString);
 	void SetColor(QColor);
 	void SetPosition(QPointF);

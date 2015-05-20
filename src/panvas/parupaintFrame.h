@@ -4,6 +4,8 @@
 #include <QImage>
 #include <QColor>
 
+class ParupaintStroke;
+
 class ParupaintFrame {
 	private:
 	bool 	Extended;
@@ -20,7 +22,7 @@ class ParupaintFrame {
 	void LoadFromData(const QByteArray&);
 	
 	void ClearColor(QColor);
-	//void DrawStep(ParupaintStep * step);
+	void DrawStroke(ParupaintStroke *);
 	void DrawStep(float x, float y, float x2, float y2, float width, QColor color);
 
 	void SetOpacity(float);

@@ -27,6 +27,7 @@ class ParupaintStroke
 	void SetLayerFrame(_lint, _fint);
 	void SetBrush(ParupaintBrush * brush);
 
+	QList<ParupaintStrokeStep*> GetStrokes() const;
 
 	void SetPreviousStroke(ParupaintStroke *);
 	ParupaintStroke* GetPreviousStroke();

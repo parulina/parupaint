@@ -16,7 +16,6 @@ class ParupaintCursor : public QGraphicsItem
 	public:
 	ParupaintCursor(ParupaintBrush *);
 
-	QPen ToPen();
 	void Paint(QPainter *);
 
 	void SetPosition(QPointF);

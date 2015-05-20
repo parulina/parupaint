@@ -31,6 +31,9 @@ Q_OBJECT
 	void UndoBrushStroke(ParupaintBrush *);
 	void RedoBrushStroke(ParupaintBrush *);
 
+	void SquashBrushStrokes(ParupaintBrush *);
+	void ClearBrushStrokes(ParupaintBrush *);
+
 	int GetNumBrushStrokes(ParupaintBrush * );
 	int GetTotalStrokes();
 	void ClearStrokes();

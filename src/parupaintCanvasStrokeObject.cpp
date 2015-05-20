@@ -40,7 +40,8 @@ void ParupaintCanvasStrokeObject::AddStroke(ParupaintStrokeStep *ss)
 	QPixmap pix(this->pixmap());
  	QPainter paint(&pix);
 
-	paint.setPen(QPen(ss->GetColor(), ss->GetWidth() * ss->GetPressure(), Qt::SolidLine, Qt::RoundCap));
+	QPen pen = this->GetBrush()->ToPen();
+	paint.setPen(pen);
 	paint.drawLine(QLineF(pos1, ss->GetPosition()));
 
  	this->setPixmap(pix);

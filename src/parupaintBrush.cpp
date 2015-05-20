@@ -13,6 +13,15 @@ ParupaintBrush::ParupaintBrush()
 	SetLastStroke(nullptr);
 }
 
+QPen ParupaintBrush::ToPen()
+{
+	QPen pen(GetColor());
+	pen.setWidth(GetWidth()*GetPressure());
+	pen.setCapStyle(Qt::RoundCap);
+	pen.setJoinStyle(Qt::RoundJoin);
+	return pen;
+}
+
 void ParupaintBrush::SetName(QString str)
 {
 	name = str;

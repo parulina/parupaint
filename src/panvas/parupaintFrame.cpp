@@ -3,6 +3,8 @@
 #include <QPen>
 
 #include "parupaintFrame.h"
+#include "../stroke/parupaintStrokeStep.h"
+#include "../stroke/parupaintStroke.h"
 
 ParupaintFrame::ParupaintFrame() : Extended(false), Opacity(1.0)
 {
@@ -37,10 +39,28 @@ void ParupaintFrame::ClearColor(QColor col)
 	Frame.fill(col);
 }
 
+void ParupaintFrame::DrawStroke(ParupaintStroke * s)
+{
+	QPointF ppos;
+	foreach(auto i, s->GetStrokes()){
+		if(ppos.isNull()) ppos = i->GetPosition();
+
+		const QPen pen = i->ToPen();
+		const QPointF pos = i->GetPosition();
+
+		QPainter painter(&Frame);
+		painter.setPen(pen);
+		painter.drawLine(ppos, pos);
+		painter.end();
+
+		ppos = pos;
+	}
+}
 
 void ParupaintFrame::DrawStep(float x, float y, float x2, float y2, float width, QColor color)
 {
 	QPainter painter(&Frame);
+
 	QPen pen(color);
 	pen.setWidthF(width);
 	painter.setPen(pen);

@@ -124,7 +124,7 @@ void ParupaintCanvasView::OnPenUp(const QPointF &pos, Qt::MouseButtons buttons)
 		Drawing = false;
 		emit PenDrawStop(CurrentBrush->GetBrush());
 	}
-	if(buttons == MoveButton && CanvasState == CANVAS_STATUS_MOVING){
+	if(CanvasState == CANVAS_STATUS_MOVING){
 		CanvasState = CANVAS_STATUS_IDLE;
 	}
 

@@ -33,7 +33,8 @@ QRectF ParupaintCanvasObject::boundingRect() const
 
 void ParupaintCanvasObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
-	QRect exposed = option->exposedRect.adjusted(-1, -1, 1, 1).toAlignedRect();
+	//QRect exposed = option->exposedRect.adjusted(-1, -1, 1, 1).toAlignedRect();
+	QRect exposed = option->exposedRect.toAlignedRect();
 
 	auto layer = GetLayer(CurrentLayer);
 

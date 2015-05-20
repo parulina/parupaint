@@ -20,7 +20,6 @@ ParupaintCanvasPool::ParupaintCanvasPool(QObject * parent) : QGraphicsScene(pare
 
 
 	Canvas->New(QSize(500, 500), 1, 1);
-	Canvas->GetLayer(0)->GetFrame(0)->DrawStep(0, 0, 500, 500, 2, QColor(0, 0, 0));
 	addItem(Canvas);
 
 	//setItemIndexMethod(NoIndex);
@@ -149,6 +148,39 @@ void ParupaintCanvasPool::RedoBrushStroke(ParupaintBrush * brush)
 		brush->SetLastStroke(stroke->GetNextStroke());
 		UpdateBrushStrokes(brush);
 	}
+}
+void ParupaintCanvasPool::SquashBrushStrokes(ParupaintBrush * brush)
+{
+	if(!strokes.isEmpty()){
+		while(brush->GetLastStroke() != strokes.first()){
+			delete strokes.first();
+			strokes.remove(strokes.firstKey(), strokes.first());
+
+			if(strokes.isEmpty()) break;
+		}
+	}
+
+	auto val = strokes.values(brush);
+	for(int i = 0; i < val.length(); i++){
+		auto s = val.at(i);
+		auto l = s->GetLayer();
+		auto f = s->GetFrame();
+		
+		ParupaintLayer * layer = this->GetCanvas()->GetLayer(l);
+		if(layer) {
+			ParupaintFrame * frame = layer->GetFrame(f);
+			frame->DrawStroke(s);
+		}
+	}
+	this->ClearBrushStrokes(brush);
+}
+void ParupaintCanvasPool::ClearBrushStrokes(ParupaintBrush * brush)
+{
+	foreach(auto i, strokes.values(brush)){
+		delete i;
+	}
+	strokes.remove(brush);
+	brush->SetLastStroke(nullptr);
 }
 
 int ParupaintCanvasPool::GetNumBrushStrokes(ParupaintBrush * brush)

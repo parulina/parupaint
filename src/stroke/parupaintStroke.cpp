@@ -4,6 +4,7 @@
 
 ParupaintStroke::ParupaintStroke()
 {
+	SetLayerFrame(0, 0);
 	SetPreviousStroke(nullptr);	
 	SetNextStroke(nullptr);	
 }
@@ -61,4 +62,11 @@ void ParupaintStroke::SetPreviousStroke(ParupaintStroke *s)
 ParupaintStroke* ParupaintStroke::GetPreviousStroke()
 {
 	return previousStroke;
+}
+
+
+
+QList<ParupaintStrokeStep*> ParupaintStroke::GetStrokes() const
+{
+	return strokes;
 }

@@ -58,12 +58,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	view->SetCanvas(canvas);
 	canvas->GetCanvas()->AddLayers(1, 2); // add 2 layers at pos 1
 	canvas->GetCanvas()->GetLayer(1)->SetFrames(10);
-	for(auto i = 0; i < 10; i++){
-		ParupaintFrame * frame = canvas->GetCanvas()->GetLayer(1)->GetFrame(i);
-		frame->DrawStep(canvas->GetCanvas()->GetWidth() * (float(i)/10.0), 0, 
-				canvas->GetCanvas()->GetWidth(), canvas->GetCanvas()->GetHeight(),
-				i, Qt::black);
-	}
+
 	// canvas->GetCanvas() returns Panvas.
 
 	ParupaintPanvasReader reader(canvas->GetCanvas());
@@ -272,8 +267,11 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 {
 	if(event->key() == Qt::Key_Space && !event->isAutoRepeat()){
 		if(OverlayButtonDown){
-			canvas->ClearStrokes();
-			return;
+			if(event->modifiers() & Qt::ControlModifier){
+				canvas->ClearBrushStrokes(&brush);
+			} else {
+				canvas->SquashBrushStrokes(&brush);
+			}
 		}
 	}
 	return QMainWindow::keyPressEvent(event);

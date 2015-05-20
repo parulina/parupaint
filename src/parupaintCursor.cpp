@@ -53,15 +53,6 @@ ParupaintBrush * ParupaintCursor::GetBrush() const
 {
 	return brush;
 }
-
-QPen ParupaintCursor::ToPen()
-{
-	QPen pen(brush->GetColor());
-	pen.setWidth(brush->GetWidth());
-	pen.setCapStyle(Qt::RoundCap);
-	pen.setJoinStyle(Qt::RoundJoin);
-	return pen;
-}
 void ParupaintCursor::Paint(QPainter * painter)
 {
 	painter->save();
