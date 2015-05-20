@@ -3,6 +3,32 @@
 	background:black;
 }
 
+#InfoBar #title {
+	background:transparent;
+	border:none;
+	border-bottom:1px solid rgb(40, 40, 40);
+}
+
+#InfoBar #tabhelp {
+	padding:0 4px;
+	font-size:13px;
+	background:rgb(30, 30, 30);
+}
+
+#InfoBar #parupaint-keys1
+{
+	background:transparent;
+	color:rgb(190, 190, 190);
+}
+
+#InfoBar #parupaint-description
+{
+	background:transparent;
+	color:rgb(160, 106, 160);
+}
+
+
+
 #Flayer,
 #ColorPicker {
 	background:rgba(0, 0, 0, 0.6);

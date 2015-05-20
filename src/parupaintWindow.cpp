@@ -251,12 +251,13 @@ void ParupaintWindow::HideOverlay()
 }
 void ParupaintWindow::UpdateOverlay()
 {
-	auto topbar = OverlayState == OVERLAY_STATUS_SHOWN_NORMAL ? 80 : 25;
-	infobar->resize(this->width(), topbar);
+	auto visible = OverlayState == OVERLAY_STATUS_SHOWN_NORMAL ? infobar->height() : 35;
+	infobar->move(0, visible - infobar->height());
+	infobar->resize(this->width(), infobar->height());
 
 	auto w1 = this->width() - chat->width();
-	chat->move(w1, topbar);
-	picker->move(0, topbar);
+	chat->move(w1, visible);
+	picker->move(0, visible);
 
 	auto h2 = this->height() - flayer->height();
 	flayer->move(0, h2);

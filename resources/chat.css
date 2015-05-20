@@ -7,3 +7,29 @@ p {
 	color:white;
 	background-color:rgba(0, 0, 0, 0.4);
 }
+
+a {
+	color:#8888CC;
+}
+
+
+titletext {
+	color:white;
+	font-size:18px;
+}
+
+titletext a[href="#name"] {
+	font-size:16px;
+	color:rgb(200, 80, 80);
+	margin:10px;
+	padding:10px;
+}
+
+titletext a[href="#dim"] {
+	font-size:13px;
+	color:rgb(80, 200, 80);
+}
+titletext flayer {
+	font-size:12px;
+	color:rgb(200, 200, 200);
+}

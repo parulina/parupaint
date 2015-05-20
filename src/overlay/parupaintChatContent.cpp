@@ -19,12 +19,11 @@ ParupaintChatContent::ParupaintChatContent(QWidget * parent) : QScrollArea(paren
 
 	area = new QTextBrowser(this);
 	
+
 	QFile file(":resources/chat.css");
-	if(file.open(QIODevice::ReadOnly | QIODevice::Text))
-	{
-		area->document()->setDefaultStyleSheet(file.readAll());
-		file.close();
-	}
+	file.open(QFile::ReadOnly);
+	area->document()->setDefaultStyleSheet(file.readAll());
+	
 	area->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	this->setWidget(area);
 }
