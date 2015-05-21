@@ -7,7 +7,7 @@ class QPainter;
 
 class ParupaintBrush;
 class ParupaintCanvasPool;
-class ParupaintCursor;
+class ParupaintCanvasBrush;
 
 
 enum PenStatus {
@@ -35,7 +35,7 @@ Q_OBJECT
 	float		Zoom;
 	bool		Drawing;
 
-	ParupaintCursor* CurrentBrush;
+	ParupaintCanvasBrush* CurrentBrush;
 
 	Qt::MouseButton DrawButton;
 	Qt::MouseButton MoveButton;

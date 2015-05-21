@@ -6,17 +6,15 @@ OBJECTS_DIR=	.obj
 MOC_DIR=	.obj/moc
 
 LIBS += 	-lz
-HEADERS +=	src/panvas/*.h \
+HEADERS +=	src/core/*.h \
 		src/overlay/*.h \
 		src/qtcolorpicker/*.hpp \
-		src/stroke/*.cpp \
 		src/karchive/*.h \
 		src/*.h
 
-SOURCES += 	src/panvas/*.cpp \
+SOURCES += 	src/core/*.cpp \
 		src/overlay/*.cpp \
 		src/qtcolorpicker/*.cpp \
-		src/stroke/*.cpp \
 		src/karchive/*.cpp \
 		src/*.cpp
 

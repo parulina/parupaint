@@ -4,7 +4,7 @@
 class ParupaintBrush;
 class ParupaintStrokeStep;
 
-#include "../panvas/panvasTypedefs.h"
+#include "panvasTypedefs.h"
 #include <QPixmap>
 #include <QList>
 

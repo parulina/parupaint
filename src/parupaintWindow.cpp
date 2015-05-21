@@ -6,17 +6,17 @@
 #include <QTimer>
 
 #include "parupaintWindow.h"
-#include "panvas/parupaintPanvasReader.h"
+#include "core/parupaintPanvasReader.h"
 
-#include "stroke/parupaintStrokeStep.h"
-#include "parupaintBrush.h"
+#include "core/parupaintStrokeStep.h"
+#include "core/parupaintBrush.h"
 
 #include "parupaintCanvasView.h"
 #include "parupaintCanvasPool.h"
 #include "parupaintCanvasObject.h"
 
-#include "panvas/parupaintLayer.h"
-#include "panvas/parupaintFrame.h"
+#include "core/parupaintLayer.h"
+#include "core/parupaintFrame.h"
 
 #include "overlay/parupaintChat.h"
 #include "overlay/parupaintFlayer.h"

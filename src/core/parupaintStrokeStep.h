@@ -1,7 +1,7 @@
 #ifndef PARUPAINTSTROKESTEP_H
 #define PARUPAINTSTROKESTEP_H
 
-#include "../parupaintBrush.h"
+#include "parupaintBrush.h"
 
 
 class ParupaintStrokeStep : public ParupaintBrush

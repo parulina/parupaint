@@ -1,6 +1,6 @@
 
 #include "parupaintBrushStrokes.h"
-#include "../parupaintBrush.h"
+#include "parupaintBrush.h"
 #include "parupaintStroke.h"
 
 

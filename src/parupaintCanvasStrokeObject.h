@@ -1,7 +1,7 @@
 #ifndef PARUPAINTCANVASSTROKEOBJECT_H
 #define PARUPAINTCANVASSTROKEOBJECT_H
 
-#include "stroke/parupaintStroke.h"
+#include "core/parupaintStroke.h"
 #include <QPixmap>
 #include <QGraphicsPixmapItem>
 

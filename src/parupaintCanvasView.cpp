@@ -11,12 +11,12 @@
 #include <QDebug>
 #include <QTimer>
 
-#include "parupaintCursor.h"
-#include "parupaintBrush.h"
+#include "parupaintCanvasBrush.h"
+#include "core/parupaintBrush.h"
 
 #include "parupaintCanvasView.h"
 #include "parupaintCanvasPool.h"
-#include "parupaintCursorPool.h"
+#include "parupaintCanvasBrushPool.h"
 #include "parupaintCanvasObject.h"
 
 //QGraphicsView for canvas view
@@ -51,7 +51,7 @@ void ParupaintCanvasView::SetCurrentBrush(ParupaintBrush * brush)
 	}
 
 	if(brush) {
-		ParupaintCursor * cursor = new ParupaintCursor(brush);
+		ParupaintCanvasBrush * cursor = new ParupaintCanvasBrush(brush);
 		viewport()->setCursor(Qt::BlankCursor);
 		if(CurrentCanvas) {
 			CurrentCanvas->AddCursor(" ", cursor);

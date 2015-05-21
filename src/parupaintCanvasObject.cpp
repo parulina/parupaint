@@ -3,8 +3,8 @@
 #include <QStyleOptionGraphicsItem>
 
 #include "parupaintCanvasObject.h"
-#include "panvas/parupaintLayer.h"
-#include "panvas/parupaintFrame.h"
+#include "core/parupaintLayer.h"
+#include "core/parupaintFrame.h"
 
 
 ParupaintCanvasObject::ParupaintCanvasObject() :

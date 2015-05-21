@@ -1,7 +1,7 @@
 #ifndef PARUPAINTCANVASOBJECT_H
 #define PARUPAINTCANVASOBJECT_H
 
-#include "panvas/parupaintPanvas.h"
+#include "core/parupaintPanvas.h"
 
 #include <QGraphicsObject>
 

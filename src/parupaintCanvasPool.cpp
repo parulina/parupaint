@@ -5,12 +5,12 @@
 #include "parupaintCanvasPool.h"
 #include "parupaintCanvasObject.h"
 #include "parupaintCanvasStrokeObject.h"
-#include "parupaintCursor.h"
-#include "parupaintBrush.h"
+#include "parupaintCanvasBrush.h"
+#include "core/parupaintBrush.h"
 
-#include "panvas/parupaintPanvas.h"
-#include "panvas/parupaintLayer.h"
-#include "panvas/parupaintFrame.h"
+#include "core/parupaintPanvas.h"
+#include "core/parupaintLayer.h"
+#include "core/parupaintFrame.h"
 
 ParupaintCanvasPool::ParupaintCanvasPool(QObject * parent) : QGraphicsScene(parent)
 {
@@ -36,14 +36,14 @@ ParupaintCanvasObject * ParupaintCanvasPool::GetCanvas()
 
 
 
-void ParupaintCanvasPool::AddCursor(QString str, ParupaintCursor * c)
+void ParupaintCanvasPool::AddCursor(QString str, ParupaintCanvasBrush * c)
 {
-	ParupaintCursorPool::AddCursor(str, c);
+	ParupaintCanvasBrushPool::AddCursor(str, c);
 	addItem(c);
 }
-void ParupaintCanvasPool::RemoveCursor(ParupaintCursor * c)
+void ParupaintCanvasPool::RemoveCursor(ParupaintCanvasBrush * c)
 {
-	ParupaintCursorPool::RemoveCursor(c);
+	ParupaintCanvasBrushPool::RemoveCursor(c);
 	removeItem(c);
 }
 

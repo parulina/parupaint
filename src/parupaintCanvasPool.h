@@ -1,15 +1,15 @@
 #ifndef PARUPAINTCANVASPOOL_H
 #define PARUPAINTCANVASPOOL_H
 
-#include "parupaintCursorPool.h"
+#include "parupaintCanvasBrushPool.h"
 #include "parupaintCanvasStrokeObject.h"
 #include <QGraphicsScene>
 #include <QMultiMap>
 
 class ParupaintCanvasObject;
-class ParupaintCursor;
+class ParupaintCanvasBrush;
 
-class ParupaintCanvasPool : public QGraphicsScene, public ParupaintCursorPool
+class ParupaintCanvasPool : public QGraphicsScene, public ParupaintCanvasBrushPool
 {
 Q_OBJECT
 	private:
@@ -20,8 +20,8 @@ Q_OBJECT
 	ParupaintCanvasPool(QObject *parent);
 	ParupaintCanvasObject * GetCanvas();
 
-	virtual void AddCursor(QString, ParupaintCursor *);
-	virtual void RemoveCursor(ParupaintCursor *);
+	virtual void AddCursor(QString, ParupaintCanvasBrush *);
+	virtual void RemoveCursor(ParupaintCanvasBrush *);
 
 
 	ParupaintCanvasStrokeObject * NewBrushStroke(ParupaintBrush * brush);

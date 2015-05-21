@@ -9,12 +9,12 @@
 class ParupaintBrush;
 
 // todo: extends ParupaintBrush?
-class ParupaintCursor : public QGraphicsItem 
+class ParupaintCanvasBrush : public QGraphicsItem 
 {
 	private:
 	ParupaintBrush * brush;
 	public:
-	ParupaintCursor(ParupaintBrush *);
+	ParupaintCanvasBrush(ParupaintBrush *);
 
 	void Paint(QPainter *);
 

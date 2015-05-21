@@ -3,8 +3,8 @@
 #include <QPen>
 
 #include "parupaintFrame.h"
-#include "../stroke/parupaintStrokeStep.h"
-#include "../stroke/parupaintStroke.h"
+#include "parupaintStrokeStep.h"
+#include "parupaintStroke.h"
 
 ParupaintFrame::ParupaintFrame() : Extended(false), Opacity(1.0)
 {

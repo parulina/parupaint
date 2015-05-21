@@ -6,8 +6,8 @@
 #include "parupaintFlayerLayer.h"
 #include "parupaintFlayerFrame.h"
 #include "../parupaintCanvasObject.h"
-#include "../panvas/parupaintLayer.h"
-#include "../panvas/parupaintFrame.h"
+#include "../core/parupaintLayer.h"
+#include "../core/parupaintFrame.h"
 
 #include <QScrollBar>
 #include <QMouseEvent>

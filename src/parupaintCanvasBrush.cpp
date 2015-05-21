@@ -1,59 +1,59 @@
 
 #include <QPainter>
 #include <QPen>
-#include "parupaintCursor.h"
-#include "parupaintBrush.h"
+#include "parupaintCanvasBrush.h"
+#include "core/parupaintBrush.h"
 
 
-ParupaintCursor::ParupaintCursor(ParupaintBrush * b) : brush(b)
+ParupaintCanvasBrush::ParupaintCanvasBrush(ParupaintBrush * b) : brush(b)
 {
 	this->setZValue(1);
 }
 
-void ParupaintCursor::SetPosition(QPointF pos)
+void ParupaintCanvasBrush::SetPosition(QPointF pos)
 {
 	brush->SetPosition(pos);
 	setPos(pos);
 }
-void ParupaintCursor::SetWidth(float f) 
+void ParupaintCanvasBrush::SetWidth(float f) 
 {
 	brush->SetWidth(f);
 }
 
-void ParupaintCursor::SetPressure(float f) 
+void ParupaintCanvasBrush::SetPressure(float f) 
 {
 	brush->SetPressure(f);
 }
 
-void ParupaintCursor::SetColor(QColor col) 
+void ParupaintCanvasBrush::SetColor(QColor col) 
 {
 	brush->SetColor(col);
 }
 
-QPointF ParupaintCursor::GetPosition() const
+QPointF ParupaintCanvasBrush::GetPosition() const
 {
 	return brush->GetPosition();
 }
 
-float ParupaintCursor::GetWidth() const
+float ParupaintCanvasBrush::GetWidth() const
 {
 	return brush->GetWidth();
 }
-float ParupaintCursor::GetPressure() const
+float ParupaintCanvasBrush::GetPressure() const
 {
 	return brush->GetPressure();
 }
 
-QColor ParupaintCursor::GetColor() const
+QColor ParupaintCanvasBrush::GetColor() const
 {
 	return brush->GetColor();
 }
 
-ParupaintBrush * ParupaintCursor::GetBrush() const
+ParupaintBrush * ParupaintCanvasBrush::GetBrush() const
 {
 	return brush;
 }
-void ParupaintCursor::Paint(QPainter * painter)
+void ParupaintCanvasBrush::Paint(QPainter * painter)
 {
 	painter->save();
 
@@ -85,13 +85,13 @@ void ParupaintCursor::Paint(QPainter * painter)
 }
 
 
-QRectF ParupaintCursor::boundingRect() const
+QRectF ParupaintCanvasBrush::boundingRect() const
 {
 	const float w = brush->GetWidth();
 	return QRectF(-w/2.0, -w/2.0, w, w);
 }
 
-void ParupaintCursor::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget*)
+void ParupaintCanvasBrush::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget*)
 {
 	painter->save();
 

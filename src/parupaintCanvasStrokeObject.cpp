@@ -1,5 +1,5 @@
 
-#include "stroke/parupaintStrokeStep.h"
+#include "core/parupaintStrokeStep.h"
 #include "parupaintCanvasStrokeObject.h"
 
 #include "parupaintCanvasPool.h"

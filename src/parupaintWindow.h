@@ -1,7 +1,7 @@
 #ifndef PARUPAINTWINDOW_H
 #define PARUPAINTWINDOW_H
 
-#include "parupaintBrush.h"
+#include "core/parupaintBrush.h"
 
 #include <QMainWindow>
 
