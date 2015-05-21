@@ -11,6 +11,9 @@ ParupaintBrush::ParupaintBrush()
 	SetWidth(1);
 	SetCurrentStroke(nullptr);
 	SetLastStroke(nullptr);
+	SetLayer(0);
+	SetFrame(0);
+	SetDrawing(false);
 }
 
 QPen ParupaintBrush::ToPen()
@@ -60,6 +63,19 @@ void ParupaintBrush::SetLastStroke(ParupaintStroke * s)
 	LastStroke = s;
 }
 
+void ParupaintBrush::SetLayer(_lint l)
+{
+	layer = l;
+}
+void ParupaintBrush::SetFrame(_fint f)
+{
+	frame = f;
+}
+
+void ParupaintBrush::SetDrawing(bool d)
+{
+	drawing = d;
+}
 
 float ParupaintBrush::GetWidth() const
 {
@@ -83,6 +99,21 @@ QString ParupaintBrush::GetName() const
 QPointF ParupaintBrush::GetPosition() const
 {
 	return position;
+}
+
+_lint ParupaintBrush::GetLayer() const 
+{
+	return layer;
+}
+
+_fint ParupaintBrush::GetFrame() const
+{
+	return frame;
+}
+
+bool ParupaintBrush::IsDrawing() const
+{
+	return drawing;
 }
 
 ParupaintStroke * ParupaintBrush::GetCurrentStroke() const

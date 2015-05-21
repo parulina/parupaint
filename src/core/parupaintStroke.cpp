@@ -4,7 +4,6 @@
 
 ParupaintStroke::ParupaintStroke()
 {
-	SetLayerFrame(0, 0);
 	SetPreviousStroke(nullptr);	
 	SetNextStroke(nullptr);	
 }
@@ -13,11 +12,6 @@ ParupaintStroke::ParupaintStroke()
 void ParupaintStroke::AddStroke(ParupaintStrokeStep * step)
 {
 	strokes.append(step);	
-}
-void ParupaintStroke::SetLayerFrame(_lint l, _fint f)
-{
-	layer = l;
-	frame = f;
 }
 
 void ParupaintStroke::SetBrush(ParupaintBrush * b)
@@ -28,15 +22,6 @@ ParupaintBrush * ParupaintStroke::GetBrush() const
 {
 	return brush;
 }
-_lint ParupaintStroke::GetLayer() const
-{
-	return layer;
-}
-_fint ParupaintStroke::GetFrame() const
-{
-	return frame;
-}
-
 void ParupaintStroke::Clear()
 {
 	foreach(auto *i, strokes){

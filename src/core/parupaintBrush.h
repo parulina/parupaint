@@ -1,6 +1,8 @@
 #ifndef PARUPAINTBRUSH_H
 #define PARUPAINTBRUSH_H
 
+#include "panvasTypedefs.h"
+
 class ParupaintStroke;
 
 #include <QPointF>
@@ -14,6 +16,10 @@ class ParupaintBrush {
 	QPointF position;
 	float 	width;
 	float   pressure;
+	_lint	layer;
+	_fint	frame;
+	bool 	drawing;
+
 
 	ParupaintStroke * CurrentStroke;
 	ParupaintStroke * LastStroke;
@@ -31,6 +37,9 @@ class ParupaintBrush {
 	void SetPosition(float, float);
 	void SetWidth(float);
 	void SetPressure(float);
+	void SetLayer(_lint);
+	void SetFrame(_fint);
+	void SetDrawing(bool);
 	void SetCurrentStroke(ParupaintStroke *);
 	void SetLastStroke(ParupaintStroke *);
 
@@ -39,6 +48,9 @@ class ParupaintBrush {
 	QString GetName() const;
 	float GetWidth() const;
 	float GetPressure() const;
+	_lint GetLayer() const;
+	_fint GetFrame() const;
+	bool IsDrawing() const;
 	ParupaintStroke * GetCurrentStroke() const;
 	ParupaintStroke * GetLastStroke() const;
 

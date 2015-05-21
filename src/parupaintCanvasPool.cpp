@@ -2,11 +2,14 @@
 // Other users as well as the actual canvas.
 //
 
+#include <QPainter>
+
 #include "parupaintCanvasPool.h"
 #include "parupaintCanvasObject.h"
 #include "parupaintCanvasStrokeObject.h"
 #include "parupaintCanvasBrush.h"
 #include "core/parupaintBrush.h"
+#include "core/parupaintStrokeStep.h"
 
 #include "core/parupaintPanvas.h"
 #include "core/parupaintLayer.h"
@@ -95,8 +98,6 @@ ParupaintCanvasStrokeObject * ParupaintCanvasPool::NewBrushStroke(ParupaintBrush
 	strokes.first()->SetNextStroke(stroke);
 	stroke->SetPreviousStroke(strokes.first());
 
-	stroke->SetLayerFrame(Canvas->GetCurrentLayer(), Canvas->GetCurrentFrame());
-	
 	strokes.insert(brush, stroke);
 	// first = new, last = 0
 	// begin = new, end = 0
@@ -163,13 +164,22 @@ void ParupaintCanvasPool::SquashBrushStrokes(ParupaintBrush * brush)
 	auto val = strokes.values(brush);
 	for(int i = 0; i < val.length(); i++){
 		auto s = val.at(i);
-		auto l = s->GetLayer();
-		auto f = s->GetFrame();
-		
-		ParupaintLayer * layer = this->GetCanvas()->GetLayer(l);
-		if(layer) {
-			ParupaintFrame * frame = layer->GetFrame(f);
-			frame->DrawStroke(s);
+
+
+		QPointF ppos;
+		foreach(auto i, s->GetStrokes()){
+			auto * layer = this->GetCanvas()->GetLayer(i->GetLayer());
+			if(!layer) continue;
+			auto * frame = layer->GetFrame(i->GetFrame());
+			if(!frame) continue;
+
+			if(ppos.isNull()) ppos = i->GetPosition();
+
+			QPen pen = i->ToPen();
+			const QPointF pos = i->GetPosition();
+
+			frame->DrawStep(ppos.x(), ppos.y(), pos.x(), pos.y(), pen);
+			ppos = pos;
 		}
 	}
 	this->ClearBrushStrokes(brush);
@@ -209,7 +219,16 @@ void ParupaintCanvasPool::CurrentChange(int l, int f)
 {
 	foreach(auto i, strokes){
 		i->hide();
-		if(i->GetLayer() == l && i->GetFrame() == f){
+		// todo - this shows all strokesteps, even though they might be
+		// in other l/f's. how to resolve?
+		// might make a func to loop through them and redraw only the
+		// ones that match l/f. probably the best choice
+		//
+		// over 2 because 0 is a null thing
+		
+
+		if(i->GetStrokes().length() < 2) continue;
+		if(i->GetStrokes().at(1)-> GetLayer() == l && i->GetStrokes().at(1)->GetFrame() == f){
 			i->show();
 		}
 	}
