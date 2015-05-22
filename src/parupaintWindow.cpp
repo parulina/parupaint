@@ -43,16 +43,19 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	CanvasKeyReload(Qt::Key_R + Qt::SHIFT),
 	// brush keys
 	BrushKeyUndo(Qt::Key_Z), BrushKeyRedo(Qt::SHIFT + Qt::Key_Z),
+	BrushKeySwitchBrush(Qt::Key_E),
 	//internal stuff?
 	OverlayState(OVERLAY_STATUS_HIDDEN)
 
 {
-	auto * view = new ParupaintCanvasView(this);
-	view->SetCurrentBrush(&brush);
+	view = new ParupaintCanvasView(this);
+	view->SetCurrentBrush(glass.GetCurrentBrush());
 
+	connect(view, &ParupaintCanvasView::CursorChange, this, &ParupaintWindow::CursorChange);
 	connect(view, &ParupaintCanvasView::PenMove, this, &ParupaintWindow::PenMove);
-	connect(view, SIGNAL(PenDrawStart(ParupaintBrush*)), this, SLOT(PenDrawStart(ParupaintBrush*)));
-	connect(view, SIGNAL(PenDrawStop(ParupaintBrush*)), this, SLOT(PenDrawStop(ParupaintBrush*)));
+	connect(view, &ParupaintCanvasView::PenDrawStart, this, &ParupaintWindow::PenDrawStart);
+	connect(view, &ParupaintCanvasView::PenDrawStop, this, &ParupaintWindow::PenDrawStop);
+
 	setCentralWidget(view);
 
 	pool = new ParupaintCanvasPool(view);
@@ -96,13 +99,17 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	connect(NextFrameKey, SIGNAL(activated()), this, SLOT(CanvasChangeKey()));
 	connect(PreviousFrameKey, SIGNAL(activated()), this, SLOT(CanvasChangeKey()));
 
+	QShortcut * SwitchKey = new QShortcut(BrushKeySwitchBrush, this);
 	QShortcut * UndoKey = 	new QShortcut(BrushKeyUndo, this);
 	QShortcut * RedoKey = 	new QShortcut(BrushKeyRedo, this);
-	connect(UndoKey, SIGNAL(activated()), this, SLOT(UndoRedoKey()));
-	connect(RedoKey, SIGNAL(activated()), this, SLOT(UndoRedoKey()));
+
+	connect(SwitchKey, &QShortcut::activated, this, &ParupaintWindow::BrushKey);
+	connect(UndoKey, &QShortcut::activated, this, &ParupaintWindow::BrushKey);
+	connect(RedoKey, &QShortcut::activated, this, &ParupaintWindow::BrushKey);
 
 	QShortcut * ReloadKey = new QShortcut(CanvasKeyReload, this);
 	connect(ReloadKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
+
 
 	UpdateTitle();
 	
@@ -111,6 +118,12 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	restoreState(cfg.value("mainWindowState").toByteArray());
 
 	show();
+}
+
+void ParupaintWindow::CursorChange(ParupaintBrush* brush)
+{
+	// when the cursor changes. important to update brushglass
+	*glass.GetCurrentBrush() = *brush;
 }
 
 ParupaintCanvasPool * ParupaintWindow::GetCanvasPool()
@@ -125,6 +138,7 @@ void ParupaintWindow::PenDrawStart(ParupaintBrush* brush){
 
 void ParupaintWindow::PenMove(ParupaintBrush* brush){
 	client->SendBrushUpdate(brush);
+
 // 	auto *stroke = brush->GetCurrentStroke();
 // 	if(stroke != nullptr){
 // 		stroke->AddStroke(new ParupaintStrokeStep(*brush));
@@ -139,23 +153,26 @@ void ParupaintWindow::PenDrawStop(ParupaintBrush* brush){
 
 void ParupaintWindow::ViewUpdate()
 {
+	auto brush = glass.GetCurrentBrush();
 	flayer->UpdateFromCanvas(pool->GetCanvas());
-	flayer->SetMarkedLayerFrame(brush.GetLayer(), brush.GetFrame());
+	flayer->SetMarkedLayerFrame(brush->GetLayer(), brush->GetFrame());
 }
 
 void ParupaintWindow::ChangedFrame(int l, int f)
 {
-	brush.SetLayer(l);
-	brush.SetFrame(f);
+	auto brush = glass.GetCurrentBrush();
+	brush->SetLayer(l);
+	brush->SetFrame(f);
 	pool->UpdateView();
 	flayer->SetMarkedLayerFrame(l, f);
 }
 
 void ParupaintWindow::SelectFrame(int l, int f)
 {
-	brush.SetLayer(l);
-	brush.SetFrame(f);
-	client->SendLayerFrame(&brush);
+	auto brush = glass.GetCurrentBrush();
+	brush->SetLayer(l);
+	brush->SetFrame(f);
+	client->SendLayerFrame(brush);
 }
 
 void ParupaintWindow::TabTimeout()
@@ -226,24 +243,32 @@ void ParupaintWindow::CanvasChangeKey()
 		ll--;
 	}
 
-	brush.SetLayer(brush.GetLayer() + ll);
-	brush.SetFrame(brush.GetFrame() + ff);
-	client->SendLayerFrame(&brush);
+	auto brush = glass.GetCurrentBrush();
+	brush->SetLayer(brush->GetLayer() + ll);
+	brush->SetFrame(brush->GetFrame() + ff);
+	client->SendLayerFrame(brush);
 
-// 	pool->GetCanvas()->AddLayerFrame(ll, ff);
-// 	pool->UpdateView();
 }
 
-void ParupaintWindow::UndoRedoKey()
+void ParupaintWindow::BrushKey()
 {
 	QShortcut* shortcut = qobject_cast<QShortcut*>(sender());
 	QKeySequence seq = shortcut->key();
 	
-	if(seq == BrushKeyUndo){
-		pool->UndoBrushStroke(&brush);
+	auto brush = glass.GetCurrentBrush();
 
+	if(seq == BrushKeyUndo){
+		pool->UndoBrushStroke(brush);
 	} else if(seq == BrushKeyRedo) {
-		pool->RedoBrushStroke(&brush);
+		pool->RedoBrushStroke(brush);
+
+	} else if(seq == BrushKeySwitchBrush) {
+
+		glass.ToggleBrush(0, 1);
+		auto brush2 = glass.GetCurrentBrush();
+
+		view->SetCurrentBrush(brush2);
+		brush2->SetPosition(brush->GetPosition());
 	}
 
 }
@@ -288,10 +313,11 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 {
 	if(event->key() == Qt::Key_Space && !event->isAutoRepeat()){
 		if(OverlayButtonDown){
+			auto brush = glass.GetCurrentBrush();
 			if(event->modifiers() & Qt::ControlModifier){
-				pool->ClearBrushStrokes(&brush);
+				pool->ClearBrushStrokes(brush);
 			} else {
-				pool->SquashBrushStrokes(&brush);
+				pool->SquashBrushStrokes(brush);
 			}
 		}
 	}

@@ -16,6 +16,13 @@ ParupaintBrush::ParupaintBrush()
 	SetDrawing(false);
 }
 
+ParupaintBrush::ParupaintBrush(QString name, float w, QColor col) : ParupaintBrush()
+{
+	SetName(name);
+	SetWidth(w);
+	SetColor(col);
+}
+
 QPen ParupaintBrush::ToPen()
 {
 	QPen pen(GetColor());

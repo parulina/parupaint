@@ -82,6 +82,8 @@ Q_OBJECT
 	void PenMove(ParupaintBrush *);
 	void PenDrawStop(ParupaintBrush *);
 
+	void CursorChange(ParupaintBrush *);
+
 public slots:
 	void OnCanvasUpdate();
 

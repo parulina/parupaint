@@ -20,30 +20,31 @@ void ParupaintCanvasBrush::Paint(QPainter * painter)
 {
 	painter->save();
 
-	painter->setRenderHint(QPainter::Antialiasing, false);
-
-	QPen pen(Qt::white);
-	pen.setCosmetic(true);
-
-	painter->setPen(pen);
-	painter->setCompositionMode(QPainter::CompositionMode_Exclusion);
-	
 	const auto w = this->GetWidth();
 	const auto p = this->GetPressure();
-
 	const QRectF cc((-QPointF(w/2, w/2)), 		QSizeF(w, w));
 	const QRectF cp((-QPointF((w*p)/2, (w*p)/2)),	QSizeF(w*p, w*p));
-	painter->drawEllipse(cc); // brush width
-
-	if(p > 0){
-		// TODO use brush ToPen?
+	if(p > 0 && p < 1){
 		QPen pen_inner(this->GetColor());
 		pen_inner.setCosmetic(true);
 		pen_inner.setWidthF(2);
 		painter->setCompositionMode(QPainter::CompositionMode_Source);
 		painter->setPen(pen_inner);
 		painter->drawEllipse(cp); // pressure
+
+		QPen pen_inner_border(Qt::white);
+		pen_inner_border.setCosmetic(true);
+		pen_inner_border.setWidthF(1);
+		painter->setPen(pen_inner_border);
+		painter->setCompositionMode(QPainter::CompositionMode_Exclusion);
+		painter->drawEllipse(cp);
+
 	}
+	QPen pen(Qt::white);
+	pen.setCosmetic(true);
+	painter->setPen(pen);
+	painter->setCompositionMode(QPainter::CompositionMode_Exclusion);
+	painter->drawEllipse(cc); // brush width
 
 	painter->restore();
 }

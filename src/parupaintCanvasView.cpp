@@ -43,7 +43,9 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 
 void ParupaintCanvasView::SetCurrentBrush(ParupaintBrush * brush)
 {
-	
+	if(CurrentBrush){
+		brush->SetPosition(CurrentBrush->GetPosition());
+	}
 	if(CurrentBrush && CurrentCanvas) {
 		CurrentCanvas->RemoveCursor(CurrentBrush);
 		delete CurrentBrush;
@@ -53,7 +55,9 @@ void ParupaintCanvasView::SetCurrentBrush(ParupaintBrush * brush)
 		ParupaintCanvasBrush * cursor = new ParupaintCanvasBrush;
 		viewport()->setCursor(Qt::BlankCursor);
 		CurrentBrush = cursor;
-		(ParupaintBrush)(*CurrentBrush) = *brush;
+		*((ParupaintBrush*)CurrentBrush) = *brush;
+		CurrentBrush->SetPosition(brush->GetPosition());
+		// copy the options
 
 		if(CurrentCanvas) CurrentCanvas->AddCursor(" ", cursor);
 	} else {
@@ -157,6 +161,7 @@ void ParupaintCanvasView::OnPenMove(const QPointF &pos, Qt::MouseButtons buttons
 			if(hd > 0)	zdl = OriginZoom + floor(30 * hd);
 			else		zdl = OriginZoom + floor((OriginZoom * 0.9) * hd);
 			CurrentBrush->SetWidth(zdl);
+			emit CursorChange(CurrentBrush);
 		}
 		viewport()->update();
 
@@ -183,6 +188,7 @@ bool ParupaintCanvasView::OnScroll(const QPointF & pos, Qt::KeyboardModifiers mo
 	} else {
 		float new_size = CurrentBrush->GetWidth() + (actual_zoom*4);
 		CurrentBrush->SetWidth(new_size);
+		emit CursorChange(CurrentBrush);
 
 	}
 	CurrentBrush->SetPosition(RealPosition(OldPosition));
