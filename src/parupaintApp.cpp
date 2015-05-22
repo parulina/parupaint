@@ -45,5 +45,4 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 		this->setStyleSheet(file.readAll());
 		file.close();
 	}
-
 }

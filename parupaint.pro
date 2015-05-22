@@ -1,4 +1,4 @@
-QT += 		widgets
+QT += 		widgets websockets
 
 CONFIG += 	c++11 debug
 QMAKE_CXXFLAGS+= -std=c++11 -fdiagnostics-color=auto
@@ -7,12 +7,14 @@ MOC_DIR=	.obj/moc
 
 LIBS += 	-lz
 HEADERS +=	src/core/*.h \
+		src/net/*.h \
 		src/overlay/*.h \
 		src/qtcolorpicker/*.hpp \
 		src/karchive/*.h \
 		src/*.h
 
 SOURCES += 	src/core/*.cpp \
+		src/net/*.cpp \
 		src/overlay/*.cpp \
 		src/qtcolorpicker/*.cpp \
 		src/karchive/*.cpp \

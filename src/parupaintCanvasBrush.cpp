@@ -5,54 +5,17 @@
 #include "core/parupaintBrush.h"
 
 
-ParupaintCanvasBrush::ParupaintCanvasBrush(ParupaintBrush * b) : brush(b)
+ParupaintCanvasBrush::ParupaintCanvasBrush()
 {
 	this->setZValue(1);
 }
 
 void ParupaintCanvasBrush::SetPosition(QPointF pos)
 {
-	brush->SetPosition(pos);
+	this->ParupaintBrush::SetPosition(pos);
 	setPos(pos);
 }
-void ParupaintCanvasBrush::SetWidth(float f) 
-{
-	brush->SetWidth(f);
-}
 
-void ParupaintCanvasBrush::SetPressure(float f) 
-{
-	brush->SetPressure(f);
-}
-
-void ParupaintCanvasBrush::SetColor(QColor col) 
-{
-	brush->SetColor(col);
-}
-
-QPointF ParupaintCanvasBrush::GetPosition() const
-{
-	return brush->GetPosition();
-}
-
-float ParupaintCanvasBrush::GetWidth() const
-{
-	return brush->GetWidth();
-}
-float ParupaintCanvasBrush::GetPressure() const
-{
-	return brush->GetPressure();
-}
-
-QColor ParupaintCanvasBrush::GetColor() const
-{
-	return brush->GetColor();
-}
-
-ParupaintBrush * ParupaintCanvasBrush::GetBrush() const
-{
-	return brush;
-}
 void ParupaintCanvasBrush::Paint(QPainter * painter)
 {
 	painter->save();
@@ -65,15 +28,16 @@ void ParupaintCanvasBrush::Paint(QPainter * painter)
 	painter->setPen(pen);
 	painter->setCompositionMode(QPainter::CompositionMode_Exclusion);
 	
-	const auto w = brush->GetWidth();
-	const auto p = brush->GetPressure();
+	const auto w = this->GetWidth();
+	const auto p = this->GetPressure();
 
 	const QRectF cc((-QPointF(w/2, w/2)), 		QSizeF(w, w));
 	const QRectF cp((-QPointF((w*p)/2, (w*p)/2)),	QSizeF(w*p, w*p));
 	painter->drawEllipse(cc); // brush width
 
 	if(p > 0){
-		QPen pen_inner(brush->GetColor());
+		// TODO use brush ToPen?
+		QPen pen_inner(this->GetColor());
 		pen_inner.setCosmetic(true);
 		pen_inner.setWidthF(2);
 		painter->setCompositionMode(QPainter::CompositionMode_Source);
@@ -87,7 +51,7 @@ void ParupaintCanvasBrush::Paint(QPainter * painter)
 
 QRectF ParupaintCanvasBrush::boundingRect() const
 {
-	const float w = brush->GetWidth();
+	const float w = this->GetWidth();
 	return QRectF(-w/2.0, -w/2.0, w, w);
 }
 
@@ -99,7 +63,7 @@ void ParupaintCanvasBrush::paint(QPainter* painter, const QStyleOptionGraphicsIt
 	
 	painter->setRenderHint(QPainter::Antialiasing, false);
 	painter->setPen(Qt::black);
-	painter->drawText(boundingRect(), Qt::AlignCenter, brush->GetName());
+	painter->drawText(boundingRect(), Qt::AlignCenter, this->GetName());
 	
 	painter->restore();
 }

@@ -46,17 +46,16 @@ void ParupaintCanvasView::SetCurrentBrush(ParupaintBrush * brush)
 	
 	if(CurrentBrush && CurrentCanvas) {
 		CurrentCanvas->RemoveCursor(CurrentBrush);
-
 		delete CurrentBrush;
 	}
 
 	if(brush) {
-		ParupaintCanvasBrush * cursor = new ParupaintCanvasBrush(brush);
+		ParupaintCanvasBrush * cursor = new ParupaintCanvasBrush;
 		viewport()->setCursor(Qt::BlankCursor);
-		if(CurrentCanvas) {
-			CurrentCanvas->AddCursor(" ", cursor);
-		}
 		CurrentBrush = cursor;
+		(ParupaintBrush)(*CurrentBrush) = *brush;
+
+		if(CurrentCanvas) CurrentCanvas->AddCursor(" ", cursor);
 	} else {
 		viewport()->setCursor(Qt::ArrowCursor);
 		CurrentBrush = nullptr;
@@ -68,10 +67,7 @@ void ParupaintCanvasView::SetCanvas(ParupaintCanvasPool * canvas)
 {
 	CurrentCanvas = canvas;
 	setScene(canvas);
-	
-	if(CurrentBrush) {
- 		canvas->AddCursor(" ", CurrentBrush);
-	}
+	if(CurrentBrush) CurrentCanvas->AddCursor(" ", CurrentBrush);
 
 	connect(canvas, SIGNAL(UpdateView()), this, SLOT(OnCanvasUpdate()));
 }
@@ -104,10 +100,12 @@ void ParupaintCanvasView::OnPenDown(const QPointF &pos, Qt::MouseButtons buttons
 	if(CurrentBrush == nullptr) return;
 
 	CurrentBrush->SetPosition(RealPosition(pos));
+	CurrentBrush->SetPressure(pressure);
 
 	if(buttons == DrawButton && !Drawing){
 		Drawing = true;
-		emit PenDrawStart(CurrentBrush->GetBrush());
+		CurrentBrush->SetDrawing(Drawing);
+		emit PenDrawStart(CurrentBrush);
 
 	} else if(buttons == MoveButton && CanvasState != CANVAS_STATUS_MOVING){
 		CanvasState = CANVAS_STATUS_MOVING;
@@ -120,9 +118,11 @@ void ParupaintCanvasView::OnPenUp(const QPointF &pos, Qt::MouseButtons buttons)
 	if(CurrentBrush == nullptr) return;
 
 	CurrentBrush->SetPosition(RealPosition(pos));
+	CurrentBrush->SetPressure(0.0);
 	if(Drawing){
 		Drawing = false;
-		emit PenDrawStop(CurrentBrush->GetBrush());
+		CurrentBrush->SetDrawing(Drawing);
+		emit PenDrawStop(CurrentBrush);
 	}
 	if(CanvasState == CANVAS_STATUS_MOVING){
 		CanvasState = CANVAS_STATUS_IDLE;
@@ -164,10 +164,8 @@ void ParupaintCanvasView::OnPenMove(const QPointF &pos, Qt::MouseButtons buttons
 
 	CurrentBrush->SetPosition(RealPosition(pos));
 	CurrentBrush->SetPressure(pressure);
-	if(Drawing){
-
-		emit PenDraw(RealPosition(OldPosition), CurrentBrush->GetBrush());
-	}
+	
+	emit PenMove(CurrentBrush);
 
 
 	OldPosition = pos;
@@ -188,6 +186,7 @@ bool ParupaintCanvasView::OnScroll(const QPointF & pos, Qt::KeyboardModifiers mo
 
 	}
 	CurrentBrush->SetPosition(RealPosition(OldPosition));
+	emit PenMove(CurrentBrush);
 	viewport()->update();
 	return false;
 }

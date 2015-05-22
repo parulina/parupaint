@@ -3,9 +3,13 @@
 
 #include "core/parupaintBrush.h"
 
+#include <QHash>
 #include <QMainWindow>
 
 class ParupaintCanvasPool;
+class ParupaintCanvasBrush;
+
+class ParupaintClientInstance;
 
 class ParupaintChat;
 class ParupaintFlayer;
@@ -34,6 +38,7 @@ Q_OBJECT
 	QKeySequence CanvasKeyPreviousLayer;
 	QKeySequence CanvasKeyNextFrame;
 	QKeySequence CanvasKeyPreviousFrame;
+	QKeySequence CanvasKeyReload;
 
 
 	QKeySequence BrushKeyUndo;
@@ -43,6 +48,7 @@ Q_OBJECT
 	void UpdateOverlay();
 	
 	OverlayStatus	OverlayState;
+	
 	ParupaintBrush 	brush;
 
 	ParupaintChat * chat;
@@ -53,13 +59,16 @@ Q_OBJECT
 	void closeEvent(QCloseEvent * event);
 	void keyPressEvent(QKeyEvent * event);
 	void resizeEvent(QResizeEvent * event);
-	ParupaintCanvasPool * canvas;
+	ParupaintCanvasPool * pool;
+
+	ParupaintClientInstance * client;
 
 	public:
 	ParupaintWindow();
+	ParupaintCanvasPool * GetCanvasPool();
+
 	void ShowOverlay(bool=true);
 	void HideOverlay();
-
 
 	void UpdateTitle();
 
@@ -70,9 +79,12 @@ Q_OBJECT
 	void UndoRedoKey();
 	void OverlayKey();
 	void CanvasChangeKey();
+	void NetworkKey();
+
+	void ViewUpdate();
 
 	void PenDrawStart(ParupaintBrush*);
-	void PenDraw(QPointF, ParupaintBrush*);
+	void PenMove(ParupaintBrush*);
 	void PenDrawStop(ParupaintBrush*);
 
 	void SelectFrame(int, int);

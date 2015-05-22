@@ -91,6 +91,15 @@ QColor ParupaintBrush::GetColor() const
 	return color;
 }
 
+QString ParupaintBrush::GetColorString() const
+{
+	return ("#"+ 
+		QString::number(color.red(), 16) + 
+		QString::number(color.green(), 16) + 
+		QString::number(color.blue(), 16) +
+		QString::number(color.alpha(), 16)).toUpper();
+}
+
 QString ParupaintBrush::GetName() const
 {
 	return name;

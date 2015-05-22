@@ -4,6 +4,8 @@
 #include <QSettings>
 #include <QShortcut>
 #include <QTimer>
+#include <QJsonObject>
+#include <QJsonDocument>
 
 #include "parupaintWindow.h"
 #include "core/parupaintPanvasReader.h"
@@ -14,6 +16,7 @@
 #include "parupaintCanvasView.h"
 #include "parupaintCanvasPool.h"
 #include "parupaintCanvasObject.h"
+#include "parupaintCanvasBrush.h"
 
 #include "core/parupaintLayer.h"
 #include "core/parupaintFrame.h"
@@ -25,6 +28,7 @@
 #include "overlay/parupaintUserList.h"
 #include "overlay/parupaintInfoBar.h"
 
+#include "net/parupaintClientInstance.h"
 
 #include <QDebug>
 
@@ -36,36 +40,25 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	CanvasKeySquash(Qt::Key_Space),
 	CanvasKeyNextLayer(Qt::Key_D), CanvasKeyPreviousLayer(Qt::Key_S),
 	CanvasKeyNextFrame(Qt::Key_F), CanvasKeyPreviousFrame(Qt::Key_A),
+	CanvasKeyReload(Qt::Key_R + Qt::SHIFT),
 	// brush keys
 	BrushKeyUndo(Qt::Key_Z), BrushKeyRedo(Qt::SHIFT + Qt::Key_Z),
 	//internal stuff?
 	OverlayState(OVERLAY_STATUS_HIDDEN)
 
 {
-
-
-
 	auto * view = new ParupaintCanvasView(this);
 	view->SetCurrentBrush(&brush);
 
-	connect(view, SIGNAL(PenDraw(QPointF, ParupaintBrush*)), this, SLOT(PenDraw(QPointF, ParupaintBrush*)));
+	connect(view, &ParupaintCanvasView::PenMove, this, &ParupaintWindow::PenMove);
 	connect(view, SIGNAL(PenDrawStart(ParupaintBrush*)), this, SLOT(PenDrawStart(ParupaintBrush*)));
 	connect(view, SIGNAL(PenDrawStop(ParupaintBrush*)), this, SLOT(PenDrawStop(ParupaintBrush*)));
 	setCentralWidget(view);
 
-	canvas = new ParupaintCanvasPool(view);
+	pool = new ParupaintCanvasPool(view);
+	view->SetCanvas(pool);
 
-	view->SetCanvas(canvas);
-	canvas->GetCanvas()->AddLayers(1, 2); // add 2 layers at pos 1
-	canvas->GetCanvas()->GetLayer(1)->SetFrames(10);
-
-	// canvas->GetCanvas() returns Panvas.
-
-	ParupaintPanvasReader reader(canvas->GetCanvas());
-	if(!reader.LoadParupaintArchive("animushin.tar.gz")){
-		qDebug() << "Something went wrong loading.";
-	}
-	canvas->GetCanvas()->Resize(canvas->GetCanvas()->GetDimensions());
+	client = new ParupaintClientInstance(pool, QUrl("ws://sqnya.se:1108"), this);
 
 
 	chat =	  new ParupaintChat(this);
@@ -73,7 +66,8 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	picker =  new ParupaintColorPicker(this);
 	infobar = new ParupaintInfoBar(this);
 	
-	connect(canvas->GetCanvas(), SIGNAL(CurrentSignal(int, int)), this, SLOT(ChangedFrame(int, int)));
+	connect(pool, SIGNAL(UpdateView()), this, SLOT(ViewUpdate()));
+	connect(pool->GetCanvas(), SIGNAL(CurrentSignal(int, int)), this, SLOT(ChangedFrame(int, int)));
 	connect(flayer->GetList(), SIGNAL(clickFrame(int, int)), this, SLOT(SelectFrame(int, int)));
 
 
@@ -107,8 +101,10 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	connect(UndoKey, SIGNAL(activated()), this, SLOT(UndoRedoKey()));
 	connect(RedoKey, SIGNAL(activated()), this, SLOT(UndoRedoKey()));
 
+	QShortcut * ReloadKey = new QShortcut(CanvasKeyReload, this);
+	connect(ReloadKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
+
 	UpdateTitle();
-	flayer->UpdateFromCanvas(canvas->GetCanvas());
 	
 	QSettings cfg;
 	restoreGeometry(cfg.value("mainWindowGeometry").toByteArray());
@@ -117,40 +113,49 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	show();
 }
 
-
-void ParupaintWindow::PenDrawStart(ParupaintBrush* brush){
-	canvas->NewBrushStroke(brush);
+ParupaintCanvasPool * ParupaintWindow::GetCanvasPool()
+{
+	return pool;
 }
 
-void ParupaintWindow::PenDraw(QPointF pos, ParupaintBrush* brush){
-	auto *stroke = brush->GetCurrentStroke();
-	if(stroke != nullptr){
-		stroke->AddStroke(new ParupaintStrokeStep(*brush));
-	}
+void ParupaintWindow::PenDrawStart(ParupaintBrush* brush){
+	client->SendBrushUpdate(brush);
+// 	pool->NewBrushStroke(brush);
+}
+
+void ParupaintWindow::PenMove(ParupaintBrush* brush){
+	client->SendBrushUpdate(brush);
+// 	auto *stroke = brush->GetCurrentStroke();
+// 	if(stroke != nullptr){
+// 		stroke->AddStroke(new ParupaintStrokeStep(*brush));
+// 	}
 }
 
 void ParupaintWindow::PenDrawStop(ParupaintBrush* brush){
-	/*
-	auto *stroke = brush->GetCurrentStroke();
-	if(stroke){
-		qDebug() << stroke->GetPreviousStroke();
-	}
-	*/
-	canvas->EndBrushStroke(brush);
+	client->SendBrushUpdate(brush);
+// 	pool->EndBrushStroke(brush);
 }
 
 
-
+void ParupaintWindow::ViewUpdate()
+{
+	flayer->UpdateFromCanvas(pool->GetCanvas());
+	flayer->SetMarkedLayerFrame(brush.GetLayer(), brush.GetFrame());
+}
 
 void ParupaintWindow::ChangedFrame(int l, int f)
 {
+	brush.SetLayer(l);
+	brush.SetFrame(f);
+	pool->UpdateView();
 	flayer->SetMarkedLayerFrame(l, f);
 }
 
 void ParupaintWindow::SelectFrame(int l, int f)
 {
-	canvas->GetCanvas()->SetLayerFrame(l, f);
-	canvas->UpdateView();
+	brush.SetLayer(l);
+	brush.SetFrame(f);
+	client->SendLayerFrame(&brush);
 }
 
 void ParupaintWindow::TabTimeout()
@@ -193,6 +198,17 @@ void ParupaintWindow::OverlayKey()
 	}
 }
 
+void ParupaintWindow::NetworkKey()
+{
+	QShortcut* shortcut = qobject_cast<QShortcut*>(sender());
+	QKeySequence seq = shortcut->key();
+
+	if(seq == CanvasKeyReload){
+		qDebug() << "Reloading image.";
+		client->ReloadImage();
+	}
+}
+
 void ParupaintWindow::CanvasChangeKey()
 {
 	QShortcut* shortcut = qobject_cast<QShortcut*>(sender());
@@ -210,8 +226,12 @@ void ParupaintWindow::CanvasChangeKey()
 		ll--;
 	}
 
-	canvas->GetCanvas()->AddLayerFrame(ll, ff);
-	canvas->UpdateView();
+	brush.SetLayer(brush.GetLayer() + ll);
+	brush.SetFrame(brush.GetFrame() + ff);
+	client->SendLayerFrame(&brush);
+
+// 	pool->GetCanvas()->AddLayerFrame(ll, ff);
+// 	pool->UpdateView();
 }
 
 void ParupaintWindow::UndoRedoKey()
@@ -220,10 +240,10 @@ void ParupaintWindow::UndoRedoKey()
 	QKeySequence seq = shortcut->key();
 	
 	if(seq == BrushKeyUndo){
-		canvas->UndoBrushStroke(&brush);
+		pool->UndoBrushStroke(&brush);
 
 	} else if(seq == BrushKeyRedo) {
-		canvas->RedoBrushStroke(&brush);
+		pool->RedoBrushStroke(&brush);
 	}
 
 }
@@ -269,9 +289,9 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 	if(event->key() == Qt::Key_Space && !event->isAutoRepeat()){
 		if(OverlayButtonDown){
 			if(event->modifiers() & Qt::ControlModifier){
-				canvas->ClearBrushStrokes(&brush);
+				pool->ClearBrushStrokes(&brush);
 			} else {
-				canvas->SquashBrushStrokes(&brush);
+				pool->SquashBrushStrokes(&brush);
 			}
 		}
 	}

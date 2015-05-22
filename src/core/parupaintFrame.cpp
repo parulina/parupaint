@@ -20,6 +20,11 @@ void ParupaintFrame::LoadFromData(const QByteArray& ba)
 	Frame.loadFromData(ba);	
 }
 
+void ParupaintFrame::Replace(QImage img)
+{
+	Frame = img;
+}
+
 void ParupaintFrame::New(QSize s)
 {
 	Frame = QImage(s, QImage::Format_ARGB32);
@@ -39,34 +44,20 @@ void ParupaintFrame::ClearColor(QColor col)
 	Frame.fill(col);
 }
 
-void ParupaintFrame::DrawStroke(ParupaintStroke * s)
+void ParupaintFrame::DrawStep(float x, float y, float x2, float y2, QPen & pen)
 {
-	QPointF ppos;
-	foreach(auto i, s->GetStrokes()){
-		if(ppos.isNull()) ppos = i->GetPosition();
-
-		const QPen pen = i->ToPen();
-		const QPointF pos = i->GetPosition();
-
-		QPainter painter(&Frame);
-		painter.setPen(pen);
-		painter.drawLine(ppos, pos);
-		painter.end();
-
-		ppos = pos;
-	}
+	QPainter painter(&Frame);
+	painter.setPen(pen);
+	painter.drawLine(x, y, x2, y2);
+	painter.end();
 }
 
 void ParupaintFrame::DrawStep(float x, float y, float x2, float y2, float width, QColor color)
 {
-	QPainter painter(&Frame);
-
 	QPen pen(color);
 	pen.setWidthF(width);
-	painter.setPen(pen);
-
-	painter.drawLine(x, y, x2, y2);
-	painter.end();
+	pen.setCapStyle(Qt::RoundCap);
+	this->DrawStep(x, y, x2, y2, pen);
 }
 
 
@@ -85,7 +76,7 @@ float ParupaintFrame::GetOpacity() const
 	return Opacity;
 }
 
-bool ParupaintFrame::IsExtended()
+bool ParupaintFrame::IsExtended() const
 {
 	return Extended;
 }

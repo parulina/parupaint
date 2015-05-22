@@ -53,7 +53,7 @@ void ParupaintFlayer::UpdateFromCanvas(ParupaintCanvasObject * canvas)
 			nframe->Extended = frame->IsExtended();
 			if(nframe->Extended) nframe->setObjectName("FlayerFrameExtended");
 		}
-	}
+	};
 }
 void ParupaintFlayer::SetMarkedLayerFrame(int layer, int frame)
 {

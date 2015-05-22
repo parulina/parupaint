@@ -19,6 +19,12 @@ ParupaintPanvas::ParupaintPanvas(QSize dim, _lint l, _fint f)
 	New(dim, l, f);
 }
 
+ParupaintPanvas::ParupaintPanvas(int width, int height, _lint l, _fint f) : ParupaintPanvas(QSize(width, height), l, f)
+{
+
+}
+
+
 void ParupaintPanvas::New(QSize dim, _lint l, _fint f)
 {
 	Info.Dimensions = dim;
@@ -63,13 +69,13 @@ void ParupaintPanvas::SetLayers(_lint l, _fint f)
 	}
 }
 
-void ParupaintPanvas::AddLayers(_lint l, _lint n)
+void ParupaintPanvas::AddLayers(_lint l, _lint n, _fint f)
 {
 	if(l > GetNumLayers()) l = GetNumLayers(); // or -1?
 	else if(l < 0) l = 0;
 
 	while(n > 0){
-		Layers.insert(l, new ParupaintLayer(Info.Dimensions, 1));
+		Layers.insert(l, new ParupaintLayer(Info.Dimensions, f));
 		n--;
 	}
 }

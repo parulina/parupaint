@@ -20,16 +20,16 @@ class ParupaintFrame {
 	void Resize(QSize);
 	QImage GetImage() const;
 	void LoadFromData(const QByteArray&);
+	void Replace(QImage);
 	
 	void ClearColor(QColor);
-	void DrawStroke(ParupaintStroke *);
 	void DrawStep(float x, float y, float x2, float y2, float width, QColor color);
+	void DrawStep(float x, float y, float x2, float y2, QPen &);
 
 	void SetOpacity(float);
 	void SetExtended(bool);
-	bool IsExtended();
+	bool IsExtended() const;
 	float GetOpacity() const;
-	QImage GetFrame();
 };
 
 #endif

@@ -44,6 +44,7 @@ class ParupaintBrush {
 	void SetLastStroke(ParupaintStroke *);
 
 	QColor GetColor() const;
+	QString GetColorString() const;
 	QPointF GetPosition() const;
 	QString GetName() const;
 	float GetWidth() const;

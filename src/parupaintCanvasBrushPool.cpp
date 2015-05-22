@@ -26,7 +26,8 @@ void ParupaintCanvasBrushPool::RemoveCursor(ParupaintCanvasBrush * c)
 ParupaintCanvasBrush * ParupaintCanvasBrushPool::GetCursor(ParupaintBrush * brush)
 {
 	foreach(auto i, Cursors){
-		if(i->GetBrush() == brush){
+		// todo - can i compare canvasbrush to brush?
+		if(i == brush){
 			return i;
 		}
 	}

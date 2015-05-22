@@ -79,7 +79,7 @@ Q_OBJECT
 
 	signals:
 	void PenDrawStart(ParupaintBrush *);
-	void PenDraw(QPointF, ParupaintBrush *);
+	void PenMove(ParupaintBrush *);
 	void PenDrawStop(ParupaintBrush *);
 
 public slots:

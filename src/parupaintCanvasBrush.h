@@ -6,29 +6,17 @@
 
 #include <QGraphicsItem>
 
-class ParupaintBrush;
+#include "core/parupaintBrush.h"
 
 // todo: extends ParupaintBrush?
-class ParupaintCanvasBrush : public QGraphicsItem 
+class ParupaintCanvasBrush : public QGraphicsItem, public ParupaintBrush
 {
-	private:
-	ParupaintBrush * brush;
 	public:
-	ParupaintCanvasBrush(ParupaintBrush *);
+	ParupaintCanvasBrush();
+	ParupaintCanvasBrush(ParupaintBrush * brush);
 
 	void Paint(QPainter *);
-
-	void SetPosition(QPointF);
-	void SetWidth(float);
-	void SetPressure(float);
-	void SetColor(QColor);
-
-	QPointF GetPosition() const;
-	float GetWidth() const;
-	float GetPressure() const;
-	QColor GetColor() const;
-
-	ParupaintBrush * GetBrush() const;
+	virtual void SetPosition(QPointF);
 
 	private:
 	QRectF boundingRect() const;

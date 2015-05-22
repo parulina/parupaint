@@ -27,13 +27,14 @@ class ParupaintPanvas {
 	public:
 	ParupaintPanvas();
 	ParupaintPanvas(QSize dim, _lint l = 1, _fint f = 1);
+	ParupaintPanvas(int, int, _lint l = 1, _fint f = 1);
 
 	void New(QSize dim, _lint l = 1, _fint f = 1);
 	void Resize(QSize dim);
 	void Clear();
 
 	void SetLayers(_lint l, _lint = 1);
-	void AddLayers(_lint l, _lint = 1);
+	void AddLayers(_lint l, _lint = 1, _fint = 1);
 	void RemoveLayers(_lint l, _lint = 1);
 	ParupaintLayer * GetLayer(_lint l);
 	
