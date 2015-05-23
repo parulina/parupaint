@@ -4,6 +4,13 @@
 #include "parupaintPanvas.h"
 #include <QString>
 
+enum PanvasReaderResult{
+	PANVAS_READER_RESULT_OK,
+	PANVAS_READER_RESULT_NOTFOUND,
+	PANVAS_READER_RESULT_OPENERROR,
+	PANVAS_READER_RESULT_ERROR
+};
+
 class ParupaintPanvasReader
 {
 	private:
@@ -13,8 +20,9 @@ class ParupaintPanvasReader
 
 	void SetPanvas(ParupaintPanvas * );
 
-	bool LoadOra(const QString filename);
-	bool LoadParupaintArchive(const QString filename);
+	PanvasReaderResult Load(const QString directory, QString filename);
+	PanvasReaderResult LoadOra(const QString filename);
+	PanvasReaderResult LoadParupaintArchive(const QString filename);
 
 };
 

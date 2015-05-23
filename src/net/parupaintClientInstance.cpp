@@ -32,7 +32,7 @@ void ParupaintClientInstance::Message(QString id, const QByteArray bytes)
 
 	if(id == "connect"){
 
-		this->send("join", "{}");
+		this->send("join");
 
 	} else if(id == "join"){
 
@@ -175,14 +175,14 @@ void ParupaintClientInstance::Message(QString id, const QByteArray bytes)
 
 void ParupaintClientInstance::ReloadImage()
 {
-	this->send("img");
+	this->ParupaintClient::send("img");
 }
 void ParupaintClientInstance::SendLayerFrame(ParupaintBrush * brush)
 {
 	QJsonObject obj;
 	obj["l"] = brush->GetLayer();
 	obj["f"] = brush->GetFrame();
-	this->send("lf", QJsonDocument(obj).toJson(QJsonDocument::Compact));
+	this->send("lf", obj);
 
 }
 
@@ -194,8 +194,25 @@ void ParupaintClientInstance::SendBrushUpdate(ParupaintBrush * brush)
 	obj["s"] = brush->GetWidth() * brush->GetPressure();
 	obj["c"] = brush->GetColorString();
 	obj["d"] = brush->IsDrawing();
-	this->send("draw", QJsonDocument(obj).toJson(QJsonDocument::Compact));
+	this->send("draw", obj);
 }
 
 
+void ParupaintClientInstance::LoadCanvas(const QString filename)
+{
+	QJsonObject obj;
+	obj["filename"] = filename;
+	this->send("load", obj);
+}
+void ParupaintClientInstance::SaveCanvas(const QString filename)
+{
+	QJsonObject obj;
+	obj["filename"] = filename;
+	this->send("save", obj);
+}
 
+
+void ParupaintClientInstance::send(const QString id, const QJsonObject & obj)
+{
+	this->ParupaintClient::send(id, QJsonDocument(obj).toJson(QJsonDocument::Compact));
+}

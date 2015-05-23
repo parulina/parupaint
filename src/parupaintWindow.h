@@ -39,8 +39,11 @@ Q_OBJECT
 	QKeySequence CanvasKeyPreviousLayer;
 	QKeySequence CanvasKeyNextFrame;
 	QKeySequence CanvasKeyPreviousFrame;
-	QKeySequence CanvasKeyReload;
 
+	QKeySequence CanvasKeyReload;
+	QKeySequence CanvasKeyQuicksave;
+	QKeySequence CanvasKeyOpen;
+	QKeySequence CanvasKeySaveProject;
 
 	QKeySequence BrushKeyUndo;
 	QKeySequence BrushKeyRedo;

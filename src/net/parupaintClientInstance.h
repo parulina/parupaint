@@ -18,7 +18,10 @@ class ParupaintClientInstance : public ParupaintClient
 
 	public:
 	ParupaintClientInstance(ParupaintCanvasPool*,QUrl, QObject * = nullptr);
+	virtual void send(const QString , const QJsonObject & = QJsonObject());
 	void ReloadImage();
+	void SaveCanvas(const QString);
+	void LoadCanvas(const QString);
 	void SendLayerFrame(ParupaintBrush * brush);
 	void SendBrushUpdate(ParupaintBrush * brush);
 

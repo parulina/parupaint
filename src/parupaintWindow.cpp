@@ -40,7 +40,9 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	CanvasKeySquash(Qt::Key_Space),
 	CanvasKeyNextLayer(Qt::Key_D), CanvasKeyPreviousLayer(Qt::Key_S),
 	CanvasKeyNextFrame(Qt::Key_F), CanvasKeyPreviousFrame(Qt::Key_A),
-	CanvasKeyReload(Qt::Key_R + Qt::SHIFT),
+	// network keys
+	CanvasKeyReload(Qt::Key_R + Qt::SHIFT), CanvasKeyQuicksave(Qt::Key_K + Qt::ALT),
+	CanvasKeyOpen(Qt::Key_O + Qt::ALT), CanvasKeySaveProject(Qt::Key_L + Qt::ALT),
 	// brush keys
 	BrushKeyUndo(Qt::Key_Z), BrushKeyRedo(Qt::SHIFT + Qt::Key_Z),
 	BrushKeySwitchBrush(Qt::Key_E),
@@ -107,8 +109,15 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	connect(UndoKey, &QShortcut::activated, this, &ParupaintWindow::BrushKey);
 	connect(RedoKey, &QShortcut::activated, this, &ParupaintWindow::BrushKey);
 
+	// Network keys
 	QShortcut * ReloadKey = new QShortcut(CanvasKeyReload, this);
 	connect(ReloadKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
+	QShortcut * QuicksaveKey = new QShortcut(CanvasKeyQuicksave, this);
+	connect(QuicksaveKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
+	QShortcut * OpenKey = new QShortcut(CanvasKeyOpen, this);
+	connect(OpenKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
+	QShortcut * SaveProjectKey = new QShortcut(CanvasKeySaveProject, this);
+	connect(SaveProjectKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
 
 
 	UpdateTitle();
@@ -221,8 +230,16 @@ void ParupaintWindow::NetworkKey()
 	QKeySequence seq = shortcut->key();
 
 	if(seq == CanvasKeyReload){
-		qDebug() << "Reloading image.";
 		client->ReloadImage();
+
+	} else if(seq == CanvasKeyQuicksave){
+		client->SaveCanvas("test.png");
+	
+	} else if(seq == CanvasKeySaveProject) {
+		client->LoadCanvas("animushin.tar.gz");
+
+	} else if(seq == CanvasKeyOpen) {
+
 	}
 }
 

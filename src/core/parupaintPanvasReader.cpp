@@ -3,6 +3,8 @@
 #include <QByteArray>
 #include <QFile>
 #include <QRegExp>
+#include <QDir>
+#include <QFileInfo>
 
 
 #include "parupaintPanvasReader.h"
@@ -24,23 +26,48 @@ void ParupaintPanvasReader::SetPanvas(ParupaintPanvas * p)
 }
 
 
-bool ParupaintPanvasReader::LoadOra(const QString filename)
+PanvasReaderResult ParupaintPanvasReader::Load(const QString directory, const QString filename)
 {
-	if(!panvas) return false;
+	if(!panvas) return PANVAS_READER_RESULT_ERROR;
+	QDir dir(directory);
+	if(!dir.exists()) return PANVAS_READER_RESULT_NOTFOUND;
+
+	QFileInfo file(dir, filename);
+	if(!file.exists()) return PANVAS_READER_RESULT_NOTFOUND; 
+
+	// prevent going up
+	if(file.absoluteFilePath().indexOf(directory) == -1) return PANVAS_READER_RESULT_NOTFOUND;
 
 
-	return true;
+	auto path = file.filePath();
+	auto suffix = file.completeSuffix();
+	if(suffix == "ora"){
+		return this->LoadOra(path);
+	} else if(suffix == "tar.gz"){
+		return this->LoadParupaintArchive(path);
+	}
+
+	return PANVAS_READER_RESULT_NOTFOUND;
+
+}
+
+PanvasReaderResult ParupaintPanvasReader::LoadOra(const QString filename)
+{
+	if(!panvas) return PANVAS_READER_RESULT_ERROR;
+
+
+	return PANVAS_READER_RESULT_OK;
 }
 
 
-bool ParupaintPanvasReader::LoadParupaintArchive(const QString filename)
+PanvasReaderResult ParupaintPanvasReader::LoadParupaintArchive(const QString filename)
 {
-	if(!panvas) return false;
+	if(!panvas) return PANVAS_READER_RESULT_ERROR;
 	
 
 	KTar tar(filename);
 	if(!tar.open(QIODevice::ReadOnly)) {
-		return false;
+		return PANVAS_READER_RESULT_OPENERROR;
 	}
 
 	struct frameLoad {
@@ -98,7 +125,7 @@ bool ParupaintPanvasReader::LoadParupaintArchive(const QString filename)
 		}
 	}
 	if(!width || !height) {
-		return false;
+		return PANVAS_READER_RESULT_ERROR;
 	}
 
 	QMap<_lint, QList<frameLoad>> real_frames;
@@ -131,7 +158,7 @@ bool ParupaintPanvasReader::LoadParupaintArchive(const QString filename)
 	}
 
 
-	return true;
+	return PANVAS_READER_RESULT_OK;
 
 }
 

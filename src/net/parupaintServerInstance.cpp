@@ -2,10 +2,12 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QSettings>
 
 #include "parupaintConnection.h"
 #include "parupaintServerInstance.h"
 #include "../core/parupaintPanvasReader.h"
+#include "../core/parupaintPanvasWriter.h"
 #include "../core/parupaintPanvas.h"
 #include "../core/parupaintLayer.h"
 #include "../core/parupaintFrame.h"
@@ -204,7 +206,33 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, QString id, const
 					c->send("img", QJsonDocument(obj).toJson(QJsonDocument::Compact));
 				}
 			}
+		} else if(id == "save") {
+			QSettings cfg;
+			auto name = obj["filename"].toString();
+			auto load_dir = cfg.value("canvas/directory").toString();
 
+			if(!name.isEmpty()){
+				ParupaintPanvasWriter writer(canvas);
+				// Loader handles name verification
+				auto ret = writer.Save(load_dir, name);
+				if(ret == PANVAS_WRITER_RESULT_OK){
+				}
+				
+			}
+		} else if(id == "load") {
+			QSettings cfg;
+			auto name = obj["filename"].toString();
+			auto load_dir = cfg.value("canvas/directory").toString();
+
+			if(!name.isEmpty()){
+				ParupaintPanvasReader reader(canvas);
+				// Loader handles name verification
+				auto ret = reader.Load(load_dir, name);
+				if(ret == PANVAS_READER_RESULT_OK){
+					this->Broadcast("canvas", MarshalCanvas());
+				}
+				
+			}
 		} else {
 			qDebug() << id << obj;
 		}
@@ -213,6 +241,10 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, QString id, const
 }
 
 
+void ParupaintServerInstance::Broadcast(QString id, QString ba, ParupaintConnection * c)
+{
+	return this->Broadcast(id, ba.toUtf8(), c);
+}
 void ParupaintServerInstance::Broadcast(QString id, const QByteArray ba, ParupaintConnection * c)
 {
 	foreach(auto i, brushes.keys()){
