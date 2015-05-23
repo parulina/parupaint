@@ -65,6 +65,7 @@ void ParupaintCanvasPool::OnCanvasResize(QSize old_size, QSize new_size)
 		i->SetRegionLimit(bounds);
 	}
 
+	emit UpdateCanvas();
 	emit UpdateView();
 }
 

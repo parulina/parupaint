@@ -42,7 +42,10 @@ Q_OBJECT
 	void OnCanvasResize(QSize old_size, QSize new_size);
 
 signals:
+	// Refresh the view.
 	void UpdateView();
+	// Canvas update (l/f..)
+	void UpdateCanvas();
 
 private slots:
 	void CurrentChange(int, int);

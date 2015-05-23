@@ -100,7 +100,6 @@ void ParupaintClientInstance::Message(QString id, const QByteArray bytes)
 
 			brush->SetPosition(QPointF(x, y));
 			brush->SetDrawing(drawing);
-
 			pool->UpdateView();
 		}
 	} else if (id == "canvas") {

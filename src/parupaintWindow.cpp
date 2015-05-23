@@ -71,7 +71,9 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	picker =  new ParupaintColorPicker(this);
 	infobar = new ParupaintInfoBar(this);
 	
-	connect(pool, SIGNAL(UpdateView()), this, SLOT(ViewUpdate()));
+	// when canvas is updated, frames/layers are added - do a view update that updates the flayer panel
+	connect(pool, &ParupaintCanvasPool::UpdateCanvas, this, &ParupaintWindow::ViewUpdate);
+
 	connect(pool->GetCanvas(), SIGNAL(CurrentSignal(int, int)), this, SLOT(ChangedFrame(int, int)));
 	connect(flayer->GetList(), SIGNAL(clickFrame(int, int)), this, SLOT(SelectFrame(int, int)));
 
@@ -164,7 +166,6 @@ void ParupaintWindow::ViewUpdate()
 {
 	auto brush = glass.GetCurrentBrush();
 	flayer->UpdateFromCanvas(pool->GetCanvas());
-	flayer->SetMarkedLayerFrame(brush->GetLayer(), brush->GetFrame());
 }
 
 void ParupaintWindow::ChangedFrame(int l, int f)
@@ -172,7 +173,6 @@ void ParupaintWindow::ChangedFrame(int l, int f)
 	auto brush = glass.GetCurrentBrush();
 	brush->SetLayer(l);
 	brush->SetFrame(f);
-	pool->UpdateView();
 	flayer->SetMarkedLayerFrame(l, f);
 }
 
@@ -259,10 +259,12 @@ void ParupaintWindow::CanvasChangeKey()
 	} else if(seq == CanvasKeyPreviousLayer){
 		ll--;
 	}
+	// Do a local check for boundaries
+	pool->GetCanvas()->AddLayerFrame(ll, ff);
 
 	auto brush = glass.GetCurrentBrush();
-	brush->SetLayer(brush->GetLayer() + ll);
-	brush->SetFrame(brush->GetFrame() + ff);
+	brush->SetLayer(pool->GetCanvas()->GetCurrentLayer());
+	brush->SetFrame(pool->GetCanvas()->GetCurrentFrame());
 	client->SendLayerFrame(brush);
 
 }
