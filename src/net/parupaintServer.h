@@ -30,7 +30,7 @@ Q_OBJECT
 	~ParupaintServer();
 
 	signals:
-	void onMessage(ParupaintConnection*, QString, const QByteArray);
+	void onMessage(ParupaintConnection*, QString, const QByteArray = "");
 };
 
 

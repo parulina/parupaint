@@ -9,7 +9,7 @@
 ParupaintServer::ParupaintServer(quint16 port, QObject * parent) : QObject(parent)
 {
 	server = new QWebSocketServer("Parupaint server", QWebSocketServer::NonSecureMode, this);
-	if(server->listen(QHostAddress::Any, port)) {
+	if(server->listen(QHostAddress::AnyIPv4, port)) {
 		connect(server, &QWebSocketServer::newConnection, this, &ParupaintServer::onConnection);
 		connect(server, &QWebSocketServer::closed, this, &ParupaintServer::onDisconnection);
 	}
@@ -62,6 +62,7 @@ void ParupaintServer::onDisconnection()
 {
 	QWebSocket *socket = dynamic_cast<QWebSocket *>(sender());
 	if(socket) {
+		emit onMessage(GetConnection(socket), "disconnect");
 		connections.removeOne(GetConnection(socket));
 		socket->deleteLater();
 	}

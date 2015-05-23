@@ -40,7 +40,6 @@ void ParupaintClientInstance::Message(QString id, const QByteArray bytes)
 		auto c = object["id"].toInt();
 		auto d = object["disconnect"].toBool();
 		auto n = object["name"].toString();
-		qDebug() << n << "joined" << c;
 
 		if(!d) {
 			auto idd = (c < 0) ? -c : c;
@@ -49,6 +48,12 @@ void ParupaintClientInstance::Message(QString id, const QByteArray bytes)
 
 
 			if(c > 0) pool->AddCursor(n, brushes[c]);
+		} else {
+			if(brushes.find(c) != brushes.end()){
+				pool->RemoveCursor(brushes[c]);
+				delete brushes[c];
+				brushes.remove(c);
+			}
 		}
 
 	} else if(id == "lf") {

@@ -72,9 +72,19 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, QString id, const
 
 	if(c) {
 		if(id == "connect"){
+		
+		} else if(id == "disconnect") {
+			if(c && c->id){
+				delete brushes[c];
+				brushes.remove(c);
+				// remove the brush
+				QJsonObject obj2;
+				obj2["disconnect"] = true;
+				obj2["id"] = c->id;
+				this->Broadcast("peer", QJsonDocument(obj2).toJson(QJsonDocument::Compact));
+			}
 
-		}
-		else if(id == "join"){
+		} else if(id == "join"){
 			c->id = (connectid++);
 
 			auto name = obj["name"].toString();
@@ -88,14 +98,14 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, QString id, const
 			foreach(auto c2, brushes.keys()){
 				auto * them = brushes.value(c2);
 
-				QJsonObject obj;
-				obj["disconnect"] = false;
+				QJsonObject obj2;
+				obj2["disconnect"] = false;
 				
 				// send me to others
-				obj["name"] = brushes[c]->GetName();
-				obj["id"] = c->id;
-				if(c2 == c) obj["id"] = -(c->id);
-				c2->send("peer", QJsonDocument(obj).toJson(QJsonDocument::Compact));
+				obj2["name"] = brushes[c]->GetName();
+				obj2["id"] = c->id;
+				if(c2 == c) obj2["id"] = -(c->id);
+				c2->send("peer", QJsonDocument(obj2).toJson(QJsonDocument::Compact));
 
 				if(c2 == c) continue;
 

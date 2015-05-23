@@ -61,7 +61,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	pool = new ParupaintCanvasPool(view);
 	view->SetCanvas(pool);
 
-	client = new ParupaintClientInstance(pool, QUrl("ws://sqnya.se:1108"), this);
+	client = new ParupaintClientInstance(pool, QUrl("ws://localhost:1108"), this);
 
 
 	chat =	  new ParupaintChat(this);
