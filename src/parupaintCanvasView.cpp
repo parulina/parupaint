@@ -202,8 +202,7 @@ bool ParupaintCanvasView::OnKeyDown(QKeyEvent * event)
 	if(CurrentBrush == nullptr) return true;
 
 	if(event->key() == Qt::Key_Space){
-		if((event->modifiers() & Qt::ControlModifier) &&
-			(event->modifiers() & Qt::ShiftModifier) &&
+		if((event->modifiers() & Qt::ShiftModifier) &&
 			CanvasState != CANVAS_STATUS_BRUSH_ZOOMING){
 			
 			CanvasState = CANVAS_STATUS_BRUSH_ZOOMING;
@@ -228,7 +227,17 @@ bool ParupaintCanvasView::OnKeyDown(QKeyEvent * event)
 bool ParupaintCanvasView::OnKeyUp(QKeyEvent * event)
 {
 	if(CurrentBrush == nullptr) return true;
-
+	
+	if(event->key() == Qt::Key_Control) {
+		if(CanvasState == CANVAS_STATUS_ZOOMING){
+			CanvasState = CANVAS_STATUS_MOVING;
+		}
+	}
+	if(event->key() == Qt::Key_Shift) {
+		if(CanvasState == CANVAS_STATUS_BRUSH_ZOOMING){
+			CanvasState = CANVAS_STATUS_MOVING;
+		}
+	}
 	if(event->key() == Qt::Key_Space && 
 		(CanvasState != CANVAS_STATUS_IDLE)){
 		CanvasState = CANVAS_STATUS_IDLE;
