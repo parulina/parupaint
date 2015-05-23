@@ -266,6 +266,7 @@ void ParupaintWindow::BrushKey()
 
 		glass.ToggleBrush(0, 1);
 		auto brush2 = glass.GetCurrentBrush();
+		brush2->SetDrawing(brush->IsDrawing());
 
 		view->SetCurrentBrush(brush2);
 		brush2->SetPosition(brush->GetPosition());
