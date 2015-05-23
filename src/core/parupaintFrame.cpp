@@ -55,7 +55,7 @@ void ParupaintFrame::DrawStep(float x, float y, float x2, float y2, QPen & pen)
 void ParupaintFrame::DrawStep(float x, float y, float x2, float y2, float width, QColor color)
 {
 	QPen pen(color);
-	pen.setWidthF(width);
+	pen.setWidthF(width < 1 ? 1 : width);
 	pen.setCapStyle(Qt::RoundCap);
 	this->DrawStep(x, y, x2, y2, pen);
 }
