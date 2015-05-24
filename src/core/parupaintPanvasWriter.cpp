@@ -31,7 +31,7 @@ PanvasWriterResult ParupaintPanvasWriter::Save(const QString directory, const QS
 
 	QFileInfo file(dir, filename);
 	auto path = file.filePath();
-	auto suffix = file.completeSuffix();
+	auto suffix = file.suffix();
 	if(suffix == "png"){
 		return this->ExportPng(path);
 

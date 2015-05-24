@@ -233,7 +233,7 @@ void ParupaintWindow::NetworkKey()
 		client->ReloadImage();
 
 	} else if(seq == CanvasKeyQuicksave){
-		client->SaveCanvas("test.png");
+		client->SaveCanvas(".png");
 	
 	} else if(seq == CanvasKeySaveProject) {
 		client->LoadCanvas("animushin.tar.gz");

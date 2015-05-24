@@ -1,4 +1,5 @@
 
+#include <QDateTime>
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
@@ -209,6 +210,12 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 			QSettings cfg;
 			auto name = obj["filename"].toString();
 			auto load_dir = cfg.value("canvas/directory").toString();
+
+			if(name.section(".", 0, 0).isEmpty()){
+				// just put it as today's date then.
+				QDateTime time = QDateTime::currentDateTime();
+				name = "drawing_at_"+ time.toString("yyyy-MM-dd_HH.mm") + name;
+			}
 
 			if(!name.isEmpty()){
 				ParupaintPanvasWriter writer(canvas);
