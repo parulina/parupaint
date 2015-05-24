@@ -26,7 +26,7 @@ class ParupaintClientInstance : public ParupaintClient
 	void SendBrushUpdate(ParupaintBrush * brush);
 
 	private slots:
-	void Message(QString, const QByteArray);
+	void Message(const QString, const QByteArray);
 };
 
 #endif

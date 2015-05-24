@@ -67,10 +67,9 @@ int ParupaintServerInstance::GetNumConnections()
 	return brushes.size();
 }
 
-void ParupaintServerInstance::Message(ParupaintConnection * c, QString id, const QByteArray bytes)
+void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id, const QByteArray bytes)
 {
-	auto document = QJsonDocument::fromJson(bytes);
-	QJsonObject obj = document.object();
+	QJsonObject obj = QJsonDocument::fromJson(bytes).object();
 
 	if(c) {
 		if(id == "connect"){

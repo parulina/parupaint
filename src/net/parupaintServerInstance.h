@@ -26,7 +26,7 @@ class ParupaintServerInstance : public ParupaintServer
 	int GetNumConnections();
 
 	private slots:
-	void Message(ParupaintConnection *, QString, const QByteArray);
+	void Message(ParupaintConnection *, const QString, const QByteArray);
 };
 
 #endif

@@ -42,14 +42,12 @@ void ParupaintServer::onError(QAbstractSocket::SocketError error)
 void ParupaintServer::textReceived(QString text)
 {
 	QWebSocket * socket = qobject_cast<QWebSocket *>(sender());
-	QString id = text.split(" ")[0];
-	const QByteArray json = text.split(" ")[1].toUtf8();
 
-
-	if(!id.isEmpty()) {
-		emit onMessage(GetConnection(socket), id, json);
-	}
+	if(text.isEmpty()) return;
+	const auto list = text.split(" ");
+	emit onMessage(GetConnection(socket), list[0], list[1].toUtf8());
 }
+
 ParupaintConnection * ParupaintServer::GetConnection(QWebSocket* s)
 {
 	for(auto i = connections.begin(); i != connections.end(); ++i){

@@ -24,11 +24,9 @@ ParupaintClientInstance::ParupaintClientInstance(ParupaintCanvasPool * p, QObjec
 	connect(this, &ParupaintClient::onMessage, this, &ParupaintClientInstance::Message);
 }
 
-void ParupaintClientInstance::Message(QString id, const QByteArray bytes)
+void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 {
-	QJsonDocument doc = QJsonDocument::fromJson(bytes);
-	QJsonObject object = doc.object();
-	QJsonArray array = doc.array();
+	QJsonObject object = QJsonDocument::fromJson(bytes).object();
 
 	if(id == "connect"){
 

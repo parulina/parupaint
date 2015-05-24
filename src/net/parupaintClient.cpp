@@ -47,10 +47,7 @@ void ParupaintClient::onDisconnect()
 }
 void ParupaintClient::textReceived(QString text)
 {
-	QString id = text.split(" ")[0];
-	const QByteArray json = text.split(" ")[1].toUtf8();
-
-	if(!id.isEmpty()) {
-		emit onMessage(id, json);
-	}
+	if(text.isEmpty()) return;
+	const auto list = text.split(" ");
+	emit onMessage(list[0], list[1].toUtf8());
 }
