@@ -44,6 +44,7 @@ Q_OBJECT
 	QKeySequence CanvasKeyQuicksave;
 	QKeySequence CanvasKeyOpen;
 	QKeySequence CanvasKeySaveProject;
+	QKeySequence CanvasKeyPreview;
 
 	QKeySequence BrushKeyUndo;
 	QKeySequence BrushKeyRedo;
@@ -87,6 +88,7 @@ Q_OBJECT
 	void BrushKey();
 	void OverlayKey();
 	void CanvasChangeKey();
+	void CanvasKey();
 	void NetworkKey();
 
 	void ViewUpdate();

@@ -12,11 +12,19 @@ Q_OBJECT
 	private:
 	_lint CurrentLayer;
 	_lint CurrentFrame;
+	bool Preview;
+
+	QPixmap checker;
 
 	public:
 	ParupaintCanvasObject();
 	virtual void New(QSize s, _lint l, _fint f);
 	virtual void Resize(QSize);
+	
+	bool IsPreview() const;
+	void SetPreview(bool);
+	void TogglePreview();
+
 	void SetLayerFrame(_lint, _fint =0);
 	void AddLayerFrame(int, int);
 	_lint GetCurrentLayer();

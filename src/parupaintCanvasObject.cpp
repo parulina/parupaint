@@ -8,9 +8,10 @@
 
 
 ParupaintCanvasObject::ParupaintCanvasObject() :
-	CurrentLayer(0), CurrentFrame(0)
+	CurrentLayer(0), CurrentFrame(0), Preview(false),
+	checker(":/resources/checker.png")
 {
-	
+
 }
 
 void ParupaintCanvasObject::New(QSize s, _lint l, _fint f)
@@ -38,9 +39,14 @@ void ParupaintCanvasObject::paint(QPainter *painter, const QStyleOptionGraphicsI
 
 	auto layer = GetLayer(CurrentLayer);
 
+	painter->save();
+	painter->drawTiledPixmap(exposed, checker);
 
-
-	for(auto i = 0; i < CurrentLayer; i++){
+	if(!IsPreview()){
+		// "draw debug mode"
+		painter->setOpacity(0.6);
+	}
+	for(auto i = 0; i < GetNumLayers(); i++){
 		// draw previous frames
 		auto layer2 = GetLayer(i);
 		if(layer2 && CurrentFrame < layer2->GetNumFrames()){
@@ -50,12 +56,30 @@ void ParupaintCanvasObject::paint(QPainter *painter, const QStyleOptionGraphicsI
 			}
 		}
 	}
+
+	painter->setOpacity(1.0);
 	if(layer != nullptr){
 		auto frame = layer->GetFrame(CurrentFrame);
 		if(frame != nullptr) {
 			painter->drawImage(exposed, frame->GetImage());
 		}
 	}
+	painter->restore();
+}
+
+
+bool ParupaintCanvasObject::IsPreview() const
+{
+	return Preview;
+}
+
+void ParupaintCanvasObject::SetPreview(bool b)
+{
+	Preview = b;
+}
+void ParupaintCanvasObject::TogglePreview()
+{
+	SetPreview(!IsPreview());
 }
 
 void ParupaintCanvasObject::SetLayerFrame(_lint layer, _fint frame)

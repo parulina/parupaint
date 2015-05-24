@@ -40,6 +40,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	CanvasKeySquash(Qt::Key_Space),
 	CanvasKeyNextLayer(Qt::Key_D), CanvasKeyPreviousLayer(Qt::Key_S),
 	CanvasKeyNextFrame(Qt::Key_F), CanvasKeyPreviousFrame(Qt::Key_A),
+	CanvasKeyPreview(Qt::Key_Q),
 	// network keys
 	CanvasKeyReload(Qt::Key_R + Qt::SHIFT), CanvasKeyQuicksave(Qt::Key_K + Qt::ALT),
 	CanvasKeyOpen(Qt::Key_O + Qt::ALT), CanvasKeySaveProject(Qt::Key_L + Qt::ALT),
@@ -92,16 +93,18 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	connect(TabKey, SIGNAL(activated()), this, SLOT(OverlayKey()));
 	connect(TabKeyShift, SIGNAL(activated()), this, SLOT(OverlayKey()));
 
+	QShortcut * PreviewKey =	new QShortcut(CanvasKeyPreview, this);
+	connect(PreviewKey, 		&QShortcut::activated, this, &ParupaintWindow::CanvasKey);
 
 	QShortcut * NextFrameKey = 	new QShortcut(CanvasKeyNextFrame, this);
 	QShortcut * PreviousFrameKey = 	new QShortcut(CanvasKeyPreviousFrame, this);
 	QShortcut * NextLayerKey = 	new QShortcut(CanvasKeyNextLayer, this);
 	QShortcut * PreviousLayerKey =	new QShortcut(CanvasKeyPreviousLayer, this);
 
-	connect(NextLayerKey, SIGNAL(activated()), this, SLOT(CanvasChangeKey()));
-	connect(PreviousLayerKey, SIGNAL(activated()), this, SLOT(CanvasChangeKey()));
-	connect(NextFrameKey, SIGNAL(activated()), this, SLOT(CanvasChangeKey()));
-	connect(PreviousFrameKey, SIGNAL(activated()), this, SLOT(CanvasChangeKey()));
+	connect(NextLayerKey, 		&QShortcut::activated, this, &ParupaintWindow::CanvasChangeKey);
+	connect(PreviousLayerKey,	&QShortcut::activated, this, &ParupaintWindow::CanvasChangeKey);
+	connect(NextFrameKey, 		&QShortcut::activated, this, &ParupaintWindow::CanvasChangeKey);
+	connect(PreviousFrameKey, 	&QShortcut::activated, this, &ParupaintWindow::CanvasChangeKey);
 
 	QShortcut * SwitchKey = new QShortcut(BrushKeySwitchBrush, this);
 	QShortcut * UndoKey = 	new QShortcut(BrushKeyUndo, this);
@@ -240,6 +243,16 @@ void ParupaintWindow::NetworkKey()
 
 	} else if(seq == CanvasKeyOpen) {
 
+	}
+}
+
+void ParupaintWindow::CanvasKey()
+{
+	QShortcut* shortcut = qobject_cast<QShortcut*>(sender());
+	QKeySequence seq = shortcut->key();
+
+	if(seq == CanvasKeyPreview){
+		pool->GetCanvas()->TogglePreview();
 	}
 }
 
