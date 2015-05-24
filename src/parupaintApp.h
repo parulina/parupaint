@@ -3,8 +3,13 @@
 
 #include <QApplication>
 
+class ParupaintServerInstance;
+
 class ParupaintApp : public QApplication {
 Q_OBJECT // for gui stuff
+	private:
+	ParupaintServerInstance * server;
+
 	public:
 	ParupaintApp(int &argc, char **argv);
 

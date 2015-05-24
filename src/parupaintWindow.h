@@ -78,6 +78,8 @@ Q_OBJECT
 
 	void UpdateTitle();
 
+	void Connect(QUrl);
+
 	private slots:
 	void TabTimeout();
 	void OverlayTimeout();

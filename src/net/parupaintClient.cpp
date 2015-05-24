@@ -5,7 +5,7 @@
 
 #include <QDebug>
 
-ParupaintClient::ParupaintClient(const QUrl u, QObject * parent) : QObject(parent), url(u)
+ParupaintClient::ParupaintClient(const QUrl u, QObject * parent) : QObject(parent), url(u), Connected(false)
 {
 	connect(&socket, &QWebSocket::connected, this, &ParupaintClient::onConnect);
 	connect(&socket, &QWebSocket::disconnected, this, &ParupaintClient::onDisconnect);
@@ -13,6 +13,20 @@ ParupaintClient::ParupaintClient(const QUrl u, QObject * parent) : QObject(paren
 	socket.open(url);
 
 }
+void ParupaintClient::Connect(QUrl u)
+{
+	if(!u.isEmpty()) url = u;
+	if(Connected) this->Disconnect();
+	socket.open(url);
+}
+
+void ParupaintClient::Disconnect()
+{
+	if(!Connected) return;
+	socket.close();
+}
+
+
 void ParupaintClient::onError(QAbstractSocket::SocketError )
 {
 }
@@ -23,12 +37,13 @@ void ParupaintClient::send(QString id, QString data)
 
 void ParupaintClient::onConnect()
 {
+	Connected = true;
 	connect(&socket, &QWebSocket::textMessageReceived, this, &ParupaintClient::textReceived);
 	emit onMessage("connect", "");
 }
 void ParupaintClient::onDisconnect()
 {
-
+	Connected = false;
 }
 void ParupaintClient::textReceived(QString text)
 {

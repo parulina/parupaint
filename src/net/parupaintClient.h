@@ -13,8 +13,13 @@ Q_OBJECT
 	private:
 	QWebSocket socket;
 	QUrl url;
+	bool Connected;
+
 	public:
 	ParupaintClient(QUrl, QObject * = nullptr);
+	void Connect(QUrl = QUrl());
+	void Disconnect();
+
 	void send(QString id, QString data = "");
 
 	private slots:

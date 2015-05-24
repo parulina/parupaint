@@ -1,14 +1,21 @@
 // (c) paru 2015
 //
 
+#include <QCommandLineParser>
+#include <QCommandLineOption>
 #include <QSettings>
 #include <QFile>
+#include <QUrl>
+
+#include "src/net/parupaintServerInstance.h"
 
 #include "parupaintWindow.h"
 #include "parupaintApp.h"
 
 // have a signal that updates the title?
 // have window in this file?
+
+#include <QDebug>
 
 ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 {
@@ -37,8 +44,34 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 	cfg.endGroup();
 
 	
+	QCommandLineParser parser;
+	parser.setApplicationDescription("Draw with other people and stuff");
+	parser.addHelpOption();
+	parser.addOption(QCommandLineOption({"c","connect"}, "Connect to a server", "address"));
+	parser.addOption(QCommandLineOption({"p","port"}, "Specify port to run the server", "port"));
+	parser.process(*this);
+
+	QString prefix = "ws://";
+	QString server_str = parser.value("connect");
+	int port_num = parser.value("port").toInt();
+	if(port_num <= 0){
+		port_num = 1108;
+	}
+
 
 	auto * win = new ParupaintWindow;
+	if(server_str.isEmpty()){
+		server = new ParupaintServerInstance(port_num);
+		win->Connect(QUrl(QString("ws://localhost:%1").arg(port_num)));
+	} else {
+
+		if(server_str.indexOf(prefix) != 0){
+			server_str = prefix + server_str.section("/", -1);
+		}
+		qDebug() << "Connecting to" << server_str;
+		win->Connect(QUrl(server_str));
+	}
+
 	QFile file(":resources/stylesheet.qss");
 	if(file.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
