@@ -31,6 +31,10 @@ ParupaintCanvasPool::ParupaintCanvasPool(QObject * parent) : QGraphicsScene(pare
 	setBackgroundBrush(QColor(255, 0, 0));
 	ClearCursors();
 }
+void ParupaintCanvasPool::TriggerViewUpdate()
+{
+	emit UpdateView();
+}
 
 ParupaintCanvasObject * ParupaintCanvasPool::GetCanvas()
 {
@@ -233,4 +237,5 @@ void ParupaintCanvasPool::CurrentChange(int l, int f)
 			i->show();
 		}
 	}
+	this->TriggerViewUpdate();
 }

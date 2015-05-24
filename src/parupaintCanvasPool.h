@@ -38,6 +38,9 @@ Q_OBJECT
 	int GetTotalStrokes();
 	void ClearStrokes();
 
+	void TriggerViewUpdate();
+
+
 	private slots:
 	void OnCanvasResize(QSize old_size, QSize new_size);
 

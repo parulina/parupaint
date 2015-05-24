@@ -64,6 +64,7 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 			brush->SetFrame(f);
 			if(c == me){
 				pool->GetCanvas()->SetLayerFrame(l, f);
+				pool->TriggerViewUpdate();
 			}
 		}
 
@@ -98,7 +99,7 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 
 			brush->SetPosition(QPointF(x, y));
 			brush->SetDrawing(drawing);
-			pool->UpdateView();
+			pool->TriggerViewUpdate();
 		}
 	} else if (id == "canvas") {
 		auto w = object["width"].toInt();
