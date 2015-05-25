@@ -8,6 +8,11 @@ PanvasProjectInformation::PanvasProjectInformation()
 	Name = "Untitled";
 }
 
+ParupaintPanvas::~ParupaintPanvas()
+{
+	this->Clear();
+}
+
 ParupaintPanvas::ParupaintPanvas() : Info()
 {
 

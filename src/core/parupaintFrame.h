@@ -13,6 +13,7 @@ class ParupaintFrame {
 	float	Opacity;
 
 	public:
+	~ParupaintFrame();
 	ParupaintFrame();
 	ParupaintFrame(QSize rect, float opacity=0);
 

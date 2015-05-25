@@ -4,9 +4,14 @@
 #include "parupaintLayer.h"
 #include "parupaintFrame.h"
 
+ParupaintLayer::~ParupaintLayer()
+{
+	Clear();
+}
+
 ParupaintLayer::ParupaintLayer()
 {
-	Clear();	
+	Clear();
 }
 ParupaintLayer::ParupaintLayer(QSize s, _fint n) : ParupaintLayer()
 {
@@ -27,6 +32,12 @@ void ParupaintLayer::Resize(QSize s)
 
 void ParupaintLayer::Clear()
 {
+	// Clear out extended frames first
+	for(auto i = GetNumFrames()-1; i > 0; i--){
+		if(!this->IsFrameReal(i)){
+			Frames.removeAt(i);
+		}
+	}
 	foreach(auto i, Frames){
 		delete i;
 	}

@@ -6,6 +6,11 @@
 #include "parupaintStrokeStep.h"
 #include "parupaintStroke.h"
 
+ParupaintFrame::~ParupaintFrame()
+{
+
+}
+
 ParupaintFrame::ParupaintFrame() : Extended(false), Opacity(1.0)
 {
 }

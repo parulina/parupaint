@@ -25,6 +25,7 @@ class ParupaintPanvas {
 	PanvasProjectInformation 	Info;
 
 	public:
+	~ParupaintPanvas();
 	ParupaintPanvas();
 	ParupaintPanvas(QSize dim, _lint l = 1, _fint f = 1);
 	ParupaintPanvas(int, int, _lint l = 1, _fint f = 1);

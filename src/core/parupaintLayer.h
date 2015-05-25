@@ -22,6 +22,7 @@ class ParupaintLayer {
 
 	public:
 
+	~ParupaintLayer();
 	ParupaintLayer();
 	ParupaintLayer(QSize s, _fint = 1);
 
