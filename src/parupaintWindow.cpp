@@ -184,7 +184,7 @@ void ParupaintWindow::SelectFrame(int l, int f)
 	auto brush = glass.GetCurrentBrush();
 	brush->SetLayer(l);
 	brush->SetFrame(f);
-	client->SendLayerFrame(brush);
+	client->SendLayerFrame(l, f);
 }
 
 void ParupaintWindow::TabTimeout()
@@ -278,7 +278,8 @@ void ParupaintWindow::CanvasChangeKey()
 	auto brush = glass.GetCurrentBrush();
 	brush->SetLayer(pool->GetCanvas()->GetCurrentLayer());
 	brush->SetFrame(pool->GetCanvas()->GetCurrentFrame());
-	client->SendLayerFrame(brush);
+	client->SendLayerFrame(pool->GetCanvas()->GetCurrentLayer(),
+				pool->GetCanvas()->GetCurrentFrame());
 
 }
 
