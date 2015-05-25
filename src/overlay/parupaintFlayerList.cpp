@@ -51,6 +51,7 @@ void ParupaintFlayerList::MoveLayer(int index, int offset)
 
 ParupaintFlayerLayer * ParupaintFlayerList::GetLayer(int index)
 {
+	if(Layers.isEmpty() || index >= Layers.size()) return nullptr;
 	return Layers.at(index);
 }
 

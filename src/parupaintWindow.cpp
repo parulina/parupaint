@@ -272,14 +272,21 @@ void ParupaintWindow::CanvasChangeKey()
 	} else if(seq == CanvasKeyPreviousLayer){
 		ll--;
 	}
-	// Do a local check for boundaries
-	pool->GetCanvas()->AddLayerFrame(ll, ff);
+	if(!OverlayButtonDown) {
+		// Do a local check for boundaries
+		pool->GetCanvas()->AddLayerFrame(ll, ff);
 
-	auto brush = glass.GetCurrentBrush();
-	brush->SetLayer(pool->GetCanvas()->GetCurrentLayer());
-	brush->SetFrame(pool->GetCanvas()->GetCurrentFrame());
-	client->SendLayerFrame(pool->GetCanvas()->GetCurrentLayer(),
-				pool->GetCanvas()->GetCurrentFrame());
+		auto brush = glass.GetCurrentBrush();
+		brush->SetLayer(pool->GetCanvas()->GetCurrentLayer());
+		brush->SetFrame(pool->GetCanvas()->GetCurrentFrame());
+		client->SendLayerFrame(pool->GetCanvas()->GetCurrentLayer(),
+					pool->GetCanvas()->GetCurrentFrame());
+	} else {
+		
+		client->SendLayerFrame(pool->GetCanvas()->GetCurrentLayer(),
+						pool->GetCanvas()->GetCurrentFrame(),
+						ll, ff);
+	}
 
 }
 

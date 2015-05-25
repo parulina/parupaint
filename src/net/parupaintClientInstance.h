@@ -22,7 +22,7 @@ class ParupaintClientInstance : public ParupaintClient
 	void ReloadImage();
 	void SaveCanvas(const QString);
 	void LoadCanvas(const QString);
-	void SendLayerFrame(int, int);
+	void SendLayerFrame(int, int, int=0, int=0);
 	void SendBrushUpdate(ParupaintBrush * brush);
 
 	private slots:

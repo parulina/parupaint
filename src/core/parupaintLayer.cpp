@@ -118,6 +118,7 @@ void ParupaintLayer::RedactFrame(_fint f, _fint n)
 
 ParupaintFrame * ParupaintLayer::GetFrame(_fint f) const
 {
+	if(Frames.isEmpty() || f >= Frames.size()) return nullptr;
 	return Frames.at(f);
 }
 

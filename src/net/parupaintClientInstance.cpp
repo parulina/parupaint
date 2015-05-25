@@ -81,11 +81,6 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 			auto x(object["x"].toDouble());
 			auto y(object["y"].toDouble());
 
-			auto old_x = brush->GetPosition().x();
-			auto old_y = brush->GetPosition().y();
-			auto l = brush->GetLayer();
-			auto f = brush->GetFrame();
-
 			brush->SetColor(color);
 			brush->SetWidth(width);
 
@@ -93,7 +88,7 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 				if(!brush->GetCurrentStroke()) pool->NewBrushStroke(brush);
 
 				if(brush->GetCurrentStroke()) {
-					brush->GetCurrentStroke()->AddStroke(new ParupaintStrokeStep(x, y, width, color));
+					brush->GetCurrentStroke()->AddStroke(new ParupaintStrokeStep(*brush));
 				}
 
 			} else {
@@ -146,9 +141,14 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 
 			ll++;
 		}
+		// resizes and updates CanvasView
+		// it crashed here because it was using old LF vals
 		canvas->Resize(QSize(w, h));
-		pool->UpdateView();
-		pool->GetCanvas()->SetLayerFrame(0, 0);
+		// updates view and flayer list
+		pool->TriggerViewUpdate();
+		// fixes and sets currently selected in flayer list
+		pool->GetCanvas()->FixLayerFrame();
+		// sends a reload signal
 		this->ReloadImage();
 
 
@@ -185,14 +185,16 @@ void ParupaintClientInstance::ReloadImage()
 {
 	this->ParupaintClient::send("img");
 }
-void ParupaintClientInstance::SendLayerFrame(int layer, int frame)
+void ParupaintClientInstance::SendLayerFrame(int layer, int frame, int ll, int ff)
 {
 	QJsonObject obj;
 	obj["l"] = layer;
 	obj["f"] = frame;
+	obj["ll"] = ll;
+	obj["ff"] = ff;
 	this->send("lf", obj);
-
 }
+
 
 void ParupaintClientInstance::SendBrushUpdate(ParupaintBrush * brush)
 {

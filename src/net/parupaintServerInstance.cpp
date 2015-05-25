@@ -119,30 +119,54 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 			}
 
 		} else if(id == "lf") {
-			auto * brush = brushes.value(c);
-			if(brush) {
-				if(obj["l"].isNull()){
-					qDebug() << "FIX LAYER/FRAME ON THE CLIENT PLEASE.";
+
+			int 	layer = obj["l"].toInt(),
+				frame = obj["f"].toInt(),
+				layer_change = obj["ll"].toInt(),
+				frame_change = obj["ff"].toInt();
+
+			bool changed = false;
+			if(layer_change != 0){
+				if(layer_change < 0 && canvas->GetNumLayers() > 1){
+					canvas->RemoveLayers(layer, -layer_change);
+					changed = true;
+				} else if(layer_change > 0){
+					canvas->AddLayers(layer, layer_change, 1);
+					changed = true;
 				}
-				int l = obj["l"].toInt();
-				int f = obj["f"].toInt();
-
-				if(l < 0) l = int(canvas->GetNumLayers())-1; 
-				if(l >= int(canvas->GetNumLayers())) l = 0; 
-				
-				auto * layer = canvas->GetLayer(l);
-				if(layer){
-					if(f < 0) f = int(layer->GetNumFrames())-1; 
-					if(f >= int(layer->GetNumFrames())) f = 0; 
+			}
+			if(frame_change != 0){
+				auto * ff = canvas->GetLayer(layer);
+				if(ff) {
+					if(frame_change < 0 && ff->GetNumFrames() > 1){
+						ff->RemoveFrames(frame, -frame_change);
+						changed = true;
+					} else if(frame_change > 0){
+						ff->AddFrames(frame, frame_change);
+						changed = true;
+					}
 				}
+			}
+			if((layer_change != 0 || frame_change != 0) && changed){
+				c->send("canvas", MarshalCanvas());
+			} else {
+				auto * brush = brushes.value(c);
+				if(brush) {
+					if(layer < 0) layer = int(canvas->GetNumLayers())-1; 
+					if(layer >= int(canvas->GetNumLayers())) layer = 0;
+					auto * ll = canvas->GetLayer(layer);
+					if(ll){
+						if(frame < 0) frame = int(ll->GetNumFrames())-1; 
+						if(frame >= int(ll->GetNumFrames())) frame = 0; 
+					}
+					brush->SetLayer(layer);
+					brush->SetFrame(frame);
+					obj["l"] = layer;
+					obj["f"] = frame;
+					obj["id"] = c->id;
+					this->Broadcast(id, QJsonDocument(obj).toJson(QJsonDocument::Compact));
 
-				brush->SetLayer(l);
-				brush->SetFrame(f);
-
-				obj["l"] = l;
-				obj["f"] = f;
-				obj["id"] = c->id;
-				this->Broadcast(id, QJsonDocument(obj).toJson(QJsonDocument::Compact));
+				}
 			}
 
 		} else if(id == "draw"){

@@ -30,6 +30,7 @@ Q_OBJECT
 
 	void SetLayerFrame(_lint, _fint =0);
 	void AddLayerFrame(int, int);
+	void FixLayerFrame();
 	_lint GetCurrentLayer();
 	_fint GetCurrentFrame();
 

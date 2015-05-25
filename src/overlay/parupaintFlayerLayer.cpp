@@ -52,6 +52,7 @@ void ParupaintFlayerLayer::MoveFrame(int index, int offset)
 
 ParupaintFlayerFrame* ParupaintFlayerLayer::GetFrame(int index)
 {
+	if(Frames.isEmpty() || index >= Frames.size()) return nullptr;
 	return Frames.at(index);
 }
 

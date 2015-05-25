@@ -23,6 +23,8 @@ class ParupaintStrokeStep : public ParupaintBrush
 		this->SetWidth(b.GetWidth());
 		this->SetPressure(b.GetPressure());
 		this->SetColor(b.GetColor());
+		this->SetLayer(b.GetLayer());
+		this->SetFrame(b.GetFrame());
 	}
 };
 

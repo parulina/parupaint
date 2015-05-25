@@ -99,14 +99,22 @@ void ParupaintCanvasObject::TogglePreview()
 
 void ParupaintCanvasObject::SetLayerFrame(_lint layer, _fint frame)
 {
+	if(GetNumLayers() == 0) return;
+
 	if(layer >= GetNumLayers()) layer = GetNumLayers()-1;
 	CurrentLayer = layer;
 
+	if(GetLayer(layer)->GetNumFrames() == 0) return;
 	if(frame >= GetLayer(layer)->GetNumFrames()) frame = GetLayer(layer)->GetNumFrames()-1;
 	CurrentFrame = frame;
 
 	RedrawCache();
 	emit CurrentSignal(int(CurrentLayer), int(CurrentFrame));
+}
+
+void ParupaintCanvasObject::FixLayerFrame()
+{
+	this->SetLayerFrame(CurrentLayer, CurrentFrame);
 }
 
 void ParupaintCanvasObject::AddLayerFrame(int layer, int frame)

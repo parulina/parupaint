@@ -97,6 +97,7 @@ void ParupaintPanvas::RemoveLayers(_lint l, _lint n)
 
 ParupaintLayer* ParupaintPanvas::GetLayer(_lint l)
 {
+	if(Layers.isEmpty() || l >= Layers.size()) return nullptr;
 	return Layers.at(l);
 }
 
