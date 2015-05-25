@@ -202,7 +202,7 @@ bool ParupaintCanvasView::OnScroll(const QPointF & pos, Qt::KeyboardModifiers mo
 
 bool ParupaintCanvasView::OnKeyDown(QKeyEvent * event)
 {
-	if(CurrentBrush == nullptr) return true;
+	if(CurrentBrush == nullptr) return false;
 
 	if(event->key() == Qt::Key_Space){
 		if((event->modifiers() & Qt::ShiftModifier) &&
@@ -211,6 +211,7 @@ bool ParupaintCanvasView::OnKeyDown(QKeyEvent * event)
 			CanvasState = CANVAS_STATUS_BRUSH_ZOOMING;
 			OriginZoom = CurrentBrush->GetWidth();
 			OriginPosition = OldPosition;
+			return true;
 
 		} else if((event->modifiers() & Qt::ControlModifier) &&
 			CanvasState != CANVAS_STATUS_ZOOMING) {
@@ -218,18 +219,18 @@ bool ParupaintCanvasView::OnKeyDown(QKeyEvent * event)
 			CanvasState = CANVAS_STATUS_ZOOMING;
 			OriginZoom = GetZoom();
 			OriginPosition = OldPosition;
+			return true;
 
 		} else if(CanvasState != CANVAS_STATUS_MOVING){
 			CanvasState = CANVAS_STATUS_MOVING;
-			return false;
 		}
 	}
-	return true;
+	return false; // Let keys go by default
 }
 
 bool ParupaintCanvasView::OnKeyUp(QKeyEvent * event)
 {
-	if(CurrentBrush == nullptr) return true;
+	if(CurrentBrush == nullptr) return false;
 	
 	if(event->key() == Qt::Key_Control) {
 		if(CanvasState == CANVAS_STATUS_ZOOMING){
@@ -258,7 +259,7 @@ bool ParupaintCanvasView::OnKeyUp(QKeyEvent * event)
 	// Whatever.
 	// Just gotta optimize this for that... 'bug'.
 	OriginPosition = OldPosition;
-	return true;
+	return false;
 }
 
 

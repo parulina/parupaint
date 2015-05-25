@@ -30,7 +30,6 @@ Q_OBJECT
 	QKeySequence OverlayKeyShow;
 	QKeySequence OverlayKeyHide;
 	bool OverlayButtonDown;
-	QTimer * OverlayButtonTimer;
 	QTimer * OverlayTimer;
 	
 	
@@ -64,6 +63,8 @@ Q_OBJECT
 
 	void closeEvent(QCloseEvent * event);
 	void keyPressEvent(QKeyEvent * event);
+	void keyReleaseEvent(QKeyEvent * event);
+	bool focusNextPrevChild(bool);
 	void resizeEvent(QResizeEvent * event);
 	ParupaintCanvasView * view;
 	ParupaintCanvasPool * pool;
@@ -82,11 +83,9 @@ Q_OBJECT
 	void Connect(QUrl);
 
 	private slots:
-	void TabTimeout();
 	void OverlayTimeout();
 
 	void BrushKey();
-	void OverlayKey();
 	void CanvasChangeKey();
 	void CanvasKey();
 	void NetworkKey();

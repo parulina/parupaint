@@ -79,19 +79,10 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	connect(flayer->GetList(), SIGNAL(clickFrame(int, int)), this, SLOT(SelectFrame(int, int)));
 
 
-	OverlayButtonTimer = new QTimer(this);
-	OverlayButtonTimer->setSingleShot(true);
-	connect(OverlayButtonTimer, SIGNAL(timeout()), this, SLOT(TabTimeout()));
-
 	OverlayTimer = new QTimer(this);
 	OverlayTimer->setSingleShot(true);
 	connect(OverlayTimer, SIGNAL(timeout()), this, SLOT(OverlayTimeout()));
 
-	
-	QShortcut * TabKey = new QShortcut(OverlayKeyShow, this);
-	QShortcut * TabKeyShift = new QShortcut(OverlayKeyHide, this);
-	connect(TabKey, SIGNAL(activated()), this, SLOT(OverlayKey()));
-	connect(TabKeyShift, SIGNAL(activated()), this, SLOT(OverlayKey()));
 
 	QShortcut * PreviewKey =	new QShortcut(CanvasKeyPreview, this);
 	connect(PreviewKey, 		&QShortcut::activated, this, &ParupaintWindow::CanvasKey);
@@ -187,45 +178,11 @@ void ParupaintWindow::SelectFrame(int l, int f)
 	client->SendLayerFrame(l, f);
 }
 
-void ParupaintWindow::TabTimeout()
-{
-	OverlayButtonDown = false;
-}
-
 void ParupaintWindow::OverlayTimeout()
 {
 	HideOverlay();
 }
 
-
-void ParupaintWindow::OverlayKey()
-{
-	QShortcut* shortcut = qobject_cast<QShortcut*>(sender());
-	QKeySequence seq = shortcut->key();
-
-	
-	if(seq == OverlayKeyShow){
-
-		if(!OverlayButtonDown) {
-			OverlayButtonTimer->start(200);
-			OverlayButtonDown = true;
-			OverlayState = OVERLAY_STATUS_SHOWN_SMALL;
-
-			ShowOverlay(false);
-
-		} else {
-			OverlayButtonTimer->stop();
-			OverlayState = OVERLAY_STATUS_SHOWN_NORMAL;
-			ShowOverlay(true);
-
-		}
-
-	} else if(seq == OverlayKeyHide){
-		OverlayButtonDown = false;
-		OverlayState = OVERLAY_STATUS_HIDDEN;
-		HideOverlay();
-	}
-}
 
 void ParupaintWindow::NetworkKey()
 {
@@ -350,8 +307,40 @@ void ParupaintWindow::UpdateOverlay()
 	flayer->resize(this->width(), flayer->height());
 }
 
+bool ParupaintWindow::focusNextPrevChild(bool)
+{
+	return false; // disable tab
+}
+
+void ParupaintWindow::keyReleaseEvent(QKeyEvent * event)
+{
+	if(event->key() == Qt::Key_Tab && !event->isAutoRepeat()){
+		OverlayButtonDown = false;
+		return;
+	}
+	return QMainWindow::keyReleaseEvent(event);
+}
+
 void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 {
+	if(event->key() == Qt::Key_Backtab) {
+		OverlayState = OVERLAY_STATUS_HIDDEN;
+		HideOverlay();
+	}
+	if(event->key() == Qt::Key_Tab){
+	
+		if(!event->isAutoRepeat()) {
+			OverlayState = OVERLAY_STATUS_SHOWN_SMALL;
+			ShowOverlay(false);
+
+		} else {
+			OverlayState = OVERLAY_STATUS_SHOWN_NORMAL;
+			ShowOverlay(true);
+
+		}
+		OverlayButtonDown = true;
+		return;
+	}
 	if(event->key() == Qt::Key_Space && !event->isAutoRepeat()){
 		if(OverlayButtonDown){
 			auto brush = glass.GetCurrentBrush();
