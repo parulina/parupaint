@@ -11,9 +11,11 @@ class ParupaintStrokeStep : public ParupaintBrush
 	ParupaintStrokeStep(){};
 	ParupaintStrokeStep(float x, float y, float w, QColor col) : ParupaintStrokeStep()
 	{
-		SetPosition(x, y);
-		SetWidth(w);
-		SetColor(col);
+		// No pressure is given, so make it follow width only
+		this->SetPressure(-1);
+		this->SetPosition(x, y);
+		this->SetWidth(w);
+		this->SetColor(col);
 	}
 	ParupaintStrokeStep(ParupaintBrush b) : ParupaintStrokeStep()
 	{

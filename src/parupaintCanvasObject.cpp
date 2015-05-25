@@ -18,6 +18,7 @@ void ParupaintCanvasObject::New(QSize s, _lint l, _fint f)
 {
 	QSize old = ParupaintPanvas::GetSize();
 	this->ParupaintPanvas::New(s, l, f);
+	RedrawCache();
 	emit ResizeSignal(old, s);
 }
 void ParupaintCanvasObject::Resize(QSize s)
@@ -25,6 +26,7 @@ void ParupaintCanvasObject::Resize(QSize s)
 	QSize old = ParupaintPanvas::GetSize();
 	this->ParupaintPanvas::Resize(s);
 	emit ResizeSignal(old, s);
+	RedrawCache();
 }
 
 QRectF ParupaintCanvasObject::boundingRect() const
@@ -32,19 +34,23 @@ QRectF ParupaintCanvasObject::boundingRect() const
 	return QRectF(0, 0, GetWidth(), GetHeight());
 }
 
-void ParupaintCanvasObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
+void ParupaintCanvasObject::TriggerCacheRedraw()
 {
-	//QRect exposed = option->exposedRect.adjusted(-1, -1, 1, 1).toAlignedRect();
-	QRect exposed = option->exposedRect.toAlignedRect();
+	this->RedrawCache();
 
+}
+
+void ParupaintCanvasObject::RedrawCache()
+{
 	auto layer = GetLayer(CurrentLayer);
+	QPixmap cc(GetWidth(), GetHeight());
+	QPainter painter(&cc);
 
-	painter->save();
-	painter->drawTiledPixmap(exposed, checker);
+	painter.drawTiledPixmap(this->boundingRect(), checker);
 
 	if(!IsPreview()){
 		// "draw debug mode"
-		painter->setOpacity(0.6);
+		painter.setOpacity(0.6);
 	}
 	for(auto i = 0; i < GetNumLayers(); i++){
 		// draw previous frames
@@ -52,21 +58,29 @@ void ParupaintCanvasObject::paint(QPainter *painter, const QStyleOptionGraphicsI
 		if(layer2 && CurrentFrame < layer2->GetNumFrames()){
 			auto frame2 = layer2->GetFrame(CurrentFrame);
 			if(frame2){
-				painter->drawImage(exposed, frame2->GetImage());
+				painter.drawImage(this->boundingRect(), frame2->GetImage());
 			}
 		}
 	}
 
-	painter->setOpacity(1.0);
+	painter.setOpacity(1.0);
 	if(layer != nullptr){
 		auto frame = layer->GetFrame(CurrentFrame);
 		if(frame != nullptr) {
-			painter->drawImage(exposed, frame->GetImage());
+			painter.drawImage(this->boundingRect(), frame->GetImage());
 		}
 	}
-	painter->restore();
+	cache = cc;
+
 }
 
+void ParupaintCanvasObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
+{
+	//QRect exposed = option->exposedRect.adjusted(-1, -1, 1, 1).toAlignedRect();
+	QRect exposed = option->exposedRect.toAlignedRect();
+
+	painter->drawPixmap(exposed, cache);
+}
 
 bool ParupaintCanvasObject::IsPreview() const
 {
@@ -76,6 +90,7 @@ bool ParupaintCanvasObject::IsPreview() const
 void ParupaintCanvasObject::SetPreview(bool b)
 {
 	Preview = b;
+	RedrawCache();
 }
 void ParupaintCanvasObject::TogglePreview()
 {
@@ -90,6 +105,7 @@ void ParupaintCanvasObject::SetLayerFrame(_lint layer, _fint frame)
 	if(frame >= GetLayer(layer)->GetNumFrames()) frame = GetLayer(layer)->GetNumFrames()-1;
 	CurrentFrame = frame;
 
+	RedrawCache();
 	emit CurrentSignal(int(CurrentLayer), int(CurrentFrame));
 }
 

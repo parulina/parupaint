@@ -26,9 +26,9 @@ ParupaintBrush::ParupaintBrush(QString name, float w, QColor col) : ParupaintBru
 QPen ParupaintBrush::ToPen()
 {
 	QPen pen(GetColor());
-	pen.setWidth(GetWidth()*GetPressure());
+	if(GetPressure() < 0) 	pen.setWidth(GetWidth());
+	else 			pen.setWidth(GetWidth()*GetPressure());
 	pen.setCapStyle(Qt::RoundCap);
-	pen.setJoinStyle(Qt::RoundJoin);
 	return pen;
 }
 

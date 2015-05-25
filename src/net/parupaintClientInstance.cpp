@@ -9,6 +9,7 @@
 
 #include "../core/parupaintLayer.h"
 #include "../core/parupaintFrame.h"
+#include "../core/parupaintStrokeStep.h"
 
 #include "../parupaintCanvasBrush.h"
 #include "../core/parupaintBrush.h"
@@ -42,6 +43,7 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 		if(!d) {
 			auto idd = (c < 0) ? -c : c;
 			brushes[idd] = new ParupaintCanvasBrush;
+			brushes[idd]->SetPressure(-1); // use width only
 			if(c < 0) me = idd;
 
 
@@ -88,12 +90,19 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 			brush->SetWidth(width);
 
 			if(drawing){
-				auto * layer = pool->GetCanvas()->GetLayer(l);
-				if(layer) {
-					auto * frame = layer->GetFrame(f);
-					if(frame){
-						frame->DrawStep(old_x, old_y, x, y, width, color);
+				if(!brush->GetCurrentStroke()) pool->NewBrushStroke(brush);
+
+				if(brush->GetCurrentStroke()) {
+					brush->GetCurrentStroke()->AddStroke(new ParupaintStrokeStep(x, y, width, color));
+				}
+
+			} else {
+				if(brush->IsDrawing()){
+					if(brush->GetCurrentStroke()){
+						pool->EndBrushStroke(brush);
+						pool->SquashBrushStrokes(brush);
 					}
+					pool->GetCanvas()->TriggerCacheRedraw();
 				}
 			}
 
@@ -164,6 +173,7 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 				frame->Replace(img);
 			}
 		}
+		pool->GetCanvas()->TriggerCacheRedraw();
 		pool->UpdateView();
 
 	} else {

@@ -33,16 +33,18 @@ void ParupaintCanvasStrokeObject::AddStroke(ParupaintStrokeStep *ss)
 	if(this->pixmap().isNull()) return;
 
 	auto pos1 = ss->GetPosition();
+	const auto pos2 = pos1;
 	if(!strokes.isEmpty()) pos1 = strokes.last()->GetPosition();
 	ParupaintStroke::AddStroke(ss);
 
-	
+
+
 	QPixmap pix(this->pixmap());
  	QPainter paint(&pix);
 
-	QPen pen = this->GetBrush()->ToPen();
+	QPen pen = ss->ToPen();
 	paint.setPen(pen);
-	paint.drawLine(QLineF(pos1, ss->GetPosition()));
+	paint.drawLine(pos1.x(), pos1.y(), pos2.x(), pos2.y());
 
  	this->setPixmap(pix);
 }

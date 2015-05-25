@@ -15,6 +15,9 @@ Q_OBJECT
 	bool Preview;
 
 	QPixmap checker;
+	QPixmap cache;
+
+	void RedrawCache();
 
 	public:
 	ParupaintCanvasObject();
@@ -30,6 +33,7 @@ Q_OBJECT
 	_lint GetCurrentLayer();
 	_fint GetCurrentFrame();
 
+	void TriggerCacheRedraw();
 
 
 	QRectF boundingRect() const;
