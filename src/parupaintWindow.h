@@ -11,6 +11,7 @@ class ParupaintCanvasPool;
 class ParupaintCanvasBrush;
 
 class ParupaintClientInstance;
+class ParupaintConnectionDialog;
 
 class ParupaintChat;
 class ParupaintFlayer;
@@ -44,6 +45,7 @@ Q_OBJECT
 	QKeySequence CanvasKeyOpen;
 	QKeySequence CanvasKeySaveProject;
 	QKeySequence CanvasKeyPreview;
+	QKeySequence CanvasKeyConnect;
 
 	QKeySequence BrushKeyUndo;
 	QKeySequence BrushKeyRedo;
@@ -70,6 +72,7 @@ Q_OBJECT
 	ParupaintCanvasPool * pool;
 
 	ParupaintClientInstance * client;
+	ParupaintConnectionDialog * connection_dialog;
 
 	public:
 	ParupaintWindow();
@@ -80,7 +83,7 @@ Q_OBJECT
 
 	void UpdateTitle();
 
-	void Connect(QUrl);
+	void Connect(QString);
 
 	private slots:
 	void OverlayTimeout();

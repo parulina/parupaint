@@ -28,6 +28,7 @@
 #include "overlay/parupaintUserList.h"
 #include "overlay/parupaintInfoBar.h"
 
+#include "parupaintConnectionDialog.h"
 #include "net/parupaintClientInstance.h"
 
 #include <QDebug>
@@ -40,10 +41,10 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	CanvasKeySquash(Qt::Key_Space),
 	CanvasKeyNextLayer(Qt::Key_D), CanvasKeyPreviousLayer(Qt::Key_S),
 	CanvasKeyNextFrame(Qt::Key_F), CanvasKeyPreviousFrame(Qt::Key_A),
-	CanvasKeyPreview(Qt::Key_Q),
 	// network keys
 	CanvasKeyReload(Qt::Key_R + Qt::SHIFT), CanvasKeyQuicksave(Qt::Key_K + Qt::CTRL),
 	CanvasKeyOpen(Qt::Key_O + Qt::CTRL), CanvasKeySaveProject(Qt::Key_L + Qt::CTRL),
+	CanvasKeyPreview(Qt::Key_Q), CanvasKeyConnect(Qt::Key_I + Qt::CTRL),
 	// brush keys
 	BrushKeyUndo(Qt::Key_Z), BrushKeyRedo(Qt::SHIFT + Qt::Key_Z),
 	BrushKeySwitchBrush(Qt::Key_E),
@@ -51,6 +52,8 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	OverlayState(OVERLAY_STATUS_HIDDEN)
 
 {
+	this->setFocusPolicy(Qt::NoFocus);
+
 	view = new ParupaintCanvasView(this);
 	view->SetCurrentBrush(glass.GetCurrentBrush());
 
@@ -65,7 +68,6 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	view->SetCanvas(pool);
 
 	client = new ParupaintClientInstance(pool, this);
-
 
 	chat =	  new ParupaintChat(this);
 	flayer =  new ParupaintFlayer(this);
@@ -114,7 +116,12 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	connect(OpenKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
 	QShortcut * SaveProjectKey = new QShortcut(CanvasKeySaveProject, this);
 	connect(SaveProjectKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
+	QShortcut * ConnectKey = new QShortcut(CanvasKeyConnect, this);
+	connect(ConnectKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
 
+	connection_dialog = new ParupaintConnectionDialog(this);
+	connect(connection_dialog, &ParupaintConnectionDialog::ConnectSignal, this, &ParupaintWindow::Connect);
+	
 
 	UpdateTitle();
 	
@@ -124,6 +131,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 
 	show();
 }
+
 
 void ParupaintWindow::CursorChange(ParupaintBrush* brush)
 {
@@ -197,6 +205,9 @@ void ParupaintWindow::NetworkKey()
 	
 	} else if(seq == CanvasKeySaveProject) {
 		client->LoadCanvas("animushin.tar.gz");
+
+	} else if(seq == CanvasKeyConnect) {
+		connection_dialog->show();
 
 	} else if(seq == CanvasKeyOpen) {
 
@@ -307,8 +318,11 @@ void ParupaintWindow::UpdateOverlay()
 	flayer->resize(this->width(), flayer->height());
 }
 
-bool ParupaintWindow::focusNextPrevChild(bool)
+bool ParupaintWindow::focusNextPrevChild(bool b)
 {
+	if(connection_dialog->isVisible()) {
+		return QMainWindow::focusNextPrevChild(b);
+	}
 	return false; // disable tab
 }
 
@@ -323,6 +337,10 @@ void ParupaintWindow::keyReleaseEvent(QKeyEvent * event)
 
 void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 {
+	if(connection_dialog->isVisible()) {
+		return QMainWindow::keyPressEvent(event);
+	}
+
 	if(event->key() == Qt::Key_F1 && !event->isAutoRepeat()){
 		OverlayState = OVERLAY_STATUS_SHOWN_NORMAL;
 		ShowOverlay(true);
@@ -378,7 +396,7 @@ void ParupaintWindow::UpdateTitle()
 	setWindowTitle(QString("parupaint"));
 }
 
-void ParupaintWindow::Connect(QUrl url)
+void ParupaintWindow::Connect(QString url)
 {
 	client->Connect(url);
 }

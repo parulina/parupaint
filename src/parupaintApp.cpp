@@ -24,10 +24,6 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 	setApplicationName("parupaint");
 	setWindowIcon(QIcon(":/resources/parupaint.ico"));
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
-	setApplicationDisplayName("parupaint");
-#endif
-
 	// Set default username
 	QSettings cfg;
 	cfg.beginGroup("painter");
@@ -51,7 +47,6 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 	parser.addOption(QCommandLineOption({"p","port"}, "Specify port to run the server", "port"));
 	parser.process(*this);
 
-	QString prefix = "ws://";
 	QString server_str = parser.value("connect");
 	int port_num = parser.value("port").toInt();
 	if(port_num <= 0){
@@ -62,14 +57,11 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 	auto * win = new ParupaintWindow;
 	if(server_str.isEmpty()){
 		server = new ParupaintServerInstance(port_num);
-		win->Connect(QUrl(QString("ws://localhost:%1").arg(port_num)));
+		win->Connect(QString("ws://localhost:%1").arg(port_num));
 	} else {
 
-		if(server_str.indexOf(prefix) != 0){
-			server_str = prefix + server_str.section("/", -1);
-		}
 		qDebug() << "Connecting to" << server_str;
-		win->Connect(QUrl(server_str));
+		win->Connect(server_str);
 	}
 
 	QFile file(":resources/stylesheet.qss");

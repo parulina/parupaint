@@ -9,6 +9,7 @@
 
 ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 {
+	this->setFocusPolicy(Qt::NoFocus);
 	this->setObjectName("InfoBar");
 	this->setFixedHeight(180);
 	this->show();
@@ -28,6 +29,7 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 
 	QTextBrowser * keys1 = new QTextBrowser;
 	keys1->setObjectName("parupaint-keys1");
+	keys1->setFocusPolicy(Qt::ClickFocus);
 	keys1->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
 	keys1->document()->setDefaultStyleSheet(stylesheet);
 	keys1->setHtml(QStringLiteral(
@@ -46,6 +48,8 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 	ptext->setOpenLinks(true);
 	ptext->setOpenExternalLinks(true);
 	ptext->document()->setDefaultStyleSheet(stylesheet);
+	ptext->setFocusPolicy(Qt::ClickFocus);
+	ptext->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
 	ptext->setHtml(QStringLiteral("<p class=\"about\">Welcome to my painting program, parupaint. The program is designed to be quick and light, while still able to be a nice drawing platform. It is also able to do animations. You can read a tutorial for this program on my website: <a href=\"http://sqnya.se\">[ sqnya.se ]</a>. Thank you for downloading this and using my creation. :D</p>"));
 
 	QTextBrowser * title = new QTextBrowser;
@@ -54,12 +58,15 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 	title->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 	title->document()->setDefaultStyleSheet(stylesheet);
 	title->setOpenLinks(false);
+	title->setFocusPolicy(Qt::ClickFocus);
+	title->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
 	title->setHtml(QStringLiteral("<titletext>· PARUPAINT ALPHA 0.6 · [<a href=\"#name\">unnamed</a>]  <a href=\"#dim\">&lt;100x100&gt;</a>  <flayer>{1 : 5}</flayer></titletext>"));
 
 	QLabel * tabtext = new QLabel("hold [tab] for help");
 	tabtext->setMaximumHeight(30);
 	tabtext->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	tabtext->setObjectName("tabhelp");
+	tabtext->setFocusPolicy(Qt::NoFocus);
 
 
 

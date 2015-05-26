@@ -11,6 +11,7 @@
 
 ParupaintChatContent::ParupaintChatContent(QWidget * parent) : QScrollArea(parent)
 {
+	this->setFocusPolicy(Qt::NoFocus);
 	this->setStyleSheet("margin:0; padding:0; border:none; background-color:transparent;");
 	this->setWidgetResizable(true);
 	this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -23,6 +24,7 @@ ParupaintChatContent::ParupaintChatContent(QWidget * parent) : QScrollArea(paren
 	QFile file(":resources/chat.css");
 	file.open(QFile::ReadOnly);
 	area->document()->setDefaultStyleSheet(file.readAll());
+	area->setFocusPolicy(Qt::ClickFocus);
 	
 	area->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	this->setWidget(area);

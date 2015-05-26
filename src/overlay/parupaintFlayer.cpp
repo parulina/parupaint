@@ -17,6 +17,7 @@
 
 ParupaintFlayer::ParupaintFlayer(QWidget * parent) : QScrollArea(parent)
 {
+	this->setFocusPolicy(Qt::ClickFocus);
 	this->setObjectName("Flayer");
 
 	this->resize(0, 200);

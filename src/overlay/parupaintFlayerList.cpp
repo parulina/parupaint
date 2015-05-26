@@ -9,6 +9,7 @@
 
 ParupaintFlayerList::ParupaintFlayerList(QWidget * parent) : QWidget(parent)
 {
+	this->setFocusPolicy(Qt::ClickFocus);
 	this->setObjectName("FlayerList");
 	box = new QVBoxLayout(this);
 	box->setSizeConstraint(QLayout::SetMinimumSize);

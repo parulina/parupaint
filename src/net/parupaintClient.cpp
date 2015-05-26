@@ -5,17 +5,24 @@
 
 #include <QDebug>
 
-ParupaintClient::ParupaintClient(const QUrl u, QObject * parent) : QObject(parent), url(u), Connected(false)
+ParupaintClient::ParupaintClient(const QString u, QObject * parent) : QObject(parent), url(u), Connected(false)
 {
 	connect(&socket, &QWebSocket::connected, this, &ParupaintClient::onConnect);
 	connect(&socket, &QWebSocket::disconnected, this, &ParupaintClient::onDisconnect);
+	connect(&socket, &QWebSocket::textMessageReceived, this, &ParupaintClient::textReceived);
+
 	connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
 	socket.open(url);
 
 }
-void ParupaintClient::Connect(QUrl u)
+void ParupaintClient::Connect(QString u)
 {
-	if(!u.isEmpty()) url = u;
+	QString prefix = "ws://";
+	if(u.indexOf(prefix) != 0){
+		u = prefix + u.section("/", -1);
+	}
+
+	if(!u.isEmpty()) url = QUrl(u);
 	if(Connected) this->Disconnect();
 	socket.open(url);
 }
@@ -38,7 +45,6 @@ void ParupaintClient::send(QString id, QString data)
 void ParupaintClient::onConnect()
 {
 	Connected = true;
-	connect(&socket, &QWebSocket::textMessageReceived, this, &ParupaintClient::textReceived);
 	emit onMessage("connect", "");
 }
 void ParupaintClient::onDisconnect()

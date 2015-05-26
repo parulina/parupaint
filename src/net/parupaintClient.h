@@ -16,8 +16,8 @@ Q_OBJECT
 	bool Connected;
 
 	public:
-	ParupaintClient(QUrl, QObject * = nullptr);
-	void Connect(QUrl = QUrl());
+	ParupaintClient(QString, QObject * = nullptr);
+	void Connect(QString = "");
 	void Disconnect();
 
 	void send(QString id, QString data = "");

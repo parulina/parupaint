@@ -16,6 +16,7 @@ ParupaintChat::ParupaintChat(QWidget * parent) : ParupaintOverlayWidget(parent)
 	line->resize(this->width(), lh);
 	line->move(0, this->height() - line->height());
 	line->setObjectName("ChatEntry");
+	line->setFocusPolicy(Qt::NoFocus);
 	
 	chat = new ParupaintChatContent(this);
 	chat->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);

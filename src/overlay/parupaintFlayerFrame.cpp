@@ -9,6 +9,7 @@ ParupaintFlayerFrame::ParupaintFlayerFrame(QWidget * parent) : QPushButton(paren
 	this->setMaximumWidth(10);
 	this->setMaximumHeight(20);
 	this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+	this->setFocusPolicy(Qt::NoFocus);
 
 	this->setCheckable(true);
 }

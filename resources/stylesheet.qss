@@ -1,4 +1,8 @@
 
+ParupaintApp {
+	color:black;
+}
+
 #InfoBar {
 	background:black;
 }
@@ -68,6 +72,33 @@
 #FlayerFrame:checked,
 #FlayerFrameExtended:checked{
 	background:black;
+}
+
+
+QDialog {
+	background:#ed8c6e;
+	border:6px solid #f2ae99;
+	color:#000;
+}
+
+QDialog QLabel{
+	color:black;
+	font-size:15px;
+	text-decoration:underline;
+}
+QDialog QLineEdit {
+	padding:4px 0;
+	border:1px solid #333;
+	background:black;
+	color:white;
+}
+
+QDialog QPushButton {
+	border-radius:0;
+	padding:6px 6px;
+	color:white;
+	background:#8a2f1d;
+	font-size:16px;
 }
 
 
