@@ -12,6 +12,7 @@ class ParupaintBrush;
 class ParupaintClientInstance : public ParupaintClient
 {
 	int me;
+	QString nickname;
 	ParupaintCanvasPool * pool;
 	// has to work with int because the server is the only connection
 	QHash<quint32, ParupaintCanvasBrush*> brushes;
@@ -24,6 +25,8 @@ class ParupaintClientInstance : public ParupaintClient
 	void LoadCanvas(const QString);
 	void SendLayerFrame(int, int, int=0, int=0);
 	void SendBrushUpdate(ParupaintBrush * brush);
+
+	void SetNickname(QString);
 
 	private slots:
 	void Message(const QString, const QByteArray);

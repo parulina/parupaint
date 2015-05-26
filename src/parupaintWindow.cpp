@@ -398,5 +398,7 @@ void ParupaintWindow::UpdateTitle()
 
 void ParupaintWindow::Connect(QString url)
 {
+	QSettings cfg;
+	client->SetNickname(cfg.value("painter/username").toString());
 	client->Connect(url);
 }

@@ -30,8 +30,10 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 	QJsonObject object = QJsonDocument::fromJson(bytes).object();
 
 	if(id == "connect"){
-
-		this->send("join");
+		
+		QJsonObject obj;
+		obj["name"] = nickname;
+		this->send("join", obj);
 
 	} else if(id == "join"){
 
@@ -221,6 +223,10 @@ void ParupaintClientInstance::SaveCanvas(const QString filename)
 	this->send("save", obj);
 }
 
+void ParupaintClientInstance::SetNickname(QString str)
+{
+	nickname = str;
+}
 
 void ParupaintClientInstance::send(const QString id, const QJsonObject & obj)
 {
