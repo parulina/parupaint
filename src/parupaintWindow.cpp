@@ -323,6 +323,10 @@ void ParupaintWindow::keyReleaseEvent(QKeyEvent * event)
 
 void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 {
+	if(event->key() == Qt::Key_F1 && !event->isAutoRepeat()){
+		OverlayState = OVERLAY_STATUS_SHOWN_NORMAL;
+		ShowOverlay(true);
+	}
 	if(event->key() == Qt::Key_Backtab) {
 		OverlayState = OVERLAY_STATUS_HIDDEN;
 		HideOverlay();
