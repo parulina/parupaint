@@ -12,6 +12,8 @@
 #include "parupaintWindow.h"
 #include "parupaintApp.h"
 
+#include "parupaintVersion.h"
+
 // have a signal that updates the title?
 // have window in this file?
 
@@ -22,6 +24,7 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 	setOrganizationName("paru");
 	setOrganizationDomain("sqnya.se");
 	setApplicationName("parupaint");
+	setApplicationVersion(PARUPAINT_VERSION);
 	setWindowIcon(QIcon(":/resources/parupaint.ico"));
 
 	// Set default username

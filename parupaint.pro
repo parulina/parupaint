@@ -27,6 +27,11 @@ SOURCES += 	src/core/*.cpp \
 RC_ICONS = 	resources/parupaint.ico
 RESOURCES +=	*.qrc
 
+VERSION_MAJOR =	0
+VERSION_MINOR =	6
+VERSION_PATCH =	d
+VERSION = 	$${VERSION_MAJOR}$${VERSION_MINOR}$${VERSION_PATCH}
+
 TARGET = 	parupaint
 DESTDIR =	bin
 

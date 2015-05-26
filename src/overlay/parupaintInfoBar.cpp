@@ -1,4 +1,3 @@
-
 #include "parupaintInfoBar.h"
 
 #include <QVBoxLayout>
@@ -6,6 +5,8 @@
 #include <QTextBrowser>
 #include <QLabel>
 #include <QFile>
+
+#include "../parupaintVersion.h"
 
 ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 {
@@ -60,7 +61,7 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 	title->setOpenLinks(false);
 	title->setFocusPolicy(Qt::ClickFocus);
 	title->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
-	title->setHtml(QStringLiteral("<titletext>· PARUPAINT ALPHA 0.6 · [<a href=\"#name\">unnamed</a>]  <a href=\"#dim\">&lt;100x100&gt;</a>  <flayer>{1 : 5}</flayer></titletext>"));
+	title->setHtml(QString("<titletext>· PARUPAINT ALPHA %1 · [<a href=\"#name\">unnamed</a>]  <a href=\"#dim\">&lt;100x100&gt;</a>  <flayer>{1 : 5}</flayer></titletext>").arg(PARUPAINT_VERSION));
 
 	QLabel * tabtext = new QLabel("hold [tab] for help");
 	tabtext->setMaximumHeight(30);
