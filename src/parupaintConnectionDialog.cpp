@@ -39,6 +39,7 @@ ParupaintConnectionDialog::ParupaintConnectionDialog(QWidget* parent) : Parupain
 	this->connect(button_connect, &QPushButton::released, this, &ParupaintConnectionDialog::ConnectClick);
 
 	this->setLayout(layout);
+	this->hide();
 }
 
 void ParupaintConnectionDialog::ConnectClick()
