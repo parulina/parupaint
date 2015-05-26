@@ -42,8 +42,8 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	CanvasKeyNextFrame(Qt::Key_F), CanvasKeyPreviousFrame(Qt::Key_A),
 	CanvasKeyPreview(Qt::Key_Q),
 	// network keys
-	CanvasKeyReload(Qt::Key_R + Qt::SHIFT), CanvasKeyQuicksave(Qt::Key_K + Qt::ALT),
-	CanvasKeyOpen(Qt::Key_O + Qt::ALT), CanvasKeySaveProject(Qt::Key_L + Qt::ALT),
+	CanvasKeyReload(Qt::Key_R + Qt::SHIFT), CanvasKeyQuicksave(Qt::Key_K + Qt::CTRL),
+	CanvasKeyOpen(Qt::Key_O + Qt::CTRL), CanvasKeySaveProject(Qt::Key_L + Qt::CTRL),
 	// brush keys
 	BrushKeyUndo(Qt::Key_Z), BrushKeyRedo(Qt::SHIFT + Qt::Key_Z),
 	BrushKeySwitchBrush(Qt::Key_E),
