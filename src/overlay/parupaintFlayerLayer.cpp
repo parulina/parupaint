@@ -10,7 +10,7 @@
 
 ParupaintFlayerLayer::ParupaintFlayerLayer(QWidget * parent) : QWidget(parent), Index(0)
 {
-	this->setFocusPolicy(Qt::ClickFocus);
+	this->setFocusPolicy(Qt::NoFocus);
 	this->setObjectName("FlayerLayer");
 	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 	this->setMinimumHeight(15);

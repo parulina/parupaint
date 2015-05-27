@@ -39,7 +39,6 @@ ParupaintConnectionDialog::ParupaintConnectionDialog(QWidget* parent) : Parupain
 	this->connect(button_connect, &QPushButton::released, this, &ParupaintConnectionDialog::ConnectClick);
 
 	this->setLayout(layout);
-	this->hide();
 }
 
 void ParupaintConnectionDialog::ConnectClick()
@@ -55,7 +54,9 @@ void ParupaintConnectionDialog::ConnectClick()
 	if(!ip.isEmpty()){
 		cfg.setValue("net/lasthost", ip);
 		emit ConnectSignal(ip);
-		this->hide();
+		// Don't know if this is safe.
+		delete this;
+
 	} else {
 		line_ip->setFocus();
 	}

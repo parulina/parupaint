@@ -6,9 +6,10 @@
 
 ParupaintChat::ParupaintChat(QWidget * parent) : ParupaintOverlayWidget(parent)
 {
-	setStyleSheet("margin:0; padding:0; border:none; background-color:transparent;");
-	setObjectName("Chat");
-	resize(400, 200);
+	this->setFocusPolicy(Qt::NoFocus);
+	this->setStyleSheet("margin:0; padding:0; border:none; background-color:transparent;");
+	this->setObjectName("Chat");
+	this->resize(400, 200);
 
 	const auto lh = 25;
 	
@@ -16,7 +17,7 @@ ParupaintChat::ParupaintChat(QWidget * parent) : ParupaintOverlayWidget(parent)
 	line->resize(this->width(), lh);
 	line->move(0, this->height() - line->height());
 	line->setObjectName("ChatEntry");
-	line->setFocusPolicy(Qt::NoFocus);
+	line->setFocusPolicy(Qt::ClickFocus);
 	
 	chat = new ParupaintChatContent(this);
 	chat->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);

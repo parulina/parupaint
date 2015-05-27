@@ -7,14 +7,14 @@
 ParupaintColorPicker::ParupaintColorPicker(QWidget * parent) : ParupaintOverlayWidget(parent)
 {
 	// TODO better this?
-	this->setFocusPolicy(Qt::ClickFocus);
+	this->setFocusPolicy(Qt::NoFocus);
 	this->setObjectName("ColorPicker");
 	resize(200, 200);
 
 	wheel = new Color_Wheel(this);
 	wheel->resize(200, 200);
 	wheel->setDisplayFlag(Color_Wheel::ANGLE_FIXED, Color_Wheel::ANGLE_FLAGS);
-	wheel->setFocusPolicy(Qt::ClickFocus);
+	wheel->setFocusPolicy(Qt::NoFocus);
 }
 
 void ParupaintColorPicker::wheelEvent(QWheelEvent * event)

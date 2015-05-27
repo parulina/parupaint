@@ -33,7 +33,7 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 	// mouse pointers and canvas itself
 	//
 	
-	this->setFocusPolicy(Qt::ClickFocus);
+	this->setFocusPolicy(Qt::WheelFocus);
 	setBackgroundBrush(QColor(200, 200, 200));
 	viewport()->setMouseTracking(true);
 	

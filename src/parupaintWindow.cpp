@@ -52,10 +52,11 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	OverlayState(OVERLAY_STATUS_HIDDEN)
 
 {
-	this->setFocusPolicy(Qt::NoFocus);
 
 	view = new ParupaintCanvasView(this);
 	view->SetCurrentBrush(glass.GetCurrentBrush());
+	this->setFocusProxy(view);
+	this->setFocusPolicy(Qt::StrongFocus);
 
 	connect(view, &ParupaintCanvasView::CursorChange, this, &ParupaintWindow::CursorChange);
 	connect(view, &ParupaintCanvasView::PenMove, this, &ParupaintWindow::PenMove);
@@ -119,8 +120,6 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	QShortcut * ConnectKey = new QShortcut(CanvasKeyConnect, this);
 	connect(ConnectKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
 
-	connection_dialog = new ParupaintConnectionDialog(this);
-	connect(connection_dialog, &ParupaintConnectionDialog::ConnectSignal, this, &ParupaintWindow::Connect);
 	
 
 	UpdateTitle();
@@ -207,7 +206,10 @@ void ParupaintWindow::NetworkKey()
 		client->LoadCanvas("animushin.tar.gz");
 
 	} else if(seq == CanvasKeyConnect) {
-		connection_dialog->show();
+		ParupaintConnectionDialog * dlg = new ParupaintConnectionDialog(this);
+		dlg->show();
+		dlg->setEnabled(true);
+		connect(dlg, &ParupaintConnectionDialog::ConnectSignal, this, &ParupaintWindow::Connect);
 
 	} else if(seq == CanvasKeyOpen) {
 
@@ -320,10 +322,7 @@ void ParupaintWindow::UpdateOverlay()
 
 bool ParupaintWindow::focusNextPrevChild(bool b)
 {
-	if(connection_dialog->isVisible()) {
-		return QMainWindow::focusNextPrevChild(b);
-	}
-	return false; // disable tab
+	return QMainWindow::focusNextPrevChild(b);
 }
 
 void ParupaintWindow::keyReleaseEvent(QKeyEvent * event)
@@ -337,7 +336,7 @@ void ParupaintWindow::keyReleaseEvent(QKeyEvent * event)
 
 void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 {
-	if(connection_dialog->isVisible()) {
+	if(!this->hasFocus()) {
 		return QMainWindow::keyPressEvent(event);
 	}
 
