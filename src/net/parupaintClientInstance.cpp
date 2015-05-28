@@ -130,7 +130,6 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 				if(extended && ff == 0) extended = false;
 
 				if(extended){
-					qDebug() << "Extending frame " << ff-1;
 					canvas_layer->ExtendFrame(ff-1);
 				} else {
 					canvas_layer->AddFrames(ff, 1);
@@ -187,13 +186,14 @@ void ParupaintClientInstance::ReloadImage()
 {
 	this->ParupaintClient::send("img");
 }
-void ParupaintClientInstance::SendLayerFrame(int layer, int frame, int ll, int ff)
+void ParupaintClientInstance::SendLayerFrame(int layer, int frame, int ll, int ff, bool ext)
 {
 	QJsonObject obj;
 	obj["l"] = layer;
 	obj["f"] = frame;
 	obj["ll"] = ll;
 	obj["ff"] = ff;
+	obj["ext"] = ext;
 	this->send("lf", obj);
 }
 

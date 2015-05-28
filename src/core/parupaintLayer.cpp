@@ -86,12 +86,11 @@ void ParupaintLayer::RemoveFrames(_fint f, _fint n)
 		n--;
 	}
 }
-
 void ParupaintLayer::ExtendFrame(_fint f, _fint n)
 {
 	if(Frames.isEmpty()) return;
 	
-	if(f > GetNumFrames()) f = GetNumFrames()-1;
+	if(f > GetNumFrames()) f = GetNumFrames();
 	else if(f < 0) f = 0;
 
 	Frames.at(f)->SetExtended(true);
@@ -112,9 +111,10 @@ void ParupaintLayer::RedactFrame(_fint f, _fint n)
 	}
 	
 	while(n > 0){
+		n--;
 		auto nf = f+1;
-		if(nf <= GetNumFrames()) {
-			if(Frames.at(nf) == Frames.at(nf)){
+		if(nf < GetNumFrames()) {
+			if(Frames.at(f) == Frames.at(nf)){
 				Frames.removeAt(nf);
 				continue;
 			}

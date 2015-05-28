@@ -50,7 +50,7 @@ QString ParupaintServerInstance::MarshalCanvas()
 			auto * frame = layer->GetFrame(f);
 
 			QJsonObject fobj;
-			fobj["extended"] = layer->IsFrameExtended(f);
+			fobj["extended"] = !(layer->IsFrameReal(f));
 			fobj["opacity"] = frame->GetOpacity();
 
 			frames.insert(f, fobj);
@@ -120,10 +120,11 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 
 		} else if(id == "lf") {
 
-			int 	layer = obj["l"].toInt(),
-				frame = obj["f"].toInt(),
-				layer_change = obj["ll"].toInt(),
-				frame_change = obj["ff"].toInt();
+			int   layer = obj["l"].toInt(),
+			      frame = obj["f"].toInt(),
+			      layer_change = obj["ll"].toInt(),
+			      frame_change = obj["ff"].toInt();
+			bool  extended = obj["ext"].toBool();
 
 			bool changed = false;
 			if(layer_change != 0){
@@ -139,34 +140,41 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 				auto * ff = canvas->GetLayer(layer);
 				if(ff) {
 					if(frame_change < 0 && ff->GetNumFrames() > 1){
-						ff->RemoveFrames(frame, -frame_change);
+						if(extended){
+							ff->RedactFrame(frame, -frame_change);
+						} else {
+							ff->RemoveFrames(frame, -frame_change);
+						}
 						changed = true;
 					} else if(frame_change > 0){
-						ff->AddFrames(frame, frame_change);
+						if(extended){
+							ff->ExtendFrame(frame, frame_change);
+						} else {
+							ff->AddFrames(frame, frame_change);
+						}
 						changed = true;
 					}
 				}
 			}
 			if((layer_change != 0 || frame_change != 0) && changed){
 				c->send("canvas", MarshalCanvas());
-			} else {
-				auto * brush = brushes.value(c);
-				if(brush) {
-					if(layer < 0) layer = int(canvas->GetNumLayers())-1; 
-					if(layer >= int(canvas->GetNumLayers())) layer = 0;
-					auto * ll = canvas->GetLayer(layer);
-					if(ll){
-						if(frame < 0) frame = int(ll->GetNumFrames())-1; 
-						if(frame >= int(ll->GetNumFrames())) frame = 0; 
-					}
-					brush->SetLayer(layer);
-					brush->SetFrame(frame);
-					obj["l"] = layer;
-					obj["f"] = frame;
-					obj["id"] = c->id;
-					this->Broadcast(id, QJsonDocument(obj).toJson(QJsonDocument::Compact));
-
+			}
+			auto * brush = brushes.value(c);
+			if(brush) {
+				if(layer < 0) layer = int(canvas->GetNumLayers())-1;
+				if(layer >= int(canvas->GetNumLayers())) layer = 0;
+				auto * ll = canvas->GetLayer(layer);
+				if(ll){
+					if(frame < 0) frame = int(ll->GetNumFrames())-1;
+					if(frame >= int(ll->GetNumFrames())) frame = 0;
 				}
+				brush->SetLayer(layer);
+				brush->SetFrame(frame);
+				obj["l"] = layer;
+				obj["f"] = frame;
+				obj["id"] = c->id;
+				this->Broadcast(id, QJsonDocument(obj).toJson(QJsonDocument::Compact));
+
 			}
 
 		} else if(id == "draw"){

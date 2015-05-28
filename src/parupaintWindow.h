@@ -32,13 +32,14 @@ Q_OBJECT
 	QKeySequence OverlayKeyHide;
 	bool OverlayButtonDown;
 	QTimer * OverlayTimer;
+	QTimer * OverlayButtonTimer;
 	
 	
 	QKeySequence CanvasKeySquash;
-	QKeySequence CanvasKeyNextLayer;
-	QKeySequence CanvasKeyPreviousLayer;
-	QKeySequence CanvasKeyNextFrame;
-	QKeySequence CanvasKeyPreviousFrame;
+	int CanvasKeyNextLayer;
+	int CanvasKeyPreviousLayer;
+	int CanvasKeyNextFrame;
+	int CanvasKeyPreviousFrame;
 
 	QKeySequence CanvasKeyReload;
 	QKeySequence CanvasKeyQuicksave;
@@ -87,9 +88,9 @@ Q_OBJECT
 
 	private slots:
 	void OverlayTimeout();
+	void ButtonTimeout();
 
 	void BrushKey();
-	void CanvasChangeKey();
 	void CanvasKey();
 	void NetworkKey();
 

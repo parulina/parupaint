@@ -86,19 +86,13 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	OverlayTimer->setSingleShot(true);
 	connect(OverlayTimer, SIGNAL(timeout()), this, SLOT(OverlayTimeout()));
 
+	OverlayButtonTimer = new QTimer(this);
+	OverlayButtonTimer->setSingleShot(true);
+	connect(OverlayButtonTimer, &QTimer::timeout, this, &ParupaintWindow::ButtonTimeout);
+
 
 	QShortcut * PreviewKey =	new QShortcut(CanvasKeyPreview, this);
 	connect(PreviewKey, 		&QShortcut::activated, this, &ParupaintWindow::CanvasKey);
-
-	QShortcut * NextFrameKey = 	new QShortcut(CanvasKeyNextFrame, this);
-	QShortcut * PreviousFrameKey = 	new QShortcut(CanvasKeyPreviousFrame, this);
-	QShortcut * NextLayerKey = 	new QShortcut(CanvasKeyNextLayer, this);
-	QShortcut * PreviousLayerKey =	new QShortcut(CanvasKeyPreviousLayer, this);
-
-	connect(NextLayerKey, 		&QShortcut::activated, this, &ParupaintWindow::CanvasChangeKey);
-	connect(PreviousLayerKey,	&QShortcut::activated, this, &ParupaintWindow::CanvasChangeKey);
-	connect(NextFrameKey, 		&QShortcut::activated, this, &ParupaintWindow::CanvasChangeKey);
-	connect(PreviousFrameKey, 	&QShortcut::activated, this, &ParupaintWindow::CanvasChangeKey);
 
 	QShortcut * SwitchKey = new QShortcut(BrushKeySwitchBrush, this);
 	QShortcut * UndoKey = 	new QShortcut(BrushKeyUndo, this);
@@ -190,6 +184,11 @@ void ParupaintWindow::OverlayTimeout()
 	HideOverlay();
 }
 
+void ParupaintWindow::ButtonTimeout()
+{
+	OverlayButtonDown = false;
+}
+
 
 void ParupaintWindow::NetworkKey()
 {
@@ -226,39 +225,6 @@ void ParupaintWindow::CanvasKey()
 	}
 }
 
-void ParupaintWindow::CanvasChangeKey()
-{
-	QShortcut* shortcut = qobject_cast<QShortcut*>(sender());
-	QKeySequence seq = shortcut->key();
-
-	int ll = 0, ff = 0;
-	if(seq == CanvasKeyNextFrame){
-		ff ++;
-	} else if(seq == CanvasKeyPreviousFrame){
-		ff --;
-
-	} else if(seq == CanvasKeyNextLayer){
-		ll++;
-	} else if(seq == CanvasKeyPreviousLayer){
-		ll--;
-	}
-	if(!OverlayButtonDown) {
-		// Do a local check for boundaries
-		pool->GetCanvas()->AddLayerFrame(ll, ff);
-
-		auto brush = glass.GetCurrentBrush();
-		brush->SetLayer(pool->GetCanvas()->GetCurrentLayer());
-		brush->SetFrame(pool->GetCanvas()->GetCurrentFrame());
-		client->SendLayerFrame(pool->GetCanvas()->GetCurrentLayer(),
-					pool->GetCanvas()->GetCurrentFrame());
-	} else {
-		
-		client->SendLayerFrame(pool->GetCanvas()->GetCurrentLayer(),
-						pool->GetCanvas()->GetCurrentFrame(),
-						ll, ff);
-	}
-
-}
 
 void ParupaintWindow::BrushKey()
 {
@@ -327,10 +293,11 @@ bool ParupaintWindow::focusNextPrevChild(bool b)
 
 void ParupaintWindow::keyReleaseEvent(QKeyEvent * event)
 {
-	if(event->key() == Qt::Key_Tab && !event->isAutoRepeat()){
-		OverlayButtonDown = false;
+	if((event->key() == Qt::Key_Tab || event->key() == Qt::Key_Backtab) && !event->isAutoRepeat()){
+		OverlayButtonTimer->start(100);
 		return;
 	}
+
 	return QMainWindow::keyReleaseEvent(event);
 }
 
@@ -340,21 +307,68 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 		return QMainWindow::keyPressEvent(event);
 	}
 
+	if(event->key() == CanvasKeyNextLayer || 
+			event->key() == CanvasKeyPreviousLayer || 
+			event->key() == CanvasKeyNextFrame || 
+			event->key() == CanvasKeyPreviousFrame){
+
+		int ll = 0, ff = 0;
+		if(event->key() == CanvasKeyNextFrame){
+			ff ++;
+		} else if(event->key() == CanvasKeyPreviousFrame){
+			ff --;
+
+		} else if(event->key() == CanvasKeyNextLayer){
+			ll++;
+		} else if(event->key() == CanvasKeyPreviousLayer){
+			ll--;
+		}
+		if(!OverlayButtonDown) {
+			// Do a local check for boundaries
+			pool->GetCanvas()->AddLayerFrame(ll, ff);
+
+			auto brush = glass.GetCurrentBrush();
+			brush->SetLayer(pool->GetCanvas()->GetCurrentLayer());
+			brush->SetFrame(pool->GetCanvas()->GetCurrentFrame());
+			client->SendLayerFrame(pool->GetCanvas()->GetCurrentLayer(),
+						pool->GetCanvas()->GetCurrentFrame());
+		} else {
+			auto current_layer = pool->GetCanvas()->GetCurrentLayer(),
+			     current_frame = pool->GetCanvas()->GetCurrentFrame();
+
+			auto shift = (event->modifiers() & Qt::ShiftModifier),
+			     control = (event->modifiers() & Qt::ControlModifier);
+
+			if(ll > 0 && !shift){
+				current_layer ++;
+			}
+			if(ff > 0 && !shift && !control){
+				current_frame ++;
+			}
+			client->SendLayerFrame(current_layer, current_frame, ll, ff, control);
+		}
+
+	}
+
 	if(event->key() == Qt::Key_F1 && !event->isAutoRepeat()){
 		OverlayState = OVERLAY_STATUS_SHOWN_NORMAL;
 		ShowOverlay(true);
 	}
-	if(event->key() == Qt::Key_Backtab) {
+	if(event->key() == Qt::Key_Backtab && !event->isAutoRepeat() && !OverlayButtonDown) {
 		OverlayState = OVERLAY_STATUS_HIDDEN;
 		HideOverlay();
+
+	} else if(OverlayButtonDown){
+		OverlayButtonTimer->stop();
 	}
 	if(event->key() == Qt::Key_Tab){
-	
-		if(!event->isAutoRepeat()) {
+		OverlayButtonTimer->stop();
+		
+		if(OverlayState == OVERLAY_STATUS_HIDDEN) {
 			OverlayState = OVERLAY_STATUS_SHOWN_SMALL;
 			ShowOverlay(false);
 
-		} else {
+		} else if(OverlayState != OVERLAY_STATUS_SHOWN_NORMAL) {
 			OverlayState = OVERLAY_STATUS_SHOWN_NORMAL;
 			ShowOverlay(true);
 
