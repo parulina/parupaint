@@ -18,6 +18,7 @@ class ParupaintServerInstance : public ParupaintServer
 
 	public:
 	ParupaintServerInstance(quint16 , QObject * = nullptr);
+	void Broadcast(QString, QJsonObject, ParupaintConnection * = nullptr);
 	void Broadcast(QString, QString, ParupaintConnection * = nullptr);
 	void Broadcast(QString, const QByteArray, ParupaintConnection * = nullptr);
 	

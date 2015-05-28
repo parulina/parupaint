@@ -176,7 +176,10 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 		}
 		pool->GetCanvas()->TriggerCacheRedraw();
 		pool->UpdateView();
-
+	} else if(id == "chat") {
+		auto name = object["name"].toString(),
+		     msg = object["message"].toString();
+		emit ChatMessageReceived(name, msg);
 	} else {
 		qDebug() << id << object;
 	}
@@ -226,6 +229,14 @@ void ParupaintClientInstance::SaveCanvas(const QString filename)
 void ParupaintClientInstance::SetNickname(QString str)
 {
 	nickname = str;
+}
+
+void ParupaintClientInstance::SendChat(QString str)
+{
+	QJsonObject obj;
+	obj["message"] = str;
+	obj["name"] = nickname;
+	this->send("chat", obj);
 }
 
 void ParupaintClientInstance::send(const QString id, const QJsonObject & obj)

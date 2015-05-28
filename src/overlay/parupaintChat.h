@@ -2,21 +2,26 @@
 #define PARUPAINTCHAT_H
 
 #include "parupaintOverlayWidget.h"
-#include "parupaintChatContent.h"
 
-#include <QLineEdit>
+class ParupaintChatInput;
+class ParupaintChatContent;
 
 class ParupaintChat : public ParupaintOverlayWidget
 {
+Q_OBJECT
 	private:
-	QLineEdit *	line;
+	ParupaintChatInput *	line;
 	ParupaintChatContent *	chat;
-
 
 	public:
 	ParupaintChat(QWidget * parent = nullptr);
+	void AddMessage(QString, QString);
 
-	private:
+	private slots:
+	void returnPressed();
+
+	signals:
+	void Message(QString);
 };
 
 #endif

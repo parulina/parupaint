@@ -47,6 +47,7 @@ Q_OBJECT
 	QKeySequence CanvasKeySaveProject;
 	QKeySequence CanvasKeyPreview;
 	QKeySequence CanvasKeyConnect;
+	int CanvasKeyChat;
 
 	QKeySequence BrushKeyUndo;
 	QKeySequence BrushKeyRedo;
@@ -104,6 +105,8 @@ Q_OBJECT
 
 	void SelectFrame(int, int);
 	void ChangedFrame(int, int);
+	void ChatMessage(QString);
+	void ChatMessageReceived(QString, QString);
 };
 
 

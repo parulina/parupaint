@@ -39,14 +39,15 @@ ParupaintApp {
 }
 
 #Chat {
-}
-
-#ChatEntry {
 	margin:0;
 	padding:0;
 	color:black;
-	background-color:black;
 	font-family:Monospace;
+}
+
+#ChatEntry {
+	background-color:black;
+	border:none;
 }
 
 #FlayerList {

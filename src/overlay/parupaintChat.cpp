@@ -1,29 +1,45 @@
 
 #include "parupaintChat.h"
 
-#include <QSizePolicy>
+#include "parupaintChatInput.h"
+#include "parupaintChatContent.h"
 
+#include <QVBoxLayout>
+#include <QSizePolicy>
+#include <QDebug>
 
 ParupaintChat::ParupaintChat(QWidget * parent) : ParupaintOverlayWidget(parent)
 {
-	this->setFocusPolicy(Qt::NoFocus);
-	this->setStyleSheet("margin:0; padding:0; border:none; background-color:transparent;");
+	this->setFocusPolicy(Qt::ClickFocus);
 	this->setObjectName("Chat");
 	this->resize(400, 200);
 
-	const auto lh = 25;
-	
-	line = new QLineEdit(this);
-	line->resize(this->width(), lh);
-	line->move(0, this->height() - line->height());
-	line->setObjectName("ChatEntry");
-	line->setFocusPolicy(Qt::ClickFocus);
+	auto * layout = new QVBoxLayout(this);
+	layout->setSpacing(0);
+	layout->setMargin(0);
 	
 	chat = new ParupaintChatContent(this);
-	chat->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
-	chat->setMinimumWidth(this->width());
-	chat->setMaximumHeight(this->height() - lh);
+	chat->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+
+	line = new ParupaintChatInput(this);
+	connect(line, &QLineEdit::returnPressed, this, &ParupaintChat::returnPressed);
+
+
+	layout->addWidget(chat);
+	layout->addWidget(line);
+
+	this->setFocusProxy(line);
+	this->setLayout(layout);
 }
 
+void ParupaintChat::AddMessage(QString name, QString msg)
+{
+	chat->AddMessage(name, msg);
+}
 
-
+void ParupaintChat::returnPressed()
+{
+	QString text = line->text();
+	line->setText("");
+	emit Message(text);
+}

@@ -54,6 +54,7 @@ void ParupaintClient::onDisconnect()
 void ParupaintClient::textReceived(QString text)
 {
 	if(text.isEmpty()) return;
-	const auto list = text.split(" ");
-	emit onMessage(list[0], list[1].toUtf8());
+	const auto id = text.split(' ')[0];
+	const auto arg = text.mid(id.length()+1);
+	emit onMessage(id, arg.toUtf8());
 }

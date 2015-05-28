@@ -173,7 +173,7 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 				obj["l"] = layer;
 				obj["f"] = frame;
 				obj["id"] = c->id;
-				this->Broadcast(id, QJsonDocument(obj).toJson(QJsonDocument::Compact));
+				this->Broadcast(id, obj);
 
 			}
 
@@ -213,7 +213,7 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 				brush->SetDrawing(drawing);
 
 				obj["id"] = c->id;
-				this->Broadcast(id, QJsonDocument(obj).toJson(QJsonDocument::Compact));
+				this->Broadcast(id, obj);
 			}
 		} else if (id == "img") {
 
@@ -271,6 +271,16 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 				}
 				
 			}
+		} else if(id == "chat") {
+			auto msg = obj["message"].toString();
+			if(msg.isEmpty()) msg = obj["msg"].toString();
+
+			auto * brush = brushes.value(c);
+			if(brush) {
+				obj["name"] = brush->GetName();
+				obj["id"] = c->id;
+				this->Broadcast(id, obj);
+			}
 		} else {
 			qDebug() << id << obj;
 		}
@@ -279,6 +289,10 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 }
 
 
+void ParupaintServerInstance::Broadcast(QString id, QJsonObject ba, ParupaintConnection * c)
+{
+	this->Broadcast(id, QJsonDocument(ba).toJson(QJsonDocument::Compact), c);
+}
 void ParupaintServerInstance::Broadcast(QString id, QString ba, ParupaintConnection * c)
 {
 	return this->Broadcast(id, ba.toUtf8(), c);

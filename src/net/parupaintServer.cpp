@@ -44,8 +44,9 @@ void ParupaintServer::textReceived(QString text)
 	QWebSocket * socket = qobject_cast<QWebSocket *>(sender());
 
 	if(text.isEmpty()) return;
-	const auto list = text.split(" ");
-	emit onMessage(GetConnection(socket), list[0], list[1].toUtf8());
+	const auto id = text.split(" ")[0];
+	const auto arg = text.mid(id.length()+1);
+	emit onMessage(GetConnection(socket), id, arg.toUtf8());
 }
 
 ParupaintConnection * ParupaintServer::GetConnection(QWebSocket* s)

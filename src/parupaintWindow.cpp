@@ -45,6 +45,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	CanvasKeyReload(Qt::Key_R + Qt::SHIFT), CanvasKeyQuicksave(Qt::Key_K + Qt::CTRL),
 	CanvasKeyOpen(Qt::Key_O + Qt::CTRL), CanvasKeySaveProject(Qt::Key_L + Qt::CTRL),
 	CanvasKeyPreview(Qt::Key_Q), CanvasKeyConnect(Qt::Key_I + Qt::CTRL),
+	CanvasKeyChat(Qt::Key_Return),
 	// brush keys
 	BrushKeyUndo(Qt::Key_Z), BrushKeyRedo(Qt::SHIFT + Qt::Key_Z),
 	BrushKeySwitchBrush(Qt::Key_E),
@@ -69,6 +70,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	view->SetCanvas(pool);
 
 	client = new ParupaintClientInstance(pool, this);
+	connect(client, &ParupaintClientInstance::ChatMessageReceived, this, &ParupaintWindow::ChatMessageReceived);
 
 	chat =	  new ParupaintChat(this);
 	flayer =  new ParupaintFlayer(this);
@@ -80,6 +82,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 
 	connect(pool->GetCanvas(), SIGNAL(CurrentSignal(int, int)), this, SLOT(ChangedFrame(int, int)));
 	connect(flayer->GetList(), SIGNAL(clickFrame(int, int)), this, SLOT(SelectFrame(int, int)));
+	connect(chat, &ParupaintChat::Message, this, &ParupaintWindow::ChatMessage);
 
 
 	OverlayTimer = new QTimer(this);
@@ -104,14 +107,15 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 
 	// Network keys
 	QShortcut * ReloadKey = new QShortcut(CanvasKeyReload, this);
-	connect(ReloadKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
 	QShortcut * QuicksaveKey = new QShortcut(CanvasKeyQuicksave, this);
-	connect(QuicksaveKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
 	QShortcut * OpenKey = new QShortcut(CanvasKeyOpen, this);
-	connect(OpenKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
 	QShortcut * SaveProjectKey = new QShortcut(CanvasKeySaveProject, this);
-	connect(SaveProjectKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
 	QShortcut * ConnectKey = new QShortcut(CanvasKeyConnect, this);
+
+	connect(ReloadKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
+	connect(QuicksaveKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
+	connect(OpenKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
+	connect(SaveProjectKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
 	connect(ConnectKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
 
 	
@@ -125,6 +129,15 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	show();
 }
 
+void ParupaintWindow::ChatMessageReceived(QString name, QString msg)
+{
+	chat->AddMessage(name, msg);
+}
+
+void ParupaintWindow::ChatMessage(QString str)
+{
+	client->SendChat(str);
+}
 
 void ParupaintWindow::CursorChange(ParupaintBrush* brush)
 {
@@ -303,7 +316,13 @@ void ParupaintWindow::keyReleaseEvent(QKeyEvent * event)
 
 void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 {
+	if(event->key() == CanvasKeyChat && !event->isAutoRepeat() && 
+	this->hasFocus()){
+		chat->setFocus();
+		chat->show();
+	}
 	if(!this->hasFocus()) {
+
 		return QMainWindow::keyPressEvent(event);
 	}
 
