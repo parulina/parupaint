@@ -90,7 +90,8 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 				if(!brush->GetCurrentStroke()) pool->NewBrushStroke(brush);
 
 				if(brush->GetCurrentStroke()) {
-					brush->GetCurrentStroke()->AddStroke(new ParupaintStrokeStep(*brush));
+					auto * step = new ParupaintStrokeStep(*brush);
+					brush->GetCurrentStroke()->AddStroke(step);
 				}
 
 			} else {

@@ -78,14 +78,18 @@ void ParupaintCanvasPool::OnCanvasResize(QSize old_size, QSize new_size)
 
 ParupaintCanvasStrokeObject * ParupaintCanvasPool::NewBrushStroke(ParupaintBrush * brush)
 {
-	if(!strokes.isEmpty()){
-		while(brush->GetLastStroke() != strokes.first()){
-			delete strokes.first();
-			strokes.remove(strokes.firstKey(), strokes.first());
+	if(!strokes.values(brush).isEmpty()){
+		while(brush->GetLastStroke() != strokes.values(brush).first()){
+			auto * stroke = strokes.values(brush).first();
+			delete stroke;
+			strokes.remove(brush, stroke);
 
-			if(strokes.isEmpty()) break;
+			if(strokes.values(brush).isEmpty()) break;
+			// todo - what if it gets empty?
+			// what happens with last stroke? should we reset it?
 		}
-	} else {
+	}
+	if(strokes.values(brush).isEmpty()) {
 		// add a dummy first thing
 		// otherwise on undo it'll set 0x00 and forget
 		// about the next stroke
@@ -100,8 +104,9 @@ ParupaintCanvasStrokeObject * ParupaintCanvasPool::NewBrushStroke(ParupaintBrush
 	stroke->SetPreviousStroke(nullptr); // grumble grumble..
 
 	// put next/prev pointers
-	strokes.first()->SetNextStroke(stroke);
-	stroke->SetPreviousStroke(strokes.first());
+	auto * first = strokes.values(brush).first();
+	first->SetNextStroke(stroke);
+	stroke->SetPreviousStroke(first);
 
 	strokes.insert(brush, stroke);
 	// first = new, last = 0
@@ -157,12 +162,13 @@ void ParupaintCanvasPool::RedoBrushStroke(ParupaintBrush * brush)
 }
 void ParupaintCanvasPool::SquashBrushStrokes(ParupaintBrush * brush)
 {
-	if(!strokes.isEmpty()){
-		while(brush->GetLastStroke() != strokes.first()){
-			delete strokes.first();
-			strokes.remove(strokes.firstKey(), strokes.first());
+	if(!strokes.values(brush).isEmpty()){
+		while(brush->GetLastStroke() != strokes.values(brush).first()){
+			auto * stroke = strokes.values(brush).first();
+			delete stroke;
+			strokes.remove(brush, stroke);
 
-			if(strokes.isEmpty()) break;
+			if(strokes.values(brush).isEmpty()) break;
 		}
 	}
 
