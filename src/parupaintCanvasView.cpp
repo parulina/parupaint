@@ -152,7 +152,7 @@ void ParupaintCanvasView::OnPenMove(const QPointF &pos, Qt::MouseButtons buttons
 	if(CanvasState == CANVAS_STATUS_MOVING){
 		QScrollBar *ver = verticalScrollBar();
 		QScrollBar *hor = horizontalScrollBar();
-		auto dif = OldPosition - pos;
+		auto dif = OldPosition.toPoint() - pos.toPoint();
 		hor->setSliderPosition(hor->sliderPosition() + dif.x());
 		ver->setSliderPosition(ver->sliderPosition() + dif.y());
 
@@ -392,7 +392,7 @@ void ParupaintCanvasView::mouseMoveEvent(QMouseEvent * event)
 
 void ParupaintCanvasView::mousePressEvent(QMouseEvent * event)
 {
-	if(PenState == PEN_STATE_TABLET_DOWN && event->buttons() == Qt::LeftButton)
+	if(PenState == PEN_STATE_TABLET_DOWN && event->buttons() != Qt::RightButton)
 	{
 		return;
 	}
