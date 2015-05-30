@@ -52,6 +52,7 @@ Q_OBJECT
 	QKeySequence BrushKeyUndo;
 	QKeySequence BrushKeyRedo;
 	QKeySequence BrushKeySwitchBrush;
+	int BrushKeyPickColor;
 
 
 	void UpdateOverlay();
@@ -103,6 +104,7 @@ Q_OBJECT
 	void PenDrawStop(ParupaintBrush*);
 
 	void CursorChange(ParupaintBrush*);
+	void ColorChange(QColor);
 
 	void SelectFrame(int, int);
 	void ChangedFrame(int, int);

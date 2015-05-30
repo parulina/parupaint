@@ -48,7 +48,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	CanvasKeyChat(Qt::Key_Return),
 	// brush keys
 	BrushKeyUndo(Qt::Key_Z), BrushKeyRedo(Qt::SHIFT + Qt::Key_Z),
-	BrushKeySwitchBrush(Qt::Key_E),
+	BrushKeySwitchBrush(Qt::Key_E), BrushKeyPickColor(Qt::Key_R),
 	//internal stuff?
 	OverlayState(OVERLAY_STATUS_HIDDEN)
 
@@ -83,6 +83,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	connect(pool->GetCanvas(), SIGNAL(CurrentSignal(int, int)), this, SLOT(ChangedFrame(int, int)));
 	connect(flayer->GetList(), SIGNAL(clickFrame(int, int)), this, SLOT(SelectFrame(int, int)));
 	connect(chat, &ParupaintChat::Message, this, &ParupaintWindow::ChatMessage);
+	connect(picker, &ParupaintColorPicker::ColorChange, this, &ParupaintWindow::ColorChange);
 
 
 	OverlayTimer = new QTimer(this);
@@ -129,6 +130,13 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	show();
 }
 
+void ParupaintWindow::ColorChange(QColor col)
+{
+	auto * brush = glass.GetCurrentBrush();
+	brush->SetColor(col); // Save it
+	view->UpdateCurrentBrush(brush); // show it
+}
+
 void ParupaintWindow::ChatMessageReceived(QString name, QString msg)
 {
 	chat->AddMessage(name, msg);
@@ -156,6 +164,8 @@ void ParupaintWindow::PenDrawStart(ParupaintBrush* brush){
 }
 
 void ParupaintWindow::PenMove(ParupaintBrush* brush){
+	auto * cbrush = glass.GetCurrentBrush();
+	cbrush->SetPosition(brush->GetPosition());
 	client->SendBrushUpdate(brush);
 
 // 	auto *stroke = brush->GetCurrentStroke();
@@ -255,6 +265,7 @@ void ParupaintWindow::BrushKey()
 
 		glass.ToggleBrush(0, 1);
 		view->SetCurrentBrush(glass.GetCurrentBrush());
+		picker->SetColor(glass.GetCurrentBrush()->GetColor());
 	}
 
 }
@@ -305,6 +316,7 @@ void ParupaintWindow::mousePressEvent(QMouseEvent * event)
 	if(event->buttons() == Qt::RightButton) {
 		glass.ToggleBrush(0, 1);
 		view->SetCurrentBrush(glass.GetCurrentBrush());
+		picker->SetColor(glass.GetCurrentBrush()->GetColor());
 
 		event->accept();
 	}
@@ -376,6 +388,34 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 
 	}
 
+	if(event->key() == BrushKeyPickColor){
+		bool global = (event->modifiers() & Qt::ControlModifier);
+		QColor col(255,255,255,0);
+
+		auto * brush = glass.GetCurrentBrush();
+		const auto pos = brush->GetPosition();
+		const auto rect = pool->GetCanvas()->boundingRect();
+
+		if(rect.contains(pos)){
+			if(global){
+				const auto & img = pool->GetCanvas()->GetCache().toImage();
+				col = img.pixel(pos.x(), pos.y());
+			} else {
+				auto * layer = pool->GetCanvas()->GetLayer(brush->GetLayer());
+				if(layer){
+					auto * frame = layer->GetFrame(brush->GetFrame());
+					if(frame){
+						const auto & img = frame->GetImage();
+						col = img.pixel(pos.x(), pos.y());
+					}
+				}
+			}
+		}
+
+		brush->SetColor(col);
+		view->UpdateCurrentBrush(brush);
+		picker->SetColor(col);
+	}
 	if(event->key() == Qt::Key_F1 && !event->isAutoRepeat()){
 		OverlayState = OVERLAY_STATUS_SHOWN_NORMAL;
 		ShowOverlay(true);

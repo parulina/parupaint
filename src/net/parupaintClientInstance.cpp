@@ -77,7 +77,7 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 		auto * brush = brushes.value(c);
 		if(brush) {
 
-			QColor color(object["c"].toString().left(7));
+			QColor color = HexToColor(object["c"].toString());
 			auto drawing(object["d"].toBool());
 			auto width(object["s"].toDouble());
 			auto x(object["x"].toDouble());

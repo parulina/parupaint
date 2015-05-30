@@ -53,6 +53,7 @@ void ParupaintFrame::DrawStep(float x, float y, float x2, float y2, QPen & pen)
 {
 	QPainter painter(&Frame);
 	painter.setPen(pen);
+	if(pen.color().alpha() == 0) painter.setCompositionMode(QPainter::CompositionMode_Clear);
 	painter.drawLine(x, y, x2, y2);
 	painter.end();
 }

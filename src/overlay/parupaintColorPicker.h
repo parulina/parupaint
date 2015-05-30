@@ -1,11 +1,12 @@
 #ifndef PARUPAINTCOLORPICKER_H
 #define PARUPAINTCOLORPICKER_H
 
-#include "../qtcolorpicker/Color_Wheel"
 #include "parupaintOverlayWidget.h"
+class Color_Wheel;
 
 class ParupaintColorPicker : public ParupaintOverlayWidget
 {
+Q_OBJECT
 	private:
 	Color_Wheel * wheel;
 
@@ -13,8 +14,10 @@ class ParupaintColorPicker : public ParupaintOverlayWidget
 
 	public:
 	ParupaintColorPicker(QWidget * parent = nullptr);
+	void SetColor(QColor);
 
-
+	signals:
+	void ColorChange(QColor);
 
 };
 

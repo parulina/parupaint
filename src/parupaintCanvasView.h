@@ -59,6 +59,7 @@ Q_OBJECT
 	ParupaintCanvasView(QWidget* parent);
 	void SetCanvas(ParupaintCanvasPool * canvas);
 	void SetCurrentBrush(ParupaintBrush * brush);
+	void UpdateCurrentBrush(ParupaintBrush * brush);
 
 	float GetZoom() const;
 	void SetZoom(float z);

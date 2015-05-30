@@ -1,5 +1,6 @@
 
 #include "parupaintColorPicker.h"
+#include "../qtcolorpicker/Color_Wheel"
 
 #include <QDebug>
 #include <QWheelEvent>
@@ -15,6 +16,13 @@ ParupaintColorPicker::ParupaintColorPicker(QWidget * parent) : ParupaintOverlayW
 	wheel->resize(200, 200);
 	wheel->setDisplayFlag(Color_Wheel::ANGLE_FIXED, Color_Wheel::ANGLE_FLAGS);
 	wheel->setFocusPolicy(Qt::NoFocus);
+
+	connect(wheel, &Color_Wheel::colorChanged, this, &ParupaintColorPicker::ColorChange);
+}
+
+void ParupaintColorPicker::SetColor(QColor c)
+{
+	wheel->setColor(c);
 }
 
 void ParupaintColorPicker::wheelEvent(QWheelEvent * event)
@@ -25,5 +33,7 @@ void ParupaintColorPicker::wheelEvent(QWheelEvent * event)
 	else if(h < 0)	h += 1;
 
 	wheel->setHue(h);
+	emit ColorChange(wheel->color());
+	QWidget::wheelEvent(event);
 }
 

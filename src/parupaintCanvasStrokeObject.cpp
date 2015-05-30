@@ -43,6 +43,7 @@ void ParupaintCanvasStrokeObject::AddStroke(ParupaintStrokeStep *ss)
  	QPainter paint(&pix);
 
 	QPen pen = ss->ToPen();
+	if(pen.color().alpha() == 0) pen.setBrush(Qt::red);
 	paint.setPen(pen);
 	paint.drawLine(pos1.x(), pos1.y(), pos2.x(), pos2.y());
 

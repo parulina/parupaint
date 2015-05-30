@@ -136,3 +136,8 @@ _fint ParupaintCanvasObject::GetCurrentFrame()
 {
 	return CurrentFrame;
 }
+
+const QPixmap & ParupaintCanvasObject::GetCache() const
+{
+	return cache;
+}

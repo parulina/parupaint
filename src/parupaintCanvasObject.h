@@ -35,6 +35,7 @@ Q_OBJECT
 	_fint GetCurrentFrame();
 
 	void TriggerCacheRedraw();
+	const QPixmap & GetCache() const;
 
 
 	QRectF boundingRect() const;

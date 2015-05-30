@@ -176,20 +176,27 @@ void ParupaintCanvasPool::SquashBrushStrokes(ParupaintBrush * brush)
 	for(int i = 0; i < val.length(); i++){
 		auto s = val.at(i);
 
-
+		QPointF pos1;
 		foreach(auto i, s->GetStrokes()){
+			if(pos1.isNull()) pos1 = i->GetPosition();
+			QPointF pos2 = i->GetPosition();
+
 			auto * layer = this->GetCanvas()->GetLayer(i->GetLayer());
 			if(!layer) continue;
 			auto * frame = layer->GetFrame(i->GetFrame());
 			if(!frame) continue;
 			
+			frame->DrawStep(pos1.x(), pos1.y(), pos2.x(), pos2.y(), i->GetWidth(), i->GetColor());
 			// putting the pixmap on the frame instead
 			// redrawing the lines makes the lines different?!?!
 			// + useless work
+			/*
 			QImage tmp_img = frame->GetImage();
 			QPainter painter(&tmp_img);
 			painter.drawPixmap(frame->GetImage().rect(), s->pixmap());
 			frame->Replace(tmp_img);
+			*/
+			pos1 = pos2;
 		}
 	}
 	this->ClearBrushStrokes(brush);

@@ -181,7 +181,7 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 			auto * brush = brushes.value(c);
 			if(brush) {
 
-				QColor color(obj["c"].toString().left(7));
+				QColor color = HexToColor(obj["c"].toString());
 				auto drawing(obj["d"].toBool());
 				auto width(obj["s"].toDouble());
 				auto x(obj["x"].toDouble());

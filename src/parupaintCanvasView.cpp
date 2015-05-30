@@ -41,6 +41,12 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 }
 
 
+void ParupaintCanvasView::UpdateCurrentBrush(ParupaintBrush * brush)
+{
+	if(CurrentBrush){
+		*((ParupaintBrush*)CurrentBrush) = *brush;
+	}
+}
 
 void ParupaintCanvasView::SetCurrentBrush(ParupaintBrush * brush)
 {
@@ -56,7 +62,7 @@ void ParupaintCanvasView::SetCurrentBrush(ParupaintBrush * brush)
 		ParupaintCanvasBrush * cursor = new ParupaintCanvasBrush;
 		viewport()->setCursor(Qt::BlankCursor);
 		CurrentBrush = cursor;
-		*((ParupaintBrush*)CurrentBrush) = *brush;
+		this->UpdateCurrentBrush(brush);
 		CurrentBrush->SetPosition(brush->GetPosition());
 		CurrentBrush->SetDrawing(brush->IsDrawing());
 		// copy the options
