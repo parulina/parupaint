@@ -386,11 +386,14 @@ void ParupaintCanvasView::mouseMoveEvent(QMouseEvent * event)
 
 void ParupaintCanvasView::mousePressEvent(QMouseEvent * event)
 {
-	if(PenState != PEN_STATE_UP){
+	if(PenState == PEN_STATE_TABLET_DOWN && event->buttons() == Qt::LeftButton)
+	{
 		return;
 	}
+
 	PenState = PEN_STATE_MOUSE_DOWN;
 	OnPenDown(event->pos(), event->button(), event->modifiers(), 1.0);
+	QGraphicsView::mousePressEvent(event);
 }
 void ParupaintCanvasView::mouseReleaseEvent(QMouseEvent * event)
 {

@@ -22,7 +22,7 @@
 ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent) : ParupaintServer(port, parent)
 {
 	connectid = 1;
-	canvas = new ParupaintPanvas(256, 256, 1);
+	canvas = new ParupaintPanvas(400, 400, 1);
 	
 	
 	canvas->GetLayer(0)->GetFrame(0)->ClearColor(Qt::white);

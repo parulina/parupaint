@@ -15,11 +15,15 @@ ParupaintBrush * ParupaintBrushGlass::GetCurrentBrush()
 
 void ParupaintBrushGlass::ToggleBrush(int from, int to)
 {
+	auto * brush = this->GetCurrentBrush();
+
 	if(currentBrush == from){
 		SetBrush(to);
 	} else {
 		SetBrush(from);
 	}
+	this->GetCurrentBrush()->SetDrawing(brush->IsDrawing());
+	this->GetCurrentBrush()->SetPosition(brush->GetPosition());
 }
 
 void ParupaintBrushGlass::SetBrush(int brush)

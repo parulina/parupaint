@@ -66,6 +66,7 @@ Q_OBJECT
 	ParupaintInfoBar * infobar;
 
 	void closeEvent(QCloseEvent * event);
+	void mousePressEvent(QMouseEvent *event);
 	void keyPressEvent(QKeyEvent * event);
 	void keyReleaseEvent(QKeyEvent * event);
 	bool focusNextPrevChild(bool);

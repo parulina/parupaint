@@ -254,11 +254,7 @@ void ParupaintWindow::BrushKey()
 	} else if(seq == BrushKeySwitchBrush) {
 
 		glass.ToggleBrush(0, 1);
-		auto brush2 = glass.GetCurrentBrush();
-		brush2->SetDrawing(brush->IsDrawing());
-
-		view->SetCurrentBrush(brush2);
-		brush2->SetPosition(brush->GetPosition());
+		view->SetCurrentBrush(glass.GetCurrentBrush());
 	}
 
 }
@@ -302,6 +298,17 @@ void ParupaintWindow::UpdateOverlay()
 bool ParupaintWindow::focusNextPrevChild(bool b)
 {
 	return QMainWindow::focusNextPrevChild(b);
+}
+
+void ParupaintWindow::mousePressEvent(QMouseEvent * event)
+{
+	if(event->buttons() == Qt::RightButton) {
+		glass.ToggleBrush(0, 1);
+		view->SetCurrentBrush(glass.GetCurrentBrush());
+
+		event->accept();
+	}
+	return QMainWindow::mousePressEvent(event);
 }
 
 void ParupaintWindow::keyReleaseEvent(QKeyEvent * event)
