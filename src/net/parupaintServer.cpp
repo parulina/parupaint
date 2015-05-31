@@ -25,8 +25,6 @@ void ParupaintServer::onConnection()
 {
 	QWebSocket *socket = server->nextPendingConnection();
 
-	qDebug() << "Connection" << socket;
-
 	connect(socket, &QWebSocket::textMessageReceived, this, &ParupaintServer::textReceived);
 	connect(socket, &QWebSocket::disconnected, this, &ParupaintServer::onDisconnection);
 	connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
@@ -34,9 +32,8 @@ void ParupaintServer::onConnection()
 	emit onMessage(connections.first(), "connect", "");
 }
 
-void ParupaintServer::onError(QAbstractSocket::SocketError error)
+void ParupaintServer::onError(QAbstractSocket::SocketError)
 {
-	qDebug() << "Socket error!" << error;
 }
 
 void ParupaintServer::textReceived(QString text)

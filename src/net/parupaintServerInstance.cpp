@@ -17,8 +17,6 @@
 
 #include "qcompressor.h"
 
-#include <QDebug>
-
 ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent) : ParupaintServer(port, parent)
 {
 	connectid = 1;
@@ -282,7 +280,7 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 				this->Broadcast(id, obj);
 			}
 		} else {
-			qDebug() << id << obj;
+			//qDebug() << id << obj;
 		}
 	}
 

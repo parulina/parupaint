@@ -169,7 +169,6 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 		if(layer){
 			auto * frame = layer->GetFrame(f);
 			if(frame){
-				qDebug() << "Replacing image for" << l << f;
 				QImage img(w, h, QImage::Format_ARGB32);
 				memcpy(img.bits(), uncompressed, img.byteCount());
 				frame->Replace(img);
@@ -182,7 +181,7 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 		     msg = object["message"].toString();
 		emit ChatMessageReceived(name, msg);
 	} else {
-		qDebug() << id << object;
+		//qDebug() << id << object;
 	}
 }
 
