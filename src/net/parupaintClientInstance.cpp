@@ -53,6 +53,7 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 		} else {
 			if(brushes.find(c) != brushes.end()){
 				pool->RemoveCursor(brushes[c]);
+				pool->ClearBrushStrokes(brushes[c]);
 				delete brushes[c];
 				brushes.remove(c);
 			}
