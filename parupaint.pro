@@ -1,4 +1,4 @@
-QT += 		widgets websockets
+QT += 		widgets network
 
 CONFIG+= 	c++11 debug
 QMAKE_CXXFLAGS+= -std=c++11 -fdiagnostics-color=auto -Wfatal-errors
@@ -16,12 +16,14 @@ HEADERS +=	src/core/*.h \
 		src/net/*.h \
 		src/overlay/*.h \
 		src/qtcolorpicker/*.hpp \
+		src/net/QtWebsocket/*.h \
 		src/*.h
 
 SOURCES += 	src/core/*.cpp \
 		src/net/*.cpp \
 		src/overlay/*.cpp \
 		src/qtcolorpicker/*.cpp \
+		src/net/QtWebsocket/*.cpp \
 		src/*.cpp
 
 RC_ICONS = 	resources/parupaint.ico
