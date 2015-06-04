@@ -10,8 +10,10 @@ class ParupaintClient : public QObject
 Q_OBJECT
 	private:
 	QtWebsocket::QWsSocket socket;
-	QUrl url;
+	QString host;
+	quint16 port;
 	bool Connected;
+	bool SwitchHost;
 
 	public:
 	ParupaintClient(QObject * = nullptr);
@@ -25,6 +27,7 @@ Q_OBJECT
 	void onDisconnect();
 	void textReceived(QString);
 	void onError(QAbstractSocket::SocketError);
+	void onSocketStateChanged(QAbstractSocket::SocketState socketState);
 
 signals:
 	void onMessage(QString, const QByteArray);
