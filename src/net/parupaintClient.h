@@ -5,7 +5,6 @@
 #include <QUrl>
 #include <QObject>
 
-
 class ParupaintClient : public QObject
 {
 Q_OBJECT
@@ -15,8 +14,8 @@ Q_OBJECT
 	bool Connected;
 
 	public:
-	ParupaintClient(QString, QObject * = nullptr);
-	void Connect(QString = "");
+	ParupaintClient(QObject * = nullptr);
+	void Connect(QString = "", quint16 = 0);
 	void Disconnect();
 
 	void send(QString id, QString data = "");

@@ -18,7 +18,7 @@
 
 #include <QDebug>
 
-ParupaintClientInstance::ParupaintClientInstance(ParupaintCanvasPool * p, QObject * parent) : ParupaintClient("localhost", parent)
+ParupaintClientInstance::ParupaintClientInstance(ParupaintCanvasPool * p, QObject * parent) : ParupaintClient(parent)
 {
 	me = -1;
 	pool = p;

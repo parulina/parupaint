@@ -5,8 +5,11 @@
 
 using namespace QtWebsocket;
 
+#include <QDebug>
+
 ParupaintServer::ParupaintServer(quint16 port, QObject * parent) : QObject(parent)
 {
+	qDebug() << "Starting server at" << port;
 	server = new QWsServer(this);
 	if(server->listen(QHostAddress::AnyIPv4, port)) {
 		connect(server, &QWsServer::newConnection, this, &ParupaintServer::onConnection);

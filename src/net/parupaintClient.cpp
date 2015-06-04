@@ -7,26 +7,34 @@
 
 using namespace QtWebsocket;
 
-ParupaintClient::ParupaintClient(const QString u, QObject * parent) : QObject(parent), url(u), Connected(false)
+ParupaintClient::ParupaintClient(QObject * parent) : QObject(parent), Connected(false)
 {
 	connect(&socket, &QWsSocket::connected, this, &ParupaintClient::onConnect);
 	connect(&socket, &QWsSocket::disconnected, this, &ParupaintClient::onDisconnect);
 	connect(&socket, SIGNAL(frameReceived(QString)), this, SLOT(textReceived(QString)));
-
 	connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
-	socket.connectToHost(u, 1108);
-
 }
-void ParupaintClient::Connect(QString u)
+
+void ParupaintClient::Connect(QString u, quint16 p)
 {
 	QString prefix = "ws://";
 	if(u.indexOf(prefix) != 0){
 		u = prefix + u.section("/", -1);
 	}
+	QString pp = u.section(":", -1);
+	quint16 port = 0;
+
+	if(pp.length()){
+		port = pp.toInt();
+		u.resize(u.length() - (1+pp.length()));
+	}
+	if(port == 0) port = 1108;
+	if(p != 0) port = p;
 
 	if(!u.isEmpty()) url = QUrl(u);
 	if(Connected) this->Disconnect();
-	socket.connectToHost(u, 1108);
+	qDebug() << u << port;
+	socket.connectToHost(u, port);
 }
 
 void ParupaintClient::Disconnect()
