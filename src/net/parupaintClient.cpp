@@ -40,6 +40,7 @@ void ParupaintClient::onError(QAbstractSocket::SocketError )
 void ParupaintClient::send(QString id, QString data)
 {
 	socket.sendTextMessage(id + " " + data);
+	socket.flush();
 }
 
 void ParupaintClient::onConnect()
