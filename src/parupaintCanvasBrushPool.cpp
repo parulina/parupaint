@@ -2,6 +2,10 @@
 #include "parupaintCanvasBrushPool.h"
 #include "parupaintCanvasBrush.h"
 
+ParupaintCanvasBrushPool::~ParupaintCanvasBrushPool()
+{
+
+}
 ParupaintCanvasBrushPool::ParupaintCanvasBrushPool()
 {
 	

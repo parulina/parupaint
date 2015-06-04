@@ -33,6 +33,11 @@
 
 #include <QDebug>
 
+ParupaintWindow::~ParupaintWindow()
+{
+	delete client;
+}
+
 ParupaintWindow::ParupaintWindow() : QMainWindow(), 
 	// overlay keys
 	OverlayKeyShow(Qt::Key_Tab), OverlayKeyHide(Qt::Key_Tab + Qt::SHIFT), 

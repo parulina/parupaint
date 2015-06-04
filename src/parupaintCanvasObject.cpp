@@ -6,6 +6,10 @@
 #include "core/parupaintLayer.h"
 #include "core/parupaintFrame.h"
 
+ParupaintCanvasObject::~ParupaintCanvasObject()
+{
+	
+}
 
 ParupaintCanvasObject::ParupaintCanvasObject() :
 	CurrentLayer(0), CurrentFrame(0), Preview(false),

@@ -20,6 +20,7 @@ Q_OBJECT
 	void RedrawCache();
 
 	public:
+	~ParupaintCanvasObject();
 	ParupaintCanvasObject();
 	virtual void New(QSize s, _lint l, _fint f);
 	virtual void Resize(QSize);

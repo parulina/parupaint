@@ -5,6 +5,11 @@
 #include "core/parupaintBrush.h"
 
 
+ParupaintCanvasBrush::~ParupaintCanvasBrush()
+{
+
+}
+
 ParupaintCanvasBrush::ParupaintCanvasBrush()
 {
 	this->setZValue(1);

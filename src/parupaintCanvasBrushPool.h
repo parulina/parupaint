@@ -13,6 +13,7 @@ class ParupaintCanvasBrushPool
 	QHash<QString, ParupaintCanvasBrush*> Cursors;
 	
 	public:
+	~ParupaintCanvasBrushPool();
 	ParupaintCanvasBrushPool();
 	void AddCursor(QString, ParupaintCanvasBrush*);
 	void RemoveCursor(QString);

@@ -21,6 +21,10 @@
 
 //QGraphicsView for canvas view
 
+ParupaintCanvasView::~ParupaintCanvasView()
+{
+
+}
 
 ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(parent), CurrentCanvas(nullptr),
 	// Canvas stuff

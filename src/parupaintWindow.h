@@ -79,6 +79,7 @@ Q_OBJECT
 	ParupaintConnectionDialog * connection_dialog;
 
 	public:
+	~ParupaintWindow();
 	ParupaintWindow();
 	ParupaintCanvasPool * GetCanvasPool();
 

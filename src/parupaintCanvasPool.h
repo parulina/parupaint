@@ -17,6 +17,7 @@ Q_OBJECT
 	QMultiMap<ParupaintBrush *, ParupaintCanvasStrokeObject*> strokes;
 
 	public:
+	~ParupaintCanvasPool();
 	ParupaintCanvasPool(QObject *parent);
 	ParupaintCanvasObject * GetCanvas();
 

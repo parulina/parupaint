@@ -11,6 +11,7 @@ Q_OBJECT // for gui stuff
 	ParupaintServerInstance * server;
 
 	public:
+	~ParupaintApp();
 	ParupaintApp(int &argc, char **argv);
 
 	protected:

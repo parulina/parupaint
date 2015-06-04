@@ -12,6 +12,7 @@
 class ParupaintCanvasBrush : public QGraphicsItem, public ParupaintBrush
 {
 	public:
+	~ParupaintCanvasBrush();
 	ParupaintCanvasBrush();
 	ParupaintCanvasBrush(ParupaintBrush * brush);
 

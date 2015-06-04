@@ -19,7 +19,12 @@
 
 #include <QDebug>
 
-ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
+ParupaintApp::~ParupaintApp()
+{
+	if(server) delete server;
+}
+
+ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv), server(nullptr)
 {
 	setOrganizationName("paru");
 	setOrganizationDomain("sqnya.se");

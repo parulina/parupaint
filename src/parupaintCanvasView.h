@@ -56,6 +56,7 @@ Q_OBJECT
 	bool viewportEvent(QEvent *event);
 
 	public:
+	~ParupaintCanvasView();
 	ParupaintCanvasView(QWidget* parent);
 	void SetCanvas(ParupaintCanvasPool * canvas);
 	void SetCurrentBrush(ParupaintBrush * brush);

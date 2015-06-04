@@ -15,6 +15,11 @@
 #include "core/parupaintLayer.h"
 #include "core/parupaintFrame.h"
 
+ParupaintCanvasPool::~ParupaintCanvasPool()
+{
+
+}
+
 ParupaintCanvasPool::ParupaintCanvasPool(QObject * parent) : QGraphicsScene(parent)
 {
 	Canvas = new ParupaintCanvasObject();

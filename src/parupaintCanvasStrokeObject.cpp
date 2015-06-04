@@ -9,6 +9,10 @@
 #include <QRectF>
 #include <QLineF>
 
+ParupaintCanvasStrokeObject::~ParupaintCanvasStrokeObject()
+{
+}
+
 ParupaintCanvasStrokeObject::ParupaintCanvasStrokeObject()
 {
 }
