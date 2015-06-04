@@ -1,8 +1,7 @@
 #ifndef PARUPAINTCLIENT_H
 #define PARUPAINTCLIENT_H
 
-#include <QAbstractSocket>
-#include <QWebSocket>
+#include "QtWebsocket/QWsSocket.h"
 #include <QUrl>
 #include <QObject>
 
@@ -11,7 +10,7 @@ class ParupaintClient : public QObject
 {
 Q_OBJECT
 	private:
-	QWebSocket socket;
+	QtWebsocket::QWsSocket socket;
 	QUrl url;
 	bool Connected;
 

@@ -1,14 +1,14 @@
 #ifndef PARUPAINTCONNECTION_H
 #define PARUPAINTCONNECTION_H
 
-#include <QWebSocket>
+#include "QtWebsocket/QWsSocket.h"
 
 struct ParupaintConnection
 {
-	QWebSocket * socket;
+	QtWebsocket::QWsSocket * socket;
 	int id;
 
-	ParupaintConnection(QWebSocket * s) : socket(s), id(0) {}
+	ParupaintConnection(QtWebsocket::QWsSocket * s) : socket(s), id(0) {}
 	qint64 send(QString, QString);
 	qint64 sendBinary(QString, const QByteArray&);
 };
