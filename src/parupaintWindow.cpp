@@ -230,7 +230,6 @@ void ParupaintWindow::NetworkKey()
 		client->SaveCanvas(".png");
 	
 	} else if(seq == CanvasKeySaveProject) {
-		client->LoadCanvas("animushin.tar.gz");
 
 	} else if(seq == CanvasKeyConnect) {
 		ParupaintConnectionDialog * dlg = new ParupaintConnectionDialog(this);
@@ -239,6 +238,7 @@ void ParupaintWindow::NetworkKey()
 		connect(dlg, &ParupaintConnectionDialog::ConnectSignal, this, &ParupaintWindow::Connect);
 
 	} else if(seq == CanvasKeyOpen) {
+		client->LoadCanvas("lazy_drawing.ora");
 
 	}
 }

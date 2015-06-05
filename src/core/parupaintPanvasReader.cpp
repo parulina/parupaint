@@ -5,7 +5,10 @@
 #include <QRegExp>
 #include <QDir>
 #include <QFileInfo>
+#include <QDomDocument>
+#include <QPainter>
 
+#include <QDebug>
 
 #include "parupaintPanvasReader.h"
 #include "panvasTypedefs.h"
@@ -13,6 +16,7 @@
 #include "parupaintFrame.h"
 
 #include "../karchive/KTar"
+#include "../karchive/KZip"
 
 
 ParupaintPanvasReader::ParupaintPanvasReader(ParupaintPanvas * p)
@@ -55,7 +59,77 @@ PanvasReaderResult ParupaintPanvasReader::LoadOra(const QString filename)
 {
 	if(!panvas) return PANVAS_READER_RESULT_ERROR;
 
+	KZip zip(filename);
+	if(!zip.open(QIODevice::ReadOnly)) {
+		return PANVAS_READER_RESULT_OPENERROR;
+	}
 
+	const KArchiveDirectory * d = zip.directory();
+
+	const auto * mte = d->entry("mimetype");
+	if(!mte->isFile()) return PANVAS_READER_RESULT_ERROR;
+	const KArchiveFile *mtf = static_cast<const KArchiveFile*>(mte);
+	if(mtf->data() != "image/openraster") return PANVAS_READER_RESULT_ERROR;
+
+	// okay, it's an ORA.
+	const auto * stacke = d->entry("stack.xml");
+	if(!stacke->isFile()) return PANVAS_READER_RESULT_ERROR;
+	const KArchiveFile *stf = static_cast<const KArchiveFile*>(stacke);
+	
+	QDomDocument doc;
+	if(!doc.setContent(stf->data(), true)) return PANVAS_READER_RESULT_ERROR;
+
+	QDomElement element = doc.documentElement();
+	QSize imagesize(
+			element.attribute("w").toInt(),
+			element.attribute("h").toInt()
+			);
+
+	if(imagesize.isEmpty()) return PANVAS_READER_RESULT_ERROR;
+
+	//okay, load the images
+	
+	// Oras can't be animation so we don't need
+	// a special filtering thing
+	panvas->Clear();
+	panvas->Resize(imagesize);
+
+	const QDomElement stackroot = doc.documentElement().firstChildElement("stack");
+	for(auto l = 0; l < stackroot.childNodes().count(); l++){
+		QDomElement e = stackroot.childNodes().at(l).toElement();
+		if(e.isNull()) continue;
+		if(e.tagName() != "layer") continue;
+		
+		const QString src = e.attribute("src");
+		const auto x = e.attribute("x").toDouble();
+		const auto y = e.attribute("y").toDouble();
+
+
+		const auto * layer_entry = d->entry(src);
+		if(!layer_entry->isFile()) continue;
+		const KArchiveFile *layer_file = static_cast<const KArchiveFile*>(layer_entry);
+
+		QByteArray byte_array = layer_file->data();
+
+		QImage original_pic;
+		original_pic.loadFromData(byte_array);
+
+		QImage pic(imagesize, original_pic.format());
+		pic.fill(0);
+		QPainter paint(&pic);
+
+		auto rp = original_pic.rect();
+		auto rr = rp;
+		rr.adjust(x, y, x, y);
+		paint.drawImage(rr, original_pic, rp);
+		
+		paint.end();
+
+		panvas->AddLayers(0, 1, 1);
+		panvas->GetLayer(0)->GetFrame(0)->Replace(pic);
+
+
+	}
 	return PANVAS_READER_RESULT_OK;
 }
 

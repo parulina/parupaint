@@ -1,4 +1,4 @@
-QT += 		widgets network
+QT += 		widgets network xml
 
 CONFIG+= 	c++11 debug
 QMAKE_CXXFLAGS+= -std=c++11 -fdiagnostics-color=auto -Wfatal-errors
