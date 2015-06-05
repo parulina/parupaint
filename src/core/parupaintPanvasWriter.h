@@ -29,7 +29,7 @@ class ParupaintPanvasWriter
 	PanvasWriterResult Save(const QString, const QString);
 
 	PanvasWriterResult SaveOra(const QString);
-	PanvasWriterResult SavePpa(const QString);
+	PanvasWriterResult SaveParupaintArchive(const QString);
 
 	PanvasWriterResult ExportPng(const QString);
 	PanvasWriterResult ExportWebp(const QString);

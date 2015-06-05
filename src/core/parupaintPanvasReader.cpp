@@ -144,70 +144,108 @@ PanvasReaderResult ParupaintPanvasReader::LoadParupaintArchive(const QString fil
 		return PANVAS_READER_RESULT_OPENERROR;
 	}
 
+
 	struct frameLoad {
 		QByteArray bytes;
 		int extended;
+		_fint ff;
 		frameLoad(){};
-		frameLoad(const QByteArray &ba, int e) : frameLoad() { bytes = ba; extended = e;};
+		frameLoad(const QByteArray &ba, int e, _fint f) : frameLoad() {
+			bytes = ba; extended = e; ff = f;
+		};
 	};
 
-	// set -> layer -> frame
-	QMap<int, QMap<_lint, QMap<_fint, frameLoad>>> frames;
-	int width = 0;
-	int height = 0;
 	const KArchiveDirectory * d = tar.directory();
+	QMap<_lint, QList<frameLoad>> real_frames;
+	int width = 0, height = 0;
 
-	foreach(auto file, d->entries()){
-		const KArchiveEntry * entry = d->entry(file);
-		if(entry->isDirectory()){
-			// set
-			auto * set = dynamic_cast<const KArchiveDirectory*>(entry);
-			foreach(auto l, set->entries()){
-				if(!set->entry(l)->isDirectory()) continue;
-				auto * layer = dynamic_cast<const KArchiveDirectory*>(set->entry(l));
+	if(d->entry("info2.ini")){
+		// set -> layer -> frame
+		QMap<int, QMap<_lint, QMap<_fint, frameLoad>>> frames;
 
-				foreach(auto f, layer->entries()){
-					if(!layer->entry(f)->isFile()) continue;
-					auto * frame = dynamic_cast<const KArchiveFile*>(layer->entry(f));
+		foreach(auto file, d->entries()){
+			const KArchiveEntry * entry = d->entry(file);
+			if(entry->isDirectory()){
+				auto * set = dynamic_cast<const KArchiveDirectory*>(entry);
+				foreach(auto l, set->entries()){
+					if(!set->entry(l)->isDirectory()) continue;
+					auto * layer = dynamic_cast<const KArchiveDirectory*>(set->entry(l));
 
-					int ss = file.toInt();
-					_lint ll = l.toInt();
+					foreach(auto f, layer->entries()){
+						if(!layer->entry(f)->isFile()) continue;
+						auto * frame = dynamic_cast<const KArchiveFile*>(layer->entry(f));
 
-					QString name = f.split(".")[0];
-					_lint ff = name.split("-")[0].toInt();
+						int ss = file.toInt();
+						_lint ll = l.toInt();
 
-					int e = 0;
-					if(name.indexOf("-") != -1){
-						e = name.split("-")[1].toInt();
+						QString name = f.split(".")[0];
+						_lint ff = name.split("-")[0].toInt();
+
+						int e = 0;
+						if(name.indexOf("-") != -1){
+							e = name.split("-")[1].toInt();
+						}
+
+						frames[ss][ll][ff] = frameLoad(frame->data(), e, ff);
 					}
 
-					frames[ss][ll][ff] = frameLoad(frame->data(), e);
+
 				}
+			} else if(entry->isFile()) {
+				auto * f = dynamic_cast<const KArchiveFile*>(entry);
+				if(file == "info2.ini") {
+					const QByteArray fbytes = f->data();
 
-
-			}
-		} else if(entry->isFile()) {
-			auto * f = dynamic_cast<const KArchiveFile*>(entry);
-			if(file == "info2.ini") {
-				const QByteArray fbytes = f->data();
-
-				QRegExp exp("CanvasWidth=(\\d+)");
-				if(exp.indexIn(fbytes) != -1) { width = exp.cap(1).toInt(); }
-				exp.setPattern("CanvasHeight=(\\d+)");
-				if(exp.indexIn(fbytes) != -1) { height = exp.cap(1).toInt(); }
+					QRegExp exp("CanvasWidth=(\\d+)");
+					if(exp.indexIn(fbytes) != -1) { width = exp.cap(1).toInt(); }
+					exp.setPattern("CanvasHeight=(\\d+)");
+					if(exp.indexIn(fbytes) != -1) { height = exp.cap(1).toInt(); }
+				}
 			}
 		}
-	}
-	if(!width || !height) {
-		return PANVAS_READER_RESULT_ERROR;
-	}
+		if(!width || !height) {
+			return PANVAS_READER_RESULT_ERROR;
+		}
 
-	QMap<_lint, QList<frameLoad>> real_frames;
-	for(auto s = frames.constBegin(); s != frames.constEnd(); ++s){
-		// s = set
-		for(auto l = s.value().constBegin(); l != s.value().constEnd(); ++l){
-			real_frames.insert(real_frames.size(), l.value().values());
-// 			qDebug() << s.key() << "," << l.key() << "added as" << real_frames.size()-1;
+		for(auto s = frames.constBegin(); s != frames.constEnd(); ++s){
+			for(auto l = s.value().constBegin(); l != s.value().constEnd(); ++l){
+				real_frames.insert(real_frames.size(), l.value().values());
+			}
+		}
+	} else {
+		auto * f = dynamic_cast<const KArchiveFile*>(d->entry("pp3info.txt"));
+		if(f){
+			const QByteArray data = f->data();
+			QRegExp exp("(\\d+)x(\\d+)");
+			if(exp.indexIn(data) != -1) {
+				width = exp.cap(1).toInt();
+				height = exp.cap(2).toInt();
+				qDebug() << width << "x" << height;
+			}
+		}
+
+		// pre alloc layer slots
+		foreach(auto l, d->entries()){
+			if(d->entry(l)->isDirectory()) real_frames.insert(real_frames.size(), {});
+		}
+		
+		foreach(auto l, d->entries()){
+			if(!d->entry(l)->isDirectory()) continue;
+			auto * layer = dynamic_cast<const KArchiveDirectory*>(d->entry(l));
+
+			foreach(auto f, layer->entries()){
+				if(!layer->entry(f)->isFile()) continue;
+				auto * frame = dynamic_cast<const KArchiveFile*>(layer->entry(f));
+
+				_lint ll = l.toInt();
+				QString name = f.section(".", 0, 0);
+				_fint ff = name.split("-")[0].toInt();
+
+				int e = 0;
+				if(name.indexOf("-") != -1){ e = name.split("-")[1].toInt(); }
+
+				real_frames[ll].append(frameLoad(frame->data(), e, ff));
+			}
 		}
 	}
 
@@ -219,13 +257,13 @@ PanvasReaderResult ParupaintPanvasReader::LoadParupaintArchive(const QString fil
 		ParupaintLayer * layer = panvas->GetLayer(l.key());
 		layer->SetFrames(l.value().length());
 		
-		for(auto f = 0; f < l.value().length(); f++){
-			auto ff = l.value().at(f);
-			ParupaintFrame * frame = layer->GetFrame(f);
-			frame->LoadFromData(ff.bytes);
-			// do something with ff.extended
-			if(ff.extended){
-				layer->ExtendFrame(f, ff.extended);
+		for(auto it = l.value().begin(); it != l.value().end(); ++it){
+			auto f = *it;
+
+			ParupaintFrame * frame = layer->GetFrame(f.ff);
+			frame->LoadFromData(f.bytes);
+			if(f.extended){
+				layer->ExtendFrame(f.ff, f.extended);
 			}
 		}
 		

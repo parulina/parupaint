@@ -1,12 +1,15 @@
 
 #include <QDir>
 #include <QPainter>
+#include <QBuffer>
 
 #include "parupaintPanvasWriter.h"
 
 #include "parupaintPanvas.h"
 #include "parupaintLayer.h"
 #include "parupaintFrame.h"
+
+#include "../karchive/KTar"
 
 #include <QDebug>
 
@@ -34,7 +37,8 @@ PanvasWriterResult ParupaintPanvasWriter::Save(const QString directory, const QS
 	auto suffix = file.suffix();
 	if(suffix == "png"){
 		return this->ExportPng(path);
-
+	} else if(suffix == "gz"){
+		return this->SaveParupaintArchive(path);
 	} else {
 		// image sequence when no other extension
 	}
@@ -52,10 +56,47 @@ PanvasWriterResult ParupaintPanvasWriter::SaveOra(const QString)
 
 }
 
-PanvasWriterResult ParupaintPanvasWriter::SavePpa(const QString)
+PanvasWriterResult ParupaintPanvasWriter::SaveParupaintArchive(const QString filename)
 {
 	if(!panvas) return PANVAS_WRITER_RESULT_ERROR;
+	
+	const QString ext = ".png";
+	KTar tar(filename);
+	if(!tar.open(QIODevice::WriteOnly)){
+		return PANVAS_WRITER_RESULT_WRITEERROR;
+	}
 
+	auto dim = panvas->GetDimensions();
+	auto str_info = QString("%1x%2").arg(dim.width()).arg(dim.height());
+	tar.writeFile("pp3info.txt", str_info.toUtf8());
+
+	for(auto l = 0; l < panvas->GetNumLayers(); l++){
+		auto * layer = panvas->GetLayer(l);
+
+		for(auto f = 0; f < layer->GetNumFrames(); f++){
+			if(!layer->IsFrameReal(f)) continue;
+
+			auto * frame = layer->GetFrame(f);
+
+			auto image = frame->GetImage();
+			QByteArray byte_array(image.byteCount(), 0);
+			QBuffer buf(&byte_array);
+			buf.open(QIODevice::WriteOnly);
+			image.save(&buf, "png");
+
+			QString filename = QString("%1/%2").arg(l).arg(f);
+			if(layer->IsFrameExtended(f)){
+				auto cc = layer->GetFrameLabel(f);
+				filename.append(cc);
+
+			}
+
+			filename += ext;
+			tar.writeFile(filename, byte_array);
+		}
+	}
+
+	tar.close();
 	return PANVAS_WRITER_RESULT_OK;
 
 }

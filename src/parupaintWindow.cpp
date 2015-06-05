@@ -231,6 +231,7 @@ void ParupaintWindow::NetworkKey()
 		client->SaveCanvas(".png");
 	
 	} else if(seq == CanvasKeySaveProject) {
+		client->SaveCanvas("test.tar.gz");
 
 	} else if(seq == CanvasKeyConnect) {
 		ParupaintConnectionDialog * dlg = new ParupaintConnectionDialog(this);

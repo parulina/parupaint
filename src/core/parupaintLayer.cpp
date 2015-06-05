@@ -152,7 +152,7 @@ QChar ParupaintLayer::GetFrameChar(_fint f)
 QString ParupaintLayer::GetFrameLabel(_fint f)
 {
 	if(IsFrameReal(f)) {
-		QString str = QString("%d-0").arg(f);
+		QString str = "-0";
 		auto d = GetFrameExtendedDirection(f);
 		if(d == 2) {
 			auto end = f;
@@ -160,13 +160,14 @@ QString ParupaintLayer::GetFrameLabel(_fint f)
 				!= FRAME_EXTENDED_RIGHT){
 				end++;
 			}
-			str = QString("%d-%d").arg(f, (end-f));
+			str = QString("-%2").arg(end-f);
 		}
 		auto fr = GetFrame(f);
 		auto op = fr->GetOpacity();
 		if(op != 1.0) {
-			str = QString("%s-%d").arg(str, int(op*255));
+			str = QString("%1-%2").arg(str).arg(int(op*255));
 		}
+		return str;
 	}
 	return QString("0-0");
 }

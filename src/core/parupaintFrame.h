@@ -15,7 +15,7 @@ class ParupaintFrame {
 	public:
 	~ParupaintFrame();
 	ParupaintFrame();
-	ParupaintFrame(QSize rect, float opacity=0);
+	ParupaintFrame(QSize rect, float opacity=1);
 
 	void New(QSize);
 	void Resize(QSize);
