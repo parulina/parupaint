@@ -12,7 +12,7 @@ class ParupaintDialog : public QDialog
 	void mouseMoveEvent(QMouseEvent * event);
 
 	public:
-	ParupaintDialog(QWidget * = nullptr);
+	ParupaintDialog(QWidget * = nullptr, QString = "", QString = "");
 
 };
 

@@ -11,7 +11,6 @@ class ParupaintCanvasPool;
 class ParupaintCanvasBrush;
 
 class ParupaintClientInstance;
-class ParupaintConnectionDialog;
 
 class ParupaintChat;
 class ParupaintFlayer;
@@ -76,7 +75,6 @@ Q_OBJECT
 	ParupaintCanvasPool * pool;
 
 	ParupaintClientInstance * client;
-	ParupaintConnectionDialog * connection_dialog;
 
 	public:
 	~ParupaintWindow();
@@ -89,6 +87,7 @@ Q_OBJECT
 	void UpdateTitle();
 
 	void Connect(QString);
+	void Open(QString);
 
 	private slots:
 	void OverlayTimeout();

@@ -4,10 +4,30 @@
 #include <QPainter>
 #include <QStyleOptionTitleBar>
 
-ParupaintDialog::ParupaintDialog(QWidget * parent) : QDialog(parent)
+#include <QLabel>
+#include <QVBoxLayout>
+
+ParupaintDialog::ParupaintDialog(QWidget * parent, QString title, QString helptext) : QDialog(parent)
 {
+	this->setMinimumSize(250, 250);
+
 	this->setWindowFlags(Qt::FramelessWindowHint);
 	this->setWindowModality(Qt::ApplicationModal);
+	this->move(parent->rect().center());
+	this->setWindowTitle(title);
+	this->setFocusPolicy(Qt::NoFocus);
+	this->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+	auto * layout = new QVBoxLayout(this);
+	layout->setMargin(8);
+	
+		auto * label = new QLabel(helptext);
+		label->setWordWrap(true);
+
+	layout->addWidget(label);
+	layout->setAlignment(label, Qt::AlignTop);
+	
+	this->setLayout(layout);
 }
 
 

@@ -29,6 +29,7 @@
 #include "overlay/parupaintInfoBar.h"
 
 #include "parupaintConnectionDialog.h"
+#include "parupaintOpenDialog.h"
 #include "net/parupaintClientInstance.h"
 
 #include <QDebug>
@@ -238,7 +239,9 @@ void ParupaintWindow::NetworkKey()
 		connect(dlg, &ParupaintConnectionDialog::ConnectSignal, this, &ParupaintWindow::Connect);
 
 	} else if(seq == CanvasKeyOpen) {
-		client->LoadCanvas("lazy_drawing.ora");
+		ParupaintOpenDialog * dlg = new ParupaintOpenDialog(this);
+		dlg->show();
+		connect(dlg, &ParupaintOpenDialog::EnterSignal, this, &ParupaintWindow::Open);
 
 	}
 }
@@ -485,4 +488,9 @@ void ParupaintWindow::Connect(QString url)
 	QSettings cfg;
 	client->SetNickname(cfg.value("painter/username").toString());
 	client->Connect(url);
+}
+
+void ParupaintWindow::Open(QString filename)
+{
+	client->LoadCanvas(filename);
 }
