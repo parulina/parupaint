@@ -10,6 +10,11 @@ class ParupaintCanvasBrush;
 class ParupaintCanvasPool;
 class ParupaintBrush;
 
+enum DrawMode {
+	DRAW_MODE_DIRECT,
+	DRAW_MODE_SIMPLE,
+	DRAW_MODE_UNDO,
+};
 class ParupaintClientInstance : public ParupaintClient
 {
 Q_OBJECT
@@ -18,6 +23,7 @@ Q_OBJECT
 	ParupaintCanvasPool * pool;
 	// has to work with int because the server is the only connection
 	QHash<quint32, ParupaintCanvasBrush*> brushes;
+	DrawMode DrawMethod;
 
 	public:
 	ParupaintClientInstance(ParupaintCanvasPool*, QObject * = nullptr);

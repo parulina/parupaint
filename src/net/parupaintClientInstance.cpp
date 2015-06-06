@@ -25,6 +25,7 @@
 ParupaintClientInstance::ParupaintClientInstance(ParupaintCanvasPool * p, QObject * parent) : ParupaintClient(parent)
 {
 	me = -1;
+	DrawMethod = DRAW_MODE_DIRECT;
 	pool = p;
 	connect(this, &ParupaintClient::onMessage, this, &ParupaintClientInstance::Message);
 }
@@ -92,15 +93,34 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 			brush->SetWidth(width);
 
 			if(drawing){
-				if(!brush->GetCurrentStroke()) pool->NewBrushStroke(brush);
+				if(DrawMethod == DRAW_MODE_DIRECT){
+					auto 	old_x = brush->GetPosition().x(),
+						old_y = brush->GetPosition().y();
+					auto 	l = brush->GetLayer(),
+						f = brush->GetFrame();
 
-				if(brush->GetCurrentStroke()) {
-					auto * step = new ParupaintStrokeStep(*brush);
-					brush->GetCurrentStroke()->AddStroke(step);
+					auto * layer = pool->GetCanvas()->GetLayer(l);
+					if(layer) {
+						auto * frame = layer->GetFrame(f);
+						if(frame){
+							frame->DrawStep(old_x, old_y, x, y, width, color);
+						}
+					}
+					pool->GetCanvas()->TriggerCacheRedraw();
+				} else {
+					if(!brush->GetCurrentStroke()) pool->NewBrushStroke(brush);
+					if(brush->GetCurrentStroke()) {
+						auto * step = new ParupaintStrokeStep(*brush);
+						brush->GetCurrentStroke()->AddStroke(step);
+					}
 				}
 
 			} else {
 				if(brush->IsDrawing()){
+					// doesn't matter, this will never
+					// evaluate since it'll never be created.
+					// still looks kinda ugly though.
+
 					if(brush->GetCurrentStroke()){
 						pool->EndBrushStroke(brush);
 						pool->SquashBrushStrokes(brush);
