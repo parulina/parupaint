@@ -4,6 +4,8 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QSettings>
+#include <QDir>
+#include <QFileInfo>
 
 #include "parupaintConnection.h"
 #include "parupaintServerInstance.h"
@@ -256,19 +258,43 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 				
 			}
 		} else if(id == "load") {
-			QSettings cfg;
-			auto name = obj["filename"].toString();
-			auto load_dir = cfg.value("canvas/directory").toString();
 
-			if(!name.isEmpty()){
+			QSettings cfg;
+			QString load_dir = cfg.value("server/directory").toString();
+
+			if(obj["file"].isString() && obj["filename"].isString()){
+
+				QByteArray data = QByteArray::fromBase64(obj["file"].toString().toUtf8());
+				QByteArray uncompressed;
+				QCompressor::gzipDecompress(data, uncompressed);
+
+				QString temp_file = obj["filename"].toString();
+
+				load_dir = QDir::temp().path();
+				QFileInfo ff(load_dir, temp_file);
+
+				QFile file(ff.filePath());
+				if(!file.open(QIODevice::WriteOnly)){
+					obj["filename"] = QJsonValue::Undefined;
+					return;
+				}
+				file.write(uncompressed);
+				file.close();
+			}
+
+			if(obj["filename"].isString()){
+				auto name = obj["filename"].toString();
+
+				if(name.isEmpty()) return;
 				ParupaintPanvasReader reader(canvas);
 				// Loader handles name verification
+				// TODO name verification here pls
 				auto ret = reader.Load(load_dir, name);
 				if(ret == PANVAS_READER_RESULT_OK){
 					this->Broadcast("canvas", MarshalCanvas());
 				}
-				
 			}
+
 		} else if(id == "chat") {
 			auto msg = obj["message"].toString();
 			if(msg.isEmpty()) msg = obj["msg"].toString();

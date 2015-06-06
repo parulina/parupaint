@@ -3,6 +3,10 @@
 #include <QJsonObject>
 #include <QPen> // brush draw
 
+// LoadCanvasLocal
+#include <QFile> 
+#include <QFileInfo>
+
 #include "parupaintClientInstance.h"
 #include "../parupaintCanvasPool.h"
 #include "../parupaintCanvasObject.h"
@@ -214,6 +218,18 @@ void ParupaintClientInstance::SendBrushUpdate(ParupaintBrush * brush)
 }
 
 
+void ParupaintClientInstance::LoadCanvasLocal(const QString filename)
+{
+	QFile file(filename);
+	if(!file.open(QIODevice::ReadOnly)) return;
+	QByteArray compressed;
+	QCompressor::gzipCompress(file.readAll(), compressed);
+	
+	QJsonObject obj;
+	obj["file"] = QString(compressed.toBase64());
+	obj["filename"] = QFileInfo(filename).fileName();
+	this->send("load", obj);
+}
 void ParupaintClientInstance::LoadCanvas(const QString filename)
 {
 	QJsonObject obj;

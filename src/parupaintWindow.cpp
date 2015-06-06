@@ -4,8 +4,8 @@
 #include <QSettings>
 #include <QShortcut>
 #include <QTimer>
-#include <QJsonObject>
-#include <QJsonDocument>
+#include <QFileInfo>
+#include <QDir>
 
 #include "parupaintWindow.h"
 #include "core/parupaintPanvasReader.h"
@@ -499,16 +499,31 @@ void ParupaintWindow::Connect(QString url)
 void ParupaintWindow::Open(QString filename)
 {
 	qDebug() << "Open" << filename;
+	auto * dialog = qobject_cast<ParupaintFileDialog*>(sender());
+
+	/*
+	QFileInfo info(filename);
+	QDir c = QDir::current();
+	if(info.isAbsolute() && info.dir().path().indexOf(c.path()) != 0){
+		return;
+	}
+	*/
+
 
 	QSettings cfg;
 	cfg.setValue("net/lastopen", filename);
 
-	client->LoadCanvas(filename);
+	client->LoadCanvasLocal(filename);
+	delete dialog;
 }
 void ParupaintWindow::SaveAs(QString filename)
 {
+	auto * dialog = qobject_cast<ParupaintFileDialog*>(sender());
+	// TODO handle overwrite here
+
 	qDebug() << "Saving canvas as" << filename;
 	client->SaveCanvas(filename);
+	delete dialog;
 }
 
 

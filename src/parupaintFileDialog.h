@@ -20,6 +20,8 @@ Q_OBJECT
 	void EnterSignal(QString);
 
 	private slots:
+	void BrowseFiles();
+	void FilePick(QString);
 	void EnterClick();
 };
 

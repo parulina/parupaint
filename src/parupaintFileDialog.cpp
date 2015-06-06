@@ -1,6 +1,7 @@
 #include <QSettings>
 #include <QLabel>
 #include <QLineEdit>
+#include <QFileDialog>
 #include <QPushButton>
 #include <QVBoxLayout>
 
@@ -10,12 +11,16 @@
 ParupaintFileDialog::ParupaintFileDialog(QWidget * parent, QString filename, QString title, QString help) : 
 	ParupaintDialog(parent, title, help)
 {	
-	label_invalid = new QLabel("this is not a valid filename.");
+	label_invalid = new QLabel("...");
 	label_invalid->setObjectName("ErrorLabel");
 	label_invalid->hide();
 
 	line_filename = new QLineEdit;
 	line_filename->setPlaceholderText("filename");
+
+
+	auto * button_browse = new QPushButton("...");
+	connect(button_browse, &QPushButton::pressed, this, &ParupaintFileDialog::BrowseFiles);
 
 	if(!filename.isEmpty()){
 		line_filename->setText(filename);
@@ -32,9 +37,33 @@ ParupaintFileDialog::ParupaintFileDialog(QWidget * parent, QString filename, QSt
 	this->layout()->setAlignment(label_invalid, Qt::AlignBottom);
 
 	this->layout()->addWidget(line_filename);
+	this->layout()->addWidget(button_browse);
 	this->layout()->addWidget(button_enter);
 
 	this->setFocusProxy(line_filename);
+	this->setFocus();
+}
+
+void ParupaintFileDialog::BrowseFiles()
+{
+	QSettings cfg;
+	QString filters = "supported files (*.png *.ora *.ppa *.tar.gz)";
+
+	auto * file_chooser = new QFileDialog(this, "browse", ".", filters);
+	file_chooser->restoreState(cfg.value("filedialog").toByteArray());
+	file_chooser->show();
+
+	connect(file_chooser, &QFileDialog::fileSelected, this, &ParupaintFileDialog::FilePick);
+}
+void ParupaintFileDialog::FilePick(QString file)
+{
+	auto * dialog = qobject_cast<QFileDialog*>(sender());
+	QSettings cfg;
+
+	cfg.setValue("filedialog", dialog->saveState());
+	
+	line_filename->setText(file);
+	line_filename->setCursorPosition(file.length());
 	this->setFocus();
 }
 
@@ -44,8 +73,8 @@ void ParupaintFileDialog::EnterClick()
 	if(!filename.isEmpty() && filename.indexOf(".") != -1){
 		// if it is something and it has a dota
 		emit EnterSignal(filename);
-		delete this;
 	} else {
+		label_invalid->setText("this is not a valid filename.");
 		label_invalid->show();
 		line_filename->setFocus();
 	}
