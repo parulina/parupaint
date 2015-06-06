@@ -27,7 +27,7 @@ ParupaintFileDialog::ParupaintFileDialog(QWidget * parent, QString filename, QSt
 		line_filename->setCursorPosition(0);
 	}
 
-	QPushButton * button_enter = new QPushButton("connect");
+	QPushButton * button_enter = new QPushButton("select");
 	button_enter->setDefault(true);
 
 	this->connect(button_enter, &QPushButton::released, this, &ParupaintFileDialog::EnterClick);
