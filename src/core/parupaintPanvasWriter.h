@@ -30,6 +30,7 @@ class ParupaintPanvasWriter
 
 	PanvasWriterResult SaveOra(const QString);
 	PanvasWriterResult SaveParupaintArchive(const QString);
+	PanvasWriterResult SaveVideo(const QString);
 
 	PanvasWriterResult ExportPng(const QString);
 	PanvasWriterResult ExportWebp(const QString);

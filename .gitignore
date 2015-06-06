@@ -8,6 +8,7 @@ qrc_*
 *.png
 *.gif
 *.apng
+*.avi
 *.tar.gz
 *.ora
 *.ppa

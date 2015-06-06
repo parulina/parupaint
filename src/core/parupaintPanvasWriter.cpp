@@ -11,6 +11,10 @@
 
 #include "../karchive/KTar"
 
+#ifdef PARUPAINT_VIDEO_EXPORT
+#include "../qtffmpeg/QVideoEncoder.h"
+#endif
+
 #include <QDebug>
 
 ParupaintPanvasWriter::ParupaintPanvasWriter(ParupaintPanvas * p)
@@ -39,6 +43,10 @@ PanvasWriterResult ParupaintPanvasWriter::Save(const QString directory, const QS
 		return this->ExportPng(path);
 	} else if(suffix == "ppa"){
 		return this->SaveParupaintArchive(path);
+#ifdef PARUPAINT_VIDEO_EXPORT
+	} else if(suffix == "avi"){
+		return this->SaveVideo(path);
+#endif
 	} else {
 		// image sequence when no other extension
 	}
@@ -46,7 +54,40 @@ PanvasWriterResult ParupaintPanvasWriter::Save(const QString directory, const QS
 	return PANVAS_WRITER_RESULT_ERROR;
 
 }
+PanvasWriterResult ParupaintPanvasWriter::SaveVideo(const QString filename)
+{
+	if(panvas && !filename.isEmpty()){
+#ifdef PARUPAINT_VIDEO_EXPORT
+		auto dim = panvas->GetDimensions();
+		auto gop = 10;
+		auto fps = 12;
 
+		QVideoEncoder encoder;
+		encoder.createFile(filename, dim.width(), dim.height(), 1000000, gop, fps);
+
+		for(auto f = 0; f < panvas->GetTotalFrames(); f++){
+			QImage img(dim, QImage::Format_RGB32);
+			for(auto l = 0; l < panvas->GetNumLayers(); l++){
+				auto * layer = panvas->GetLayer(l);
+				if(!layer) continue;
+
+				auto * frame = layer->GetFrame(f);
+				if(!frame) continue;
+
+				const QImage & fimg = frame->GetImage();
+				QPainter paint(&img);
+				paint.drawImage(img.rect(), fimg, fimg.rect());
+			}
+			encoder.encodeImage(img);
+		}
+		encoder.close();
+
+		return PANVAS_WRITER_RESULT_OK;
+#endif
+	}
+
+	return PANVAS_WRITER_RESULT_ERROR;
+}
 
 PanvasWriterResult ParupaintPanvasWriter::SaveOra(const QString)
 {
