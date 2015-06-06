@@ -88,6 +88,7 @@ Q_OBJECT
 
 	void Connect(QString);
 	void Open(QString);
+	void SaveAs(QString);
 
 	private slots:
 	void OverlayTimeout();

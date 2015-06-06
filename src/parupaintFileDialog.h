@@ -1,21 +1,20 @@
-#ifndef PARUPAINTOPENDIALOG_H
-#define PARUPAINTOPENDIALOG_H
+#ifndef PARUPAINTFILEDIALOG_H
+#define PARUPAINTFILEDIALOG_H
 
 #include "parupaintDialog.h"
 
 class QLineEdit;
 class QLabel;
 
-class ParupaintOpenDialog : public ParupaintDialog
+class ParupaintFileDialog : public ParupaintDialog
 {
 Q_OBJECT
 	private:
 	QLineEdit * line_filename;
 	QLabel * label_invalid;
 
-	void showEvent(QShowEvent * event);
 	public:
-	ParupaintOpenDialog(QWidget * = nullptr);
+	ParupaintFileDialog(QWidget * = nullptr, QString = "", QString = "File...", QString = "enter filename.");
 
 	signals:
 	void EnterSignal(QString);

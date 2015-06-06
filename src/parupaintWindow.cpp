@@ -29,7 +29,7 @@
 #include "overlay/parupaintInfoBar.h"
 
 #include "parupaintConnectionDialog.h"
-#include "parupaintOpenDialog.h"
+#include "parupaintFileDialog.h"
 #include "net/parupaintClientInstance.h"
 
 #include <QDebug>
@@ -231,7 +231,10 @@ void ParupaintWindow::NetworkKey()
 		client->SaveCanvas(".png");
 	
 	} else if(seq == CanvasKeySaveProject) {
-		client->SaveCanvas("test.tar.gz");
+		QSettings cfg;
+		ParupaintFileDialog * dlg = new ParupaintFileDialog(this, ".png", "save as...");
+		dlg->show();
+		connect(dlg, &ParupaintFileDialog::EnterSignal, this, &ParupaintWindow::SaveAs);
 
 	} else if(seq == CanvasKeyConnect) {
 		ParupaintConnectionDialog * dlg = new ParupaintConnectionDialog(this);
@@ -240,10 +243,12 @@ void ParupaintWindow::NetworkKey()
 		connect(dlg, &ParupaintConnectionDialog::ConnectSignal, this, &ParupaintWindow::Connect);
 
 	} else if(seq == CanvasKeyOpen) {
-		ParupaintOpenDialog * dlg = new ParupaintOpenDialog(this);
-		dlg->show();
-		connect(dlg, &ParupaintOpenDialog::EnterSignal, this, &ParupaintWindow::Open);
 
+		QSettings cfg;
+		auto lastopen = cfg.value("net/lastopen").toString();
+		ParupaintFileDialog * dlg = new ParupaintFileDialog(this, lastopen, "open...");
+		dlg->show();
+		connect(dlg, &ParupaintFileDialog::EnterSignal, this, &ParupaintWindow::Open);
 	}
 }
 
@@ -493,5 +498,17 @@ void ParupaintWindow::Connect(QString url)
 
 void ParupaintWindow::Open(QString filename)
 {
+	qDebug() << "Open" << filename;
+
+	QSettings cfg;
+	cfg.setValue("net/lastopen", filename);
+
 	client->LoadCanvas(filename);
 }
+void ParupaintWindow::SaveAs(QString filename)
+{
+	qDebug() << "Saving canvas as" << filename;
+	client->SaveCanvas(filename);
+}
+
+
