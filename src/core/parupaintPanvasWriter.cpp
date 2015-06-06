@@ -124,6 +124,7 @@ PanvasWriterResult ParupaintPanvasWriter::SaveParupaintArchive(const QString fil
 			QBuffer buf(&byte_array);
 			buf.open(QIODevice::WriteOnly);
 			image.save(&buf, "png");
+			buf.close();
 
 			QString filename = QString("%1/%2").arg(l).arg(f);
 			if(layer->IsFrameExtended(f)){
