@@ -291,6 +291,7 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 				// TODO name verification here pls
 				auto ret = reader.Load(load_dir, name);
 				if(ret == PANVAS_READER_RESULT_OK){
+					qDebug() << "Loaded canvas fine.";
 					this->Broadcast("canvas", MarshalCanvas());
 				}
 			}

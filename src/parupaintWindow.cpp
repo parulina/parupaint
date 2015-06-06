@@ -8,7 +8,7 @@
 #include <QDir>
 
 #include "parupaintWindow.h"
-#include "core/parupaintPanvasReader.h"
+#include "core/parupaintPanvasWriter.h"
 
 #include "core/parupaintStrokeStep.h"
 #include "core/parupaintBrush.h"
@@ -518,11 +518,21 @@ void ParupaintWindow::Open(QString filename)
 }
 void ParupaintWindow::SaveAs(QString filename)
 {
+	QSettings cfg;
 	auto * dialog = qobject_cast<ParupaintFileDialog*>(sender());
 	// TODO handle overwrite here
 
+	if(filename.isEmpty()) filename = ".png";
+	if(filename.section(".", 0, 0).isEmpty()) {
+		QDateTime time = QDateTime::currentDateTime();
+		filename = "drawing_at_"+ time.toString("yyyy-MM-dd_HH.mm") + filename;
+	}
+
 	qDebug() << "Saving canvas as" << filename;
-	client->SaveCanvas(filename);
+
+	ParupaintPanvasWriter write(pool->GetCanvas());
+	write.Save(cfg.value("client/directory").toString(), filename);
+
 	delete dialog;
 }
 
