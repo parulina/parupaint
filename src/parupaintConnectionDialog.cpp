@@ -6,39 +6,29 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-ParupaintConnectionDialog::ParupaintConnectionDialog(QWidget* parent) : ParupaintDialog(parent)
+ParupaintConnectionDialog::ParupaintConnectionDialog(QWidget* parent) : 
+	ParupaintDialog(parent, "connect...", "enter your nickname and the server address here. the server is in the form of <host>:<port>.")
 {
-	this->setMinimumSize(QSize(250, 210));
-	this->setFocusPolicy(Qt::NoFocus);
-	this->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
-	this->setWindowTitle("connect to");
+	QSettings cfg;
 
-	auto * layout = new QVBoxLayout(this);	
-	layout->setMargin(8);
-
-	QString help_str = QString(
-		"enter your nickname and the server address here."
-		"the server is in the form of <host>:<port>."
-	);
-
-	QLabel * label_help 		= new QLabel(help_str, this);
-	label_help->setWordWrap(true);
-	label_help->setFocusPolicy(Qt::NoFocus);
-	line_nickname 			= new QLineEdit(this);
+	line_nickname = new QLineEdit();
 	line_nickname->setPlaceholderText("nickname");
-	line_ip 			= new QLineEdit(this);
+	line_nickname->setText(cfg.value("painter/username").toString());
+
+	line_ip = new QLineEdit();
 	line_ip->setPlaceholderText("<host>:<port>");
-	QPushButton * button_connect	= new QPushButton("connect", this);
+	line_ip->setText(cfg.value("net/lasthost").toString());
 
-	layout->addWidget(label_help);
-	layout->setAlignment(label_help, Qt::AlignTop);
-	layout->addWidget(line_nickname);
-	layout->addWidget(line_ip);
-	layout->addWidget(button_connect);
-
+	QPushButton * button_connect = new QPushButton("connect");
+	button_connect->setDefault(true);
 	this->connect(button_connect, &QPushButton::released, this, &ParupaintConnectionDialog::ConnectClick);
 
-	this->setLayout(layout);
+	this->layout()->addWidget(line_nickname);
+	this->layout()->addWidget(line_ip);
+	this->layout()->addWidget(button_connect);
+	
+	this->setFocusProxy(line_ip);
+	this->setFocus();
 }
 
 void ParupaintConnectionDialog::ConnectClick()
@@ -46,28 +36,16 @@ void ParupaintConnectionDialog::ConnectClick()
 	QString name 	= line_nickname->text();
 	QString ip 	= line_ip->text();
 	QSettings cfg;
+
 	if(!name.isEmpty()){
 		cfg.setValue("painter/username", name);
 	} else {
-		line_nickname->setFocus();
+		return line_nickname->setFocus();
 	}
 	if(!ip.isEmpty()){
 		cfg.setValue("net/lasthost", ip);
 		emit ConnectSignal(ip);
-		// Don't know if this is safe.
-		delete this;
-
 	} else {
-		line_ip->setFocus();
+		return line_ip->setFocus();
 	}
-}
-
-void ParupaintConnectionDialog::showEvent(QShowEvent * )
-{
-	QSettings cfg;
-	line_nickname->setText(cfg.value("painter/username").toString());
-	line_ip->setText(cfg.value("net/lasthost").toString());
-
-	line_ip->setFocus();
-
 }

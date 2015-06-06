@@ -12,7 +12,6 @@ Q_OBJECT
 	QLineEdit * line_nickname;	
 	QLineEdit * line_ip;	
 
-	void showEvent(QShowEvent * event);
 	public:
 	ParupaintConnectionDialog(QWidget * = nullptr);
 

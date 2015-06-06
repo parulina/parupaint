@@ -501,9 +501,12 @@ void ParupaintWindow::UpdateTitle()
 
 void ParupaintWindow::Connect(QString url)
 {
+	auto * dialog = qobject_cast<ParupaintConnectionDialog*>(sender());
 	QSettings cfg;
 	client->SetNickname(cfg.value("painter/username").toString());
 	client->Connect(url);
+
+	delete dialog;
 }
 
 void ParupaintWindow::Open(QString filename)
