@@ -10,6 +10,7 @@
 #include "parupaintFrame.h"
 
 #include "../karchive/KTar"
+#include "../karchive/KZip"
 
 #ifdef PARUPAINT_VIDEO_EXPORT
 #include "../qtffmpeg/QVideoEncoder.h"
@@ -41,6 +42,8 @@ PanvasWriterResult ParupaintPanvasWriter::Save(const QString directory, const QS
 	auto suffix = file.suffix();
 	if(suffix == "png"){
 		return this->ExportPng(path);
+	} else if(suffix == "zip"){
+		return this->ExportPngSeq(path);
 	} else if(suffix == "ppa"){
 		return this->SaveParupaintArchive(path);
 #ifdef PARUPAINT_VIDEO_EXPORT
@@ -177,9 +180,32 @@ PanvasWriterResult ParupaintPanvasWriter::ExportWebp(const QString path)
 	return PANVAS_WRITER_RESULT_OK;
 }
 
-PanvasWriterResult ParupaintPanvasWriter::ExportPngSeq(const QString path)
+PanvasWriterResult ParupaintPanvasWriter::ExportPngSeq(const QString filename)
 {
-	return PANVAS_WRITER_RESULT_ERROR;
+	if(!panvas) return PANVAS_WRITER_RESULT_ERROR;
+
+	KZip zip(filename);
+	if(!zip.open(QIODevice::WriteOnly)){
+		return PANVAS_WRITER_RESULT_WRITEERROR;
+	}
+
+	auto frames = panvas->GetImageFrames();
+	for(auto i = 0; i < frames.length(); i++){
+
+		const QImage & image = frames.at(i);
+		QString fname = QString("%1.png").arg(i);
+
+		QByteArray byte_array(image.byteCount(), 0);
+		QBuffer buf(&byte_array);
+		buf.open(QIODevice::WriteOnly);
+		image.save(&buf, "png");
+		buf.close();
+
+		zip.writeFile(fname, byte_array);
+	}
+
+	zip.close();
+	return PANVAS_WRITER_RESULT_OK;
 }
 
 

@@ -1,6 +1,9 @@
 
+#include <QPainter>
+
 #include "parupaintPanvas.h"
 #include "parupaintLayer.h"
+#include "parupaintFrame.h"
 
 
 PanvasProjectInformation::PanvasProjectInformation()
@@ -123,7 +126,26 @@ _lint ParupaintPanvas::GetNumLayers()
 
 QList<QImage> ParupaintPanvas::GetImageFrames()
 {
-	return QList<QImage>();
+	QList<QImage> images;
+	for(auto f = 0; f < this->GetTotalFrames(); f++){
+		QImage img(this->GetDimensions(), QImage::Format_ARGB32);
+		img.fill(0);
+
+		for(auto l = 0; l < this->GetNumLayers(); l++){
+			auto * layer = this->GetLayer(l);
+			if(!layer) continue;
+
+			auto * frame = layer->GetFrame(f);
+			if(!frame) continue;
+
+			const QImage & fimg = frame->GetImage();
+			QPainter paint(&img);
+			paint.drawImage(img.rect(), fimg, fimg.rect());
+		}
+		images.append(img);
+	}
+
+	return images;
 }
 
 int ParupaintPanvas::GetWidth() const
