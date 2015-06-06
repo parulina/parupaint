@@ -22,6 +22,7 @@ class ParupaintPanvasReader
 
 	PanvasReaderResult Load(const QString directory, QString filename);
 	PanvasReaderResult LoadOra(const QString filename);
+	PanvasReaderResult LoadPng(const QString filename);
 	PanvasReaderResult LoadParupaintArchive(const QString filename);
 
 };

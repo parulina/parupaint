@@ -47,12 +47,28 @@ PanvasReaderResult ParupaintPanvasReader::Load(const QString directory, const QS
 	auto suffix = file.suffix();
 	if(suffix == "ora"){
 		return this->LoadOra(path);
+	} else if(suffix == "png"){
+		return this->LoadPng(path);
 	} else if(suffix == "gz" || suffix == "ppa"){
 		return this->LoadParupaintArchive(path);
 	}
 
 	return PANVAS_READER_RESULT_NOTFOUND;
 
+}
+
+PanvasReaderResult ParupaintPanvasReader::LoadPng(const QString filename)
+{
+	if(!panvas) return PANVAS_READER_RESULT_ERROR;
+
+	QImage img(filename);
+	panvas->Clear();
+	panvas->Resize(img.size());
+	panvas->SetLayers(1, 1);
+	panvas->GetLayer(0)->SetFrames(1);
+	panvas->GetLayer(0)->GetFrame(0)->Replace(img);
+	
+	return PANVAS_READER_RESULT_OK;
 }
 
 PanvasReaderResult ParupaintPanvasReader::LoadOra(const QString filename)
