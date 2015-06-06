@@ -17,9 +17,8 @@ ParupaintChatContent::ParupaintChatContent(QWidget * parent) : QScrollArea(paren
 	this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	this->setContextMenuPolicy(Qt::NoContextMenu);
 	
-
 	area = new QTextBrowser(this);
-	
+	area->setOpenExternalLinks(true);
 
 	QFile file(":resources/chat.css");
 	file.open(QFile::ReadOnly);

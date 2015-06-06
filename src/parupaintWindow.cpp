@@ -7,6 +7,8 @@
 #include <QFileInfo>
 #include <QDir>
 
+#include "parupaintVersionCheck.h"
+
 #include "parupaintWindow.h"
 #include "core/parupaintPanvasWriter.h"
 
@@ -59,6 +61,9 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	OverlayState(OVERLAY_STATUS_HIDDEN)
 
 {
+
+	auto * version_check = new ParupaintVersionCheck();
+	connect(version_check, &ParupaintVersionCheck::Response, this, &ParupaintWindow::VersionResponse);
 
 	view = new ParupaintCanvasView(this);
 	view->SetCurrentBrush(glass.GetCurrentBrush());
@@ -134,6 +139,13 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	restoreState(cfg.value("mainWindowState").toByteArray());
 
 	show();
+}
+
+void ParupaintWindow::VersionResponse(bool update, QString body)
+{
+	qDebug() << (update ? "New update." : "No new update.");
+
+	if(update) chat->AddMessage(body);
 }
 
 void ParupaintWindow::ColorChange(QColor col)
