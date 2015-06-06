@@ -220,6 +220,7 @@ void ParupaintWindow::SelectFrame(int l, int f)
 
 void ParupaintWindow::OverlayTimeout()
 {
+	OverlayState = OVERLAY_STATUS_HIDDEN;
 	HideOverlay();
 }
 
@@ -297,7 +298,7 @@ void ParupaintWindow::BrushKey()
 void ParupaintWindow::ShowOverlay(bool permanent)
 {
 	if(!permanent) {
-		OverlayTimer->start(1000);
+		OverlayTimer->start(1400);
 	} else {
 		OverlayTimer->stop();
 	}
@@ -321,7 +322,8 @@ void ParupaintWindow::UpdateOverlay()
 	infobar->move(0, visible - infobar->height());
 	infobar->resize(this->width(), infobar->height());
 
-	auto w1 = this->width() - chat->width();
+	auto spad = 15; // scroll padding
+	auto w1 = this->width() - chat->width() - spad;
 	chat->move(w1, visible);
 	picker->move(0, visible);
 
