@@ -251,7 +251,7 @@ void ParupaintWindow::NetworkKey()
 		client->ReloadImage();
 
 	} else if(seq == CanvasKeyQuicksave){
-		client->SaveCanvas(".png");
+		this->SaveAs(".png");
 	
 	} else if(seq == CanvasKeySaveProject) {
 		QSettings cfg;
