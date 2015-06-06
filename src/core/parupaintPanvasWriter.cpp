@@ -37,7 +37,7 @@ PanvasWriterResult ParupaintPanvasWriter::Save(const QString directory, const QS
 	auto suffix = file.suffix();
 	if(suffix == "png"){
 		return this->ExportPng(path);
-	} else if(suffix == "gz"){
+	} else if(suffix == "ppa"){
 		return this->SaveParupaintArchive(path);
 	} else {
 		// image sequence when no other extension

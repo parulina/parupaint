@@ -44,10 +44,10 @@ PanvasReaderResult ParupaintPanvasReader::Load(const QString directory, const QS
 
 
 	auto path = file.filePath();
-	auto suffix = file.completeSuffix();
+	auto suffix = file.suffix();
 	if(suffix == "ora"){
 		return this->LoadOra(path);
-	} else if(suffix == "tar.gz"){
+	} else if(suffix == "gz" || suffix == "ppa"){
 		return this->LoadParupaintArchive(path);
 	}
 
