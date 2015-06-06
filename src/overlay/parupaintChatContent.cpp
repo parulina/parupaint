@@ -30,12 +30,16 @@ ParupaintChatContent::ParupaintChatContent(QWidget * parent) : QScrollArea(paren
 	this->setWidget(area);
 }
 
-void ParupaintChatContent::AddMessage(QString who, QString str)
+void ParupaintChatContent::AddMessage(QString msg, QString who)
 {
-	AddMessage("<span class=\"user\">" + who + "</span>: <span class=\"message\">" + str + "</span>");
+	QString str = "<span class=\"message\">" + msg + "</span>";
+	if(!who.isEmpty()){
+		str = "<span class=\"user\">" + who + "</span>: " + str;
+	}
+	this->AddChatMessage(str);
 }
 
-void ParupaintChatContent::AddMessage(QString str)
+void ParupaintChatContent::AddChatMessage(QString str)
 {
 	QString html = QString("<p>%1</p>\n\r").arg(str);
 	area->append(html);

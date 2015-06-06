@@ -145,11 +145,21 @@ void ParupaintWindow::ColorChange(QColor col)
 
 void ParupaintWindow::ChatMessageReceived(QString name, QString msg)
 {
-	chat->AddMessage(name, msg);
+	chat->AddMessage(msg, name);
 }
 
 void ParupaintWindow::ChatMessage(QString str)
 {
+	if(str[0] == '/'){
+		QString cmd = str;
+		QString params = "";
+		if(str.indexOf(" ") != -1){
+			cmd = str.section(" ", 0, 0);
+			params = str.section(" ", 1);
+		}
+		cmd = cmd.mid(1);
+		return Command(cmd, params);
+	}
 	client->SendChat(str);
 }
 
@@ -536,4 +546,17 @@ void ParupaintWindow::SaveAs(QString filename)
 	delete dialog;
 }
 
+void ParupaintWindow::Command(QString cmd, QString params)
+{
+	if(params.isEmpty()) return;
+	
+	qDebug() << cmd << params;
+	if(cmd == "load"){
+		client->LoadCanvas(params);
 
+	} else if(cmd == "save"){
+		client->SaveCanvas(params);
+
+	}
+	chat->AddMessage(">> " + cmd + " " + params);
+}

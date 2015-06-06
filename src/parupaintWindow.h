@@ -91,6 +91,8 @@ Q_OBJECT
 	void SaveAs(QString);
 
 	private slots:
+	void Command(QString, QString);
+
 	void OverlayTimeout();
 	void ButtonTimeout();
 

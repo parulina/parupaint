@@ -32,9 +32,9 @@ ParupaintChat::ParupaintChat(QWidget * parent) : ParupaintOverlayWidget(parent)
 	this->setLayout(layout);
 }
 
-void ParupaintChat::AddMessage(QString name, QString msg)
+void ParupaintChat::AddMessage(QString msg, QString name)
 {
-	chat->AddMessage(name, msg);
+	chat->AddMessage(msg, name);
 }
 
 void ParupaintChat::returnPressed()

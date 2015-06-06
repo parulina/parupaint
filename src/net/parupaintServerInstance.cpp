@@ -254,6 +254,8 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 				// Loader handles name verification
 				auto ret = writer.Save(load_dir, name);
 				if(ret == PANVAS_WRITER_RESULT_OK){
+					QString msg = QString("Server saved canvas successfully at: \"%1\"").arg(name);
+					this->BroadcastChat(msg);
 				}
 				
 			}
@@ -292,6 +294,9 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 				auto ret = reader.Load(load_dir, name);
 				if(ret == PANVAS_READER_RESULT_OK){
 					qDebug() << "Loaded canvas fine.";
+					QString msg = QString("Server loaded file successfully at: \"%1\"").arg(name);
+					this->BroadcastChat(msg);
+
 					this->Broadcast("canvas", MarshalCanvas());
 				}
 			}
@@ -313,6 +318,12 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 
 }
 
+void ParupaintServerInstance::BroadcastChat(QString str)
+{
+	QJsonObject obj;
+	obj["message"] = str;
+	this->Broadcast("chat", obj);
+}
 
 void ParupaintServerInstance::Broadcast(QString id, QJsonObject ba, ParupaintConnection * c)
 {

@@ -9,12 +9,12 @@ class ParupaintChatContent : public QScrollArea
 	private:
 	// list of messages and stuff
 	QTextBrowser * area;
+	void AddChatMessage(QString);
 
 	public:
 	ParupaintChatContent(QWidget * = nullptr);
 
-	void AddMessage(QString, QString);
-	void AddMessage(QString);
+	void AddMessage(QString, QString = "");
 
 };
 
