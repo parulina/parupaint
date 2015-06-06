@@ -34,6 +34,7 @@ class ParupaintPanvasWriter
 
 	PanvasWriterResult ExportPng(const QString);
 	PanvasWriterResult ExportWebp(const QString);
+	PanvasWriterResult ExportPngZip(const QString);
 	PanvasWriterResult ExportPngSeq(const QString);
 	
 };

@@ -70,7 +70,7 @@ void ParupaintFileDialog::FilePick(QString file)
 void ParupaintFileDialog::EnterClick()
 {
 	QString filename = line_filename->text();
-	if(!filename.isEmpty() && filename.indexOf(".") != -1){
+	if(!filename.isEmpty()){
 		// if it is something and it has a dota
 		emit EnterSignal(filename);
 	} else {

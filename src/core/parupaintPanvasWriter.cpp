@@ -43,15 +43,17 @@ PanvasWriterResult ParupaintPanvasWriter::Save(const QString directory, const QS
 	if(suffix == "png"){
 		return this->ExportPng(path);
 	} else if(suffix == "zip"){
-		return this->ExportPngSeq(path);
+		return this->ExportPngZip(path);
 	} else if(suffix == "ppa"){
 		return this->SaveParupaintArchive(path);
 #ifdef PARUPAINT_VIDEO_EXPORT
 	} else if(suffix == "avi"){
 		return this->SaveVideo(path);
 #endif
+	} else if(suffix.isEmpty()){
+		return this->ExportPngSeq(path);
 	} else {
-		// image sequence when no other extension
+		// ?
 	}
 
 	return PANVAS_WRITER_RESULT_ERROR;
@@ -181,6 +183,30 @@ PanvasWriterResult ParupaintPanvasWriter::ExportWebp(const QString path)
 }
 
 PanvasWriterResult ParupaintPanvasWriter::ExportPngSeq(const QString filename)
+{
+	if(!panvas) return PANVAS_WRITER_RESULT_ERROR;
+
+	QDir dir(filename);
+	dir.mkpath(".");
+
+	// clear files
+	dir.setNameFilters(QStringList() << "*.*");
+	dir.setFilter(QDir::Files);
+	foreach(QString dirFile, dir.entryList()) dir.remove(dirFile);
+
+	auto frames = panvas->GetImageFrames();
+	for(auto i = 0; i < frames.length(); i++){
+
+		const QImage & image = frames.at(i);
+		// Might change this to padded number? for timelapse etc
+		QString fname = QString("%1.png").arg(i);
+		image.save(QFileInfo(dir, fname).filePath());
+	}
+
+	return PANVAS_WRITER_RESULT_OK;
+}
+
+PanvasWriterResult ParupaintPanvasWriter::ExportPngZip(const QString filename)
 {
 	if(!panvas) return PANVAS_WRITER_RESULT_ERROR;
 
