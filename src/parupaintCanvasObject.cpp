@@ -67,11 +67,14 @@ void ParupaintCanvasObject::RedrawCache()
 		}
 	}
 
-	painter.setOpacity(1.0);
-	if(layer != nullptr){
-		auto frame = layer->GetFrame(CurrentFrame);
-		if(frame != nullptr) {
-			painter.drawImage(this->boundingRect(), frame->GetImage());
+	if(!IsPreview()){
+		painter.fillRect(cc.rect(), Qt::white);
+		painter.setOpacity(1.0);
+		if(layer != nullptr){
+			auto frame = layer->GetFrame(CurrentFrame);
+			if(frame != nullptr) {
+				painter.drawImage(this->boundingRect(), frame->GetImage());
+			}
 		}
 	}
 	cache = cc;
