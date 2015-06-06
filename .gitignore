@@ -1,7 +1,13 @@
 build/
 bin/
 junk/
-Makefile
+Makefile*
 .*
 qrc_*
+
+*.png
+*.gif
+*.apng
 *.tar.gz
+*.ora
+*.ppa
