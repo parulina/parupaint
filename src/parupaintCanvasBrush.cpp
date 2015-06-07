@@ -47,6 +47,9 @@ void ParupaintCanvasBrush::Paint(QPainter * painter)
 	}
 	QPen pen(Qt::white);
 	pen.setCosmetic(true);
+	if(this->GetColor().alpha() == 0){
+		pen.setStyle(Qt::DashLine);
+	}
 	painter->setPen(pen);
 	painter->setCompositionMode(QPainter::CompositionMode_Exclusion);
 	painter->drawEllipse(cc); // brush width
