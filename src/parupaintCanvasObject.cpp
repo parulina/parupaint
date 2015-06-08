@@ -22,14 +22,16 @@ void ParupaintCanvasObject::New(QSize s, _lint l, _fint f)
 {
 	QSize old = ParupaintPanvas::GetSize();
 	this->ParupaintPanvas::New(s, l, f);
-	RedrawCache();
 	emit ResizeSignal(old, s);
+	NewCache();
+	RedrawCache();
 }
 void ParupaintCanvasObject::Resize(QSize s)
 {
 	QSize old = ParupaintPanvas::GetSize();
 	this->ParupaintPanvas::Resize(s);
 	emit ResizeSignal(old, s);
+	NewCache();
 	RedrawCache();
 }
 
@@ -38,19 +40,24 @@ QRectF ParupaintCanvasObject::boundingRect() const
 	return QRectF(0, 0, GetWidth(), GetHeight());
 }
 
-void ParupaintCanvasObject::TriggerCacheRedraw()
+void ParupaintCanvasObject::NewCache()
 {
-	this->RedrawCache();
-
+	cache = QPixmap(GetWidth(), GetHeight());
 }
 
 void ParupaintCanvasObject::RedrawCache()
 {
-	auto layer = GetLayer(CurrentLayer);
-	QPixmap cc(GetWidth(), GetHeight());
-	QPainter painter(&cc);
+	this->RedrawCache(this->boundingRect().toRect());
+}
 
-	painter.drawTiledPixmap(this->boundingRect(), checker);
+void ParupaintCanvasObject::RedrawCache(QRect area)
+{
+	if(cache.isNull()) NewCache();
+	QPainter painter(&cache);
+	auto layer = GetLayer(CurrentLayer);
+
+	const QPointF ppp(area.x() % checker.width(), area.y() % checker.height());
+	painter.drawTiledPixmap(area, checker, ppp);
 
 	if(!IsPreview()){
 		// "draw debug mode"
@@ -62,23 +69,21 @@ void ParupaintCanvasObject::RedrawCache()
 		if(layer2 && CurrentFrame < layer2->GetNumFrames()){
 			auto frame2 = layer2->GetFrame(CurrentFrame);
 			if(frame2){
-				painter.drawImage(this->boundingRect(), frame2->GetImage());
+				painter.drawImage(area, frame2->GetImage(), area);
 			}
 		}
 	}
 
 	if(!IsPreview()){
-		painter.fillRect(cc.rect(), Qt::white);
-		painter.setOpacity(1.0);
+		painter.fillRect(area, Qt::white);
+		painter.setOpacity(0.8);
 		if(layer != nullptr){
 			auto frame = layer->GetFrame(CurrentFrame);
 			if(frame != nullptr) {
-				painter.drawImage(this->boundingRect(), frame->GetImage());
+				painter.drawImage(area, frame->GetImage(), area);
 			}
 		}
 	}
-	cache = cc;
-
 }
 
 void ParupaintCanvasObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)

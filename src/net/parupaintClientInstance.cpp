@@ -106,7 +106,11 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 							frame->DrawStep(old_x, old_y, x, y, width, color);
 						}
 					}
-					pool->GetCanvas()->TriggerCacheRedraw();
+
+					// Calculate updated area and update the cache accordingly
+					QRect urect(old_x - width, old_y - width, old_x + width, old_y + width);
+					urect |= QRect(x - width, y - width, x + width, y + width);
+					pool->GetCanvas()->RedrawCache(urect);
 				} else {
 					if(!brush->GetCurrentStroke()) pool->NewBrushStroke(brush);
 					if(brush->GetCurrentStroke()) {
@@ -125,7 +129,6 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 						pool->EndBrushStroke(brush);
 						pool->SquashBrushStrokes(brush);
 					}
-					pool->GetCanvas()->TriggerCacheRedraw();
 				}
 			}
 
@@ -199,7 +202,8 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 				frame->Replace(img);
 			}
 		}
-		pool->GetCanvas()->TriggerCacheRedraw();
+		// todo do this after receiving all images only?
+		pool->GetCanvas()->RedrawCache();
 		pool->UpdateView();
 	} else if(id == "chat") {
 		auto name = object["name"].toString(),

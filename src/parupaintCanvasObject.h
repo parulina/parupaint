@@ -17,7 +17,7 @@ Q_OBJECT
 	QPixmap checker;
 	QPixmap cache;
 
-	void RedrawCache();
+	void NewCache();
 
 	public:
 	~ParupaintCanvasObject();
@@ -35,7 +35,8 @@ Q_OBJECT
 	_lint GetCurrentLayer();
 	_fint GetCurrentFrame();
 
-	void TriggerCacheRedraw();
+	void RedrawCache();
+	void RedrawCache(QRect);
 	const QPixmap & GetCache() const;
 
 
