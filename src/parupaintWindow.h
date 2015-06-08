@@ -45,7 +45,7 @@ Q_OBJECT
 	int CanvasKeyNew;
 	QKeySequence CanvasKeyQuicksave;
 	QKeySequence CanvasKeySaveProject;
-	QKeySequence CanvasKeyPreview;
+	int CanvasKeyPreview;
 	QKeySequence CanvasKeyConnect;
 	int CanvasKeyChat;
 
@@ -102,7 +102,6 @@ Q_OBJECT
 	void ButtonTimeout();
 
 	void BrushKey();
-	void CanvasKey();
 	void NetworkKey();
 
 	void ViewUpdate();

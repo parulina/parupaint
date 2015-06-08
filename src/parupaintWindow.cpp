@@ -107,10 +107,6 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	OverlayButtonTimer->setSingleShot(true);
 	connect(OverlayButtonTimer, &QTimer::timeout, this, &ParupaintWindow::ButtonTimeout);
 
-
-	QShortcut * PreviewKey =	new QShortcut(CanvasKeyPreview, this);
-	connect(PreviewKey, 		&QShortcut::activated, this, &ParupaintWindow::CanvasKey);
-
 	QShortcut * SwitchKey = new QShortcut(BrushKeySwitchBrush, this);
 	QShortcut * UndoKey = 	new QShortcut(BrushKeyUndo, this);
 	QShortcut * RedoKey = 	new QShortcut(BrushKeyRedo, this);
@@ -277,16 +273,6 @@ void ParupaintWindow::NetworkKey()
 	}
 }
 
-void ParupaintWindow::CanvasKey()
-{
-	QShortcut* shortcut = qobject_cast<QShortcut*>(sender());
-	QKeySequence seq = shortcut->key();
-
-	if(seq == CanvasKeyPreview){
-		pool->GetCanvas()->TogglePreview();
-	}
-}
-
 
 void ParupaintWindow::BrushKey()
 {
@@ -435,6 +421,19 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			client->SendLayerFrame(current_layer, current_frame, ll, ff, control);
 		}
 
+	}
+	if(!event->isAutoRepeat() && event->key() == CanvasKeyPreview){
+
+		if(event->modifiers() & Qt::ControlModifier){
+			pool->GetCanvas()->SetPreview(true);
+
+		} else if(event->modifiers() & Qt::ShiftModifier){
+			pool->GetCanvas()->SetPreview(false);
+
+		} else {
+			pool->GetCanvas()->TogglePreview();
+		}
+		pool->TriggerViewUpdate();
 	}
 
 	if(event->key() == BrushKeyPickColor){
