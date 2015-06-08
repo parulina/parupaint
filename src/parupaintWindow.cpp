@@ -32,6 +32,7 @@
 
 #include "parupaintConnectionDialog.h"
 #include "parupaintFileDialog.h"
+#include "parupaintNewDialog.h"
 #include "net/parupaintClientInstance.h"
 
 #include <QDebug>
@@ -50,8 +51,9 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	CanvasKeyNextLayer(Qt::Key_D), CanvasKeyPreviousLayer(Qt::Key_S),
 	CanvasKeyNextFrame(Qt::Key_F), CanvasKeyPreviousFrame(Qt::Key_A),
 	// network keys
-	CanvasKeyReload(Qt::Key_R + Qt::SHIFT), CanvasKeyQuicksave(Qt::Key_K + Qt::CTRL),
-	CanvasKeyOpen(Qt::Key_O + Qt::CTRL), CanvasKeySaveProject(Qt::Key_L + Qt::CTRL),
+	CanvasKeyReload(Qt::Key_R + Qt::SHIFT), 
+	CanvasKeyOpen(Qt::Key_O + Qt::CTRL), CanvasKeyNew(Qt::Key_N),
+	CanvasKeyQuicksave(Qt::Key_K + Qt::CTRL), CanvasKeySaveProject(Qt::Key_L + Qt::CTRL),
 	CanvasKeyPreview(Qt::Key_Q), CanvasKeyConnect(Qt::Key_I + Qt::CTRL),
 	CanvasKeyChat(Qt::Key_Return),
 	// brush keys
@@ -383,6 +385,15 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 		return QMainWindow::keyPressEvent(event);
 	}
 
+
+	if(!event->isAutoRepeat() && event->modifiers() & Qt::ControlModifier){
+		if(event->key() == CanvasKeyNew){
+			auto * dialog = new ParupaintNewDialog(this);
+			dialog->show();
+			connect(dialog, &ParupaintNewDialog::NewSignal, this, &ParupaintWindow::New);
+		}
+	}
+
 	if(event->key() == CanvasKeyNextLayer || 
 			event->key() == CanvasKeyPreviousLayer || 
 			event->key() == CanvasKeyNextFrame || 
@@ -511,6 +522,15 @@ void ParupaintWindow::resizeEvent(QResizeEvent* event)
 void ParupaintWindow::UpdateTitle()
 {
 	setWindowTitle(QString("parupaint"));
+}
+
+void ParupaintWindow::New(int w, int h)
+{
+	auto * dialog = qobject_cast<ParupaintNewDialog*>(sender());
+	qDebug() << "New canvas" << w << h;
+
+	client->NewCanvas(w, h);
+	delete dialog;
 }
 
 void ParupaintWindow::Connect(QString url)

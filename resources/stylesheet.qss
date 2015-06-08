@@ -106,6 +106,10 @@ QDialog QPushButton {
 	color:red;
 }
 
+QComboBox {
+	background:black;
+}
+
 
 QScrollBar {
 	border: 2px solid grey;

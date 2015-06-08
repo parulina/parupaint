@@ -31,6 +31,7 @@ Q_OBJECT
 	void ReloadImage();
 	void SaveCanvas(const QString);
 	void LoadCanvas(const QString);
+	void NewCanvas(int, int);
 	void LoadCanvasLocal(const QString);
 	void SendLayerFrame(int, int, int=0, int=0, bool=false);
 	void SendBrushUpdate(ParupaintBrush * brush);

@@ -21,11 +21,13 @@ ParupaintDialog::ParupaintDialog(QWidget * parent, QString title, QString helpte
 	auto * layout = new QVBoxLayout(this);
 	layout->setMargin(8);
 	
+	if(!helptext.isEmpty()){
 		auto * label = new QLabel(helptext);
 		label->setWordWrap(true);
-
-	layout->addWidget(label);
-	layout->setAlignment(label, Qt::AlignTop);
+		label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+		layout->addWidget(label);
+		layout->setAlignment(label, Qt::AlignTop);
+	}
 	
 	this->setLayout(layout);
 }

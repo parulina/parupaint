@@ -263,6 +263,14 @@ void ParupaintClientInstance::SaveCanvas(const QString filename)
 	this->send("save", obj);
 }
 
+void ParupaintClientInstance::NewCanvas(int w, int h)
+{
+	QJsonObject obj;
+	obj["width"] = w;
+	obj["height"] = h;
+	this->send("new", obj);
+}
+
 void ParupaintClientInstance::SetNickname(QString str)
 {
 	nickname = str;

@@ -3,7 +3,7 @@
 #include <QLineEdit>
 #include <QFileDialog>
 #include <QPushButton>
-#include <QVBoxLayout>
+#include <QHBoxLayout>
 
 #include "parupaintFileDialog.h"
 
@@ -33,11 +33,18 @@ ParupaintFileDialog::ParupaintFileDialog(QWidget * parent, QString filename, QSt
 	this->connect(button_enter, &QPushButton::released, this, &ParupaintFileDialog::EnterClick);
 	this->connect(line_filename, &QLineEdit::textEdited, label_invalid, &QLabel::hide);
 
+	auto * vwidget = new QWidget;
+	auto * hlayout = new QHBoxLayout;
+	hlayout->setMargin(0);
+	hlayout->addWidget(line_filename);
+	hlayout->addWidget(button_browse);
+	vwidget->setLayout(hlayout);
+
+	this->layout()->addWidget(vwidget);
+	this->layout()->setAlignment(vwidget, Qt::AlignBottom);
 	this->layout()->addWidget(label_invalid);
 	this->layout()->setAlignment(label_invalid, Qt::AlignBottom);
 
-	this->layout()->addWidget(line_filename);
-	this->layout()->addWidget(button_browse);
 	this->layout()->addWidget(button_enter);
 
 	this->setFocusProxy(line_filename);

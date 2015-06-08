@@ -41,8 +41,9 @@ Q_OBJECT
 	int CanvasKeyPreviousFrame;
 
 	QKeySequence CanvasKeyReload;
-	QKeySequence CanvasKeyQuicksave;
 	QKeySequence CanvasKeyOpen;
+	int CanvasKeyNew;
+	QKeySequence CanvasKeyQuicksave;
 	QKeySequence CanvasKeySaveProject;
 	QKeySequence CanvasKeyPreview;
 	QKeySequence CanvasKeyConnect;
@@ -86,9 +87,11 @@ Q_OBJECT
 
 	void UpdateTitle();
 
+	// Dialogs
 	void Connect(QString);
 	void Open(QString);
 	void SaveAs(QString);
+	void New(int, int);
 
 	private slots:
 	void VersionResponse(bool, QString);
