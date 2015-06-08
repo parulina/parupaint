@@ -9,6 +9,7 @@
 ParupaintConnectionDialog::ParupaintConnectionDialog(QWidget* parent) : 
 	ParupaintDialog(parent, "connect...", "enter your nickname and the server address here. the server is in the form of <host>:<port>.")
 {
+	this->setMinimumSize(280, 160);
 	QSettings cfg;
 
 	line_nickname = new QLineEdit();
@@ -19,13 +20,26 @@ ParupaintConnectionDialog::ParupaintConnectionDialog(QWidget* parent) :
 	line_ip->setPlaceholderText("<host>:<port>");
 	line_ip->setText(cfg.value("net/lasthost").toString());
 
-	QPushButton * button_connect = new QPushButton("connect");
+	auto * button_widget = new QWidget;
+	button_widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	auto * button_layout = new QHBoxLayout;
+	button_layout->setMargin(0);
+
+	auto * button_connect = new QPushButton("connect");
 	button_connect->setDefault(true);
 	this->connect(button_connect, &QPushButton::released, this, &ParupaintConnectionDialog::ConnectClick);
+	
+	auto * button_disconnect = new QPushButton("disconnect");
+	this->connect(button_disconnect, &QPushButton::pressed, this, &ParupaintConnectionDialog::DisconnectSignal);
+
+	button_layout->addWidget(button_connect);
+	button_layout->addWidget(button_disconnect);
+	button_widget->setLayout(button_layout);
 
 	this->layout()->addWidget(line_nickname);
 	this->layout()->addWidget(line_ip);
-	this->layout()->addWidget(button_connect);
+	this->layout()->addWidget(button_widget);
+
 	
 	this->setFocusProxy(line_ip);
 	this->setFocus();

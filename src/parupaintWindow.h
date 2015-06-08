@@ -93,6 +93,7 @@ Q_OBJECT
 
 	// Dialogs
 	void Connect(QString);
+	void Disconnect();
 	void Open(QString);
 	void SaveAs(QString);
 	void New(int, int);

@@ -24,7 +24,7 @@ ParupaintDialog::ParupaintDialog(QWidget * parent, QString title, QString helpte
 	if(!helptext.isEmpty()){
 		auto * label = new QLabel(helptext);
 		label->setWordWrap(true);
-		label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+		label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 		layout->addWidget(label);
 		layout->setAlignment(label, Qt::AlignTop);
 	}

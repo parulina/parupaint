@@ -17,6 +17,8 @@ Q_OBJECT
 
 	signals:
 	void ConnectSignal(QString);
+	void DisconnectSignal();
+
 	private slots:
 	void ConnectClick();
 };

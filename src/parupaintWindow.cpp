@@ -263,6 +263,7 @@ void ParupaintWindow::NetworkKey()
 		dlg->show();
 		dlg->setEnabled(true);
 		connect(dlg, &ParupaintConnectionDialog::ConnectSignal, this, &ParupaintWindow::Connect);
+		connect(dlg, &ParupaintConnectionDialog::DisconnectSignal, this, &ParupaintWindow::Disconnect);
 
 	} else if(seq == CanvasKeyOpen) {
 
@@ -557,6 +558,14 @@ void ParupaintWindow::Connect(QString url)
 	client->SetNickname(cfg.value("painter/username").toString());
 	client->Connect(url);
 
+	delete dialog;
+}
+
+void ParupaintWindow::Disconnect()
+{
+	auto * dialog = qobject_cast<ParupaintConnectionDialog*>(sender());
+
+	client->Connect("ws://localhost:1108");
 	delete dialog;
 }
 
