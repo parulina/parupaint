@@ -6,6 +6,7 @@
 #include <QTimer>
 #include <QFileInfo>
 #include <QDir>
+#include <QMimeData>
 
 #include "parupaintVersionCheck.h"
 
@@ -128,7 +129,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	connect(SaveProjectKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
 	connect(ConnectKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
 
-	
+	this->setAcceptDrops(true);
 
 	UpdateTitle();
 	
@@ -517,6 +518,23 @@ void ParupaintWindow::resizeEvent(QResizeEvent* event)
 	QMainWindow::resizeEvent(event);
 }
 
+void ParupaintWindow::dropEvent(QDropEvent *ev)
+{
+	if(ev->mimeData()->urls().size() == 1){
+		QUrl link = ev->mimeData()->urls().first();
+		if(link.isLocalFile()){
+			QString file = link.toLocalFile();
+			qDebug() << "Loading" << file;
+			client->LoadCanvasLocal(file);
+		}
+	}
+}
+
+void ParupaintWindow::dragEnterEvent(QDragEnterEvent *ev)
+{
+	if(ev->mimeData()->urls().size() != 1) return;
+	ev->accept();
+}
 
 void ParupaintWindow::UpdateTitle()
 {

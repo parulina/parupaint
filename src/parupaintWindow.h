@@ -17,6 +17,8 @@ class ParupaintFlayer;
 class ParupaintColorPicker;
 class ParupaintInfoBar;
 
+class QDropEvent;
+
 enum OverlayStatus {
 	OVERLAY_STATUS_HIDDEN,
 	OVERLAY_STATUS_SHOWN_SMALL,
@@ -72,6 +74,8 @@ Q_OBJECT
 	void keyReleaseEvent(QKeyEvent * event);
 	bool focusNextPrevChild(bool);
 	void resizeEvent(QResizeEvent * event);
+	void dropEvent(QDropEvent *ev);
+	void dragEnterEvent(QDragEnterEvent *ev);
 	ParupaintCanvasView * view;
 	ParupaintCanvasPool * pool;
 

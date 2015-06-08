@@ -42,6 +42,8 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 	viewport()->setMouseTracking(true);
 	
 	SetZoom(Zoom);
+
+	this->setAcceptDrops(false);
 }
 
 
