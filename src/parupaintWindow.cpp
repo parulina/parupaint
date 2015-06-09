@@ -374,11 +374,11 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			!(event->modifiers() & Qt::NoModifier)){
 
 		if(event->modifiers() & Qt::ControlModifier){
-			client->ReloadCanvas();
-		} else if(event->modifiers() & Qt::ShiftModifier) {
-			client->ReloadImage();
+			return client->ReloadCanvas();
+		} else if(event->modifiers() & Qt::ShiftModifier && 
+				event->modifiers() & Qt::ControlModifier) {
+			return client->ReloadImage();
 		}
-		return;
 	}
 	if(!event->isAutoRepeat() && event->modifiers() & Qt::ControlModifier){
 		if(event->key() == CanvasKeyNew){
