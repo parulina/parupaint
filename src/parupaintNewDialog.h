@@ -11,13 +11,15 @@ Q_OBJECT
 	private:
 	QComboBox * width;
 	QComboBox * height;
-
+	int cwidth;
+	int cheight;
 
 	public:
 	ParupaintNewDialog(QWidget * = nullptr);
+	void setOriginalDimensions(int, int);
 
 	signals:
-	void NewSignal(int, int, bool=false);
+	void NewSignal(int, int, bool);
 };
 
 #endif

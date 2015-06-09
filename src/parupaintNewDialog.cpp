@@ -71,8 +71,9 @@ class ParupaintCanvasPreviewWidget : public QWidget
 };
 
 ParupaintNewDialog::ParupaintNewDialog(QWidget * parent) : 
-	ParupaintDialog(parent, "new...")
+	ParupaintDialog(parent, "new..."), cwidth(0), cheight(0)
 {
+
 	this->setMinimumSize(300, 300);
 	QStringList dim_list = {
 		"120",
@@ -145,7 +146,7 @@ ParupaintNewDialog::ParupaintNewDialog(QWidget * parent) :
 		int h = height->currentText().toInt();
 		if(h <= 0) return height->setFocus();
 
-		emit NewSignal(w, h);		
+		emit NewSignal(w, h, false);
 	});
 
 	auto * resize = new QPushButton("resize");
@@ -163,7 +164,9 @@ ParupaintNewDialog::ParupaintNewDialog(QWidget * parent) :
 	auto * reset = new QPushButton("reset");
 	reset->setToolTip("reset the current canvas, keeping its dimensions.");
 	connect(reset, &QPushButton::pressed, [=]{
-		qDebug() << "yes";
+		if(!cwidth || !cheight) return;
+
+		emit NewSignal(cwidth, cheight, false);
 	});
 
 	wbuttonlayout->addWidget(enter);
@@ -182,4 +185,10 @@ ParupaintNewDialog::ParupaintNewDialog(QWidget * parent) :
 
 	this->setFocusProxy(wcont);
 	this->setFocus();
+}
+
+void ParupaintNewDialog::setOriginalDimensions(int w, int h)
+{
+	cwidth = w;
+	cheight = h;
 }

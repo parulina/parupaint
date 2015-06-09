@@ -381,6 +381,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 	if(!event->isAutoRepeat() && event->modifiers() & Qt::ControlModifier){
 		if(event->key() == CanvasKeyNew){
 			auto * dialog = new ParupaintNewDialog(this);
+			dialog->setOriginalDimensions(pool->GetCanvas()->GetWidth(), pool->GetCanvas()->GetHeight());
 			dialog->show();
 			connect(dialog, &ParupaintNewDialog::NewSignal, this, &ParupaintWindow::New);
 		}
