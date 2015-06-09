@@ -96,7 +96,7 @@ Q_OBJECT
 	void Disconnect();
 	void Open(QString);
 	void SaveAs(QString);
-	void New(int, int);
+	void New(int, int, bool=false);
 
 	private slots:
 	void VersionResponse(bool, QString);

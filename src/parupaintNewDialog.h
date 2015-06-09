@@ -17,7 +17,7 @@ Q_OBJECT
 	ParupaintNewDialog(QWidget * = nullptr);
 
 	signals:
-	void NewSignal(int, int);
+	void NewSignal(int, int, bool=false);
 };
 
 #endif

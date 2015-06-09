@@ -268,16 +268,22 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 
 			int width = obj["width"].toInt();
 			int height = obj["height"].toInt();
+			bool resize = obj["resize"].toBool();
 
 			if(width <= 0 || height <= 0) return;
 
-			canvas->Clear();
 			canvas->Resize(QSize(width, height));
-			canvas->AddLayers(0, 1, 1);
 
-			QString msg = QString("New canvas: %1 x %2").arg(width).arg(height);
+			QString msg;
+			if(!resize){
+				canvas->Clear();
+				canvas->AddLayers(0, 1, 1);
+				msg = QString("New canvas: %1 x %2").arg(width).arg(height);
+			} else {
+				msg = QString("Resize canvas: %1 x %2").arg(width).arg(height);
+			}
+
 			this->BroadcastChat(msg);
-
 			this->Broadcast("canvas", MarshalCanvas());
 
 		} else if(id == "load") {

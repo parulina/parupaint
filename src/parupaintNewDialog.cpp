@@ -109,6 +109,7 @@ ParupaintNewDialog::ParupaintNewDialog(QWidget * parent) :
 			preview->setPreviewHeight(str.toInt());
 		});
 	auto * label = new QPushButton("← x →");
+	label->setToolTip("flip the values.");
 	connect(label, &QPushButton::pressed, 
 			[=]{
 				auto hh = height->currentText();
@@ -118,6 +119,8 @@ ParupaintNewDialog::ParupaintNewDialog(QWidget * parent) :
 
 	auto * wcont = new QWidget;
 	auto * wlay = new QHBoxLayout;
+	wlay->setMargin(0);
+
 	wlay->addWidget(width);
 	wlay->addWidget(label);
 	wlay->setAlignment(label, Qt::AlignCenter);
@@ -128,8 +131,13 @@ ParupaintNewDialog::ParupaintNewDialog(QWidget * parent) :
 
 	wcont->setTabOrder(width, height);
 
-	auto * enter = new QPushButton("create new");
+	auto * wbutton = new QWidget;
+	auto * wbuttonlayout = new QHBoxLayout;
+	wbuttonlayout->setMargin(0);
+
+	auto * enter = new QPushButton("new");
 	enter->setDefault(true);
+	enter->setToolTip("create a new canvas with the given dimensions.");
 	connect(enter, &QPushButton::pressed, [=]{
 		int w = width->currentText().toInt();
 		if(w <= 0) return width->setFocus();
@@ -140,9 +148,33 @@ ParupaintNewDialog::ParupaintNewDialog(QWidget * parent) :
 		emit NewSignal(w, h);		
 	});
 
+	auto * resize = new QPushButton("resize");
+	resize->setToolTip("resize the current canvas with the given dimensions.");
+	connect(resize, &QPushButton::pressed, [=]{
+		int w = width->currentText().toInt();
+		if(w <= 0) return width->setFocus();
+
+		int h = height->currentText().toInt();
+		if(h <= 0) return height->setFocus();
+
+		emit NewSignal(w, h, true);
+	});
+
+	auto * reset = new QPushButton("reset");
+	reset->setToolTip("reset the current canvas, keeping its dimensions.");
+	connect(reset, &QPushButton::pressed, [=]{
+		qDebug() << "yes";
+	});
+
+	wbuttonlayout->addWidget(enter);
+	wbuttonlayout->addWidget(resize);
+	wbuttonlayout->addWidget(reset);
+
+	wbutton->setLayout(wbuttonlayout);
+
 	this->layout()->addWidget(preview);
 	this->layout()->addWidget(wcont);
-	this->layout()->addWidget(enter);
+	this->layout()->addWidget(wbutton);
 
 	QSettings cfg;
 	width->setEditText(cfg.value("canvas/lastwidth").toString());

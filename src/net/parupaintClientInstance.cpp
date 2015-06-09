@@ -271,11 +271,12 @@ void ParupaintClientInstance::SaveCanvas(const QString filename)
 	this->send("save", obj);
 }
 
-void ParupaintClientInstance::NewCanvas(int w, int h)
+void ParupaintClientInstance::NewCanvas(int w, int h, bool resize)
 {
 	QJsonObject obj;
 	obj["width"] = w;
 	obj["height"] = h;
+	obj["resize"] = resize;
 	this->send("new", obj);
 }
 

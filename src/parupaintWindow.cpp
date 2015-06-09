@@ -546,12 +546,12 @@ void ParupaintWindow::UpdateTitle()
 	setWindowTitle(QString("parupaint"));
 }
 
-void ParupaintWindow::New(int w, int h)
+void ParupaintWindow::New(int w, int h, bool resize)
 {
 	auto * dialog = qobject_cast<ParupaintNewDialog*>(sender());
 	qDebug() << "New canvas" << w << h;
 
-	client->NewCanvas(w, h);
+	client->NewCanvas(w, h, resize);
 	delete dialog;
 }
 
