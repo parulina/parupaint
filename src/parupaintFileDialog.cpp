@@ -11,6 +11,8 @@
 ParupaintFileDialog::ParupaintFileDialog(QWidget * parent, QString filename, QString title, QString help) : 
 	ParupaintDialog(parent, title, help)
 {	
+	this->SetSaveName("fileDialog");
+
 	label_invalid = new QLabel("...");
 	label_invalid->setObjectName("ErrorLabel");
 	label_invalid->hide();

@@ -74,6 +74,7 @@ ParupaintNewDialog::ParupaintNewDialog(QWidget * parent) :
 	ParupaintDialog(parent, "new..."), cwidth(0), cheight(0)
 {
 
+	this->SetSaveName("newDialog");
 	this->setMinimumSize(300, 300);
 	QStringList dim_list = {
 		"120",
