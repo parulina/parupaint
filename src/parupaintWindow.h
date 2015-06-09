@@ -42,6 +42,7 @@ Q_OBJECT
 	int CanvasKeyNextFrame;
 	int CanvasKeyPreviousFrame;
 
+	int CanvasKeySettings;
 	int CanvasKeyReload;
 	QKeySequence CanvasKeyOpen;
 	int CanvasKeyNew;

@@ -4,6 +4,7 @@
 #include <QPainter>
 #include <QStyleOptionTitleBar>
 
+#include <QMargins>
 #include <QSettings>
 #include <QLabel>
 #include <QVBoxLayout>
@@ -13,10 +14,9 @@ ParupaintDialog::ParupaintDialog(QWidget * parent, QString title, QString helpte
 	QSettings cfg;
 	this->setMinimumSize(250, 250);
 
-	bool noframeless = false;
-	noframeless = cfg.value("window/noframeless").toBool();
-
-	if(!noframeless) this->setWindowFlags(Qt::FramelessWindowHint);
+	Qt::WindowFlags flags = Qt::Dialog;
+	if(cfg.value("window/frameless").toBool()) flags = Qt::Widget | Qt::FramelessWindowHint;
+	this->setWindowFlags(flags);
 
 	this->move(parent->rect().center());
 	this->setWindowTitle(title);
@@ -35,6 +35,43 @@ ParupaintDialog::ParupaintDialog(QWidget * parent, QString title, QString helpte
 	}
 	
 	this->setLayout(layout);
+}
+
+void ParupaintDialog::SetSaveName(QString str)
+{
+	savename = str;
+	this->LoadGeometry(str);
+}
+
+void ParupaintDialog::SaveGeometry(QString str)
+{
+	QSettings cfg;
+	cfg.setValue("window/" + str, saveGeometry());
+	
+}
+void ParupaintDialog::LoadGeometry(QString str)
+{
+	QSettings cfg;
+	restoreGeometry(cfg.value("window/" + str).toByteArray());
+}
+
+void ParupaintDialog::SetFrameless(bool frameless)
+{
+	bool cframe = this->windowFlags().testFlag(Qt::FramelessWindowHint);
+	QPoint new_pos = this->pos();
+
+	if(!cframe && frameless) {
+		new_pos = this->pos() - this->parentWidget()->pos();
+
+	} else if(cframe && !frameless) {
+		new_pos = this->parentWidget()->pos() + this->pos();
+	}
+
+	if(frameless) this->setWindowFlags(Qt::Widget | Qt::FramelessWindowHint);
+	if(!frameless) this->setWindowFlags(Qt::Dialog);
+
+	this->show();
+	this->move(new_pos);
 }
 
 
@@ -94,5 +131,35 @@ void ParupaintDialog::paintEvent(QPaintEvent * event)
 	this->QDialog::paintEvent(event);
 }
 
+void ParupaintDialog::showEvent(QShowEvent * event)
+{
+	if(!this->windowFlags().testFlag(Qt::FramelessWindowHint)) return this->QDialog::showEvent(event);
 
+	QRect parent_rect = this->parentWidget()->rect();
+	QRect this_rect = this->geometry();
 
+	if(!parent_rect.contains(this_rect, true)){
+
+		int w_change = 0;
+		int h_change = 0;
+
+		if(this_rect.right() > parent_rect.right()) 	w_change += this_rect.right() - parent_rect.right();
+		if(this_rect.bottom() > parent_rect.bottom()) 	w_change += this_rect.bottom() - parent_rect.bottom();
+		if(this_rect.left() < parent_rect.left()) 	w_change += this_rect.left() - parent_rect.left();
+		if(this_rect.top() < parent_rect.top()) 	w_change += this_rect.top() - parent_rect.top();
+
+		this->move(
+			this_rect.x() - w_change,
+			this_rect.y() - h_change
+		);
+	}
+	this->QDialog::showEvent(event);
+}
+
+void ParupaintDialog::moveEvent(QMoveEvent * event)
+{
+	if(!savename.isEmpty()){
+		this->SaveGeometry(savename);
+	}
+	this->QDialog::moveEvent(event);
+}

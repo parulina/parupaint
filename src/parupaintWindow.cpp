@@ -34,6 +34,8 @@
 #include "parupaintConnectionDialog.h"
 #include "parupaintFileDialog.h"
 #include "parupaintNewDialog.h"
+#include "parupaintSettingsDialog.h"
+
 #include "net/parupaintClientInstance.h"
 
 #include <QDebug>
@@ -52,7 +54,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	CanvasKeyNextLayer(Qt::Key_D), CanvasKeyPreviousLayer(Qt::Key_S),
 	CanvasKeyNextFrame(Qt::Key_F), CanvasKeyPreviousFrame(Qt::Key_A),
 	// network keys
-	CanvasKeyReload(Qt::Key_R), 
+	CanvasKeySettings(Qt::Key_M), CanvasKeyReload(Qt::Key_R), 
 	CanvasKeyOpen(Qt::Key_O + Qt::CTRL), CanvasKeyNew(Qt::Key_N),
 	CanvasKeyQuicksave(Qt::Key_K + Qt::CTRL), CanvasKeySaveProject(Qt::Key_L + Qt::CTRL),
 	CanvasKeyPreview(Qt::Key_Q), CanvasKeyConnect(Qt::Key_I + Qt::CTRL),
@@ -384,6 +386,10 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			dialog->setOriginalDimensions(pool->GetCanvas()->GetWidth(), pool->GetCanvas()->GetHeight());
 			dialog->show();
 			connect(dialog, &ParupaintNewDialog::NewSignal, this, &ParupaintWindow::New);
+
+		} else if(event->key() == CanvasKeySettings){
+			auto * dialog = new ParupaintSettingsDialog(this);
+			dialog->show();
 		}
 	}
 
