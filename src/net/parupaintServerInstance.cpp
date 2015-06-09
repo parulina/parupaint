@@ -157,7 +157,7 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 				}
 			}
 			if((layer_change != 0 || frame_change != 0) && changed){
-				c->send("canvas", MarshalCanvas());
+				this->Broadcast("canvas", MarshalCanvas());
 			}
 			auto * brush = brushes.value(c);
 			if(brush) {
