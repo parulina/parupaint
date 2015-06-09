@@ -52,7 +52,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	CanvasKeyNextLayer(Qt::Key_D), CanvasKeyPreviousLayer(Qt::Key_S),
 	CanvasKeyNextFrame(Qt::Key_F), CanvasKeyPreviousFrame(Qt::Key_A),
 	// network keys
-	CanvasKeyReload(Qt::Key_R + Qt::SHIFT), 
+	CanvasKeyReload(Qt::Key_R), 
 	CanvasKeyOpen(Qt::Key_O + Qt::CTRL), CanvasKeyNew(Qt::Key_N),
 	CanvasKeyQuicksave(Qt::Key_K + Qt::CTRL), CanvasKeySaveProject(Qt::Key_L + Qt::CTRL),
 	CanvasKeyPreview(Qt::Key_Q), CanvasKeyConnect(Qt::Key_I + Qt::CTRL),
@@ -117,13 +117,11 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	connect(RedoKey, &QShortcut::activated, this, &ParupaintWindow::BrushKey);
 
 	// Network keys
-	QShortcut * ReloadKey = new QShortcut(CanvasKeyReload, this);
 	QShortcut * QuicksaveKey = new QShortcut(CanvasKeyQuicksave, this);
 	QShortcut * OpenKey = new QShortcut(CanvasKeyOpen, this);
 	QShortcut * SaveProjectKey = new QShortcut(CanvasKeySaveProject, this);
 	QShortcut * ConnectKey = new QShortcut(CanvasKeyConnect, this);
 
-	connect(ReloadKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
 	connect(QuicksaveKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
 	connect(OpenKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
 	connect(SaveProjectKey, &QShortcut::activated, this, &ParupaintWindow::NetworkKey);
@@ -246,10 +244,7 @@ void ParupaintWindow::NetworkKey()
 	QShortcut* shortcut = qobject_cast<QShortcut*>(sender());
 	QKeySequence seq = shortcut->key();
 
-	if(seq == CanvasKeyReload){
-		client->ReloadImage();
-
-	} else if(seq == CanvasKeyQuicksave){
+	if(seq == CanvasKeyQuicksave){
 		this->SaveAs(".png");
 	
 	} else if(seq == CanvasKeySaveProject) {
@@ -373,7 +368,16 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 		return QMainWindow::keyPressEvent(event);
 	}
 
+	if(!event->isAutoRepeat() && event->key() == CanvasKeyReload &&
+			!(event->modifiers() & Qt::NoModifier)){
 
+		if(event->modifiers() & Qt::ControlModifier){
+			client->ReloadCanvas();
+		} else if(event->modifiers() & Qt::ShiftModifier) {
+			client->ReloadImage();
+		}
+		return;
+	}
 	if(!event->isAutoRepeat() && event->modifiers() & Qt::ControlModifier){
 		if(event->key() == CanvasKeyNew){
 			auto * dialog = new ParupaintNewDialog(this);

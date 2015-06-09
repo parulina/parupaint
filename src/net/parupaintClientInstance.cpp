@@ -218,6 +218,10 @@ void ParupaintClientInstance::ReloadImage()
 {
 	this->ParupaintClient::send("img");
 }
+void ParupaintClientInstance::ReloadCanvas()
+{
+	this->ParupaintClient::send("canvas");
+}
 void ParupaintClientInstance::SendLayerFrame(int layer, int frame, int ll, int ff, bool ext)
 {
 	QJsonObject obj;

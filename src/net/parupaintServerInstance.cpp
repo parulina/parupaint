@@ -215,6 +215,9 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 				obj["id"] = c->id;
 				this->Broadcast(id, obj);
 			}
+		} else if(id == "canvas") {
+			c->send("canvas", this->MarshalCanvas());
+
 		} else if (id == "img") {
 
 			for(auto l = 0; l < canvas->GetNumLayers(); l++){

@@ -29,6 +29,7 @@ Q_OBJECT
 	ParupaintClientInstance(ParupaintCanvasPool*, QObject * = nullptr);
 	virtual void send(const QString , const QJsonObject & = QJsonObject());
 	void ReloadImage();
+	void ReloadCanvas();
 	void SaveCanvas(const QString);
 	void LoadCanvas(const QString);
 	void NewCanvas(int, int);
