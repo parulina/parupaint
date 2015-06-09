@@ -4,15 +4,20 @@
 #include <QPainter>
 #include <QStyleOptionTitleBar>
 
+#include <QSettings>
 #include <QLabel>
 #include <QVBoxLayout>
 
 ParupaintDialog::ParupaintDialog(QWidget * parent, QString title, QString helptext) : QDialog(parent)
 {
+	QSettings cfg;
 	this->setMinimumSize(250, 250);
 
-	this->setWindowFlags(Qt::FramelessWindowHint);
-	this->setWindowModality(Qt::ApplicationModal);
+	bool noframeless = false;
+	noframeless = cfg.value("window/noframeless").toBool();
+
+	if(!noframeless) this->setWindowFlags(Qt::FramelessWindowHint);
+
 	this->move(parent->rect().center());
 	this->setWindowTitle(title);
 	this->setFocusPolicy(Qt::NoFocus);
@@ -26,7 +31,7 @@ ParupaintDialog::ParupaintDialog(QWidget * parent, QString title, QString helpte
 		label->setWordWrap(true);
 		label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 		layout->addWidget(label);
-		layout->setAlignment(label, Qt::AlignTop);
+		layout->setAlignment(label, Qt::AlignVCenter);
 	}
 	
 	this->setLayout(layout);
@@ -35,6 +40,8 @@ ParupaintDialog::ParupaintDialog(QWidget * parent, QString title, QString helpte
 
 void ParupaintDialog::mouseMoveEvent(QMouseEvent * event)
 {
+	if(!this->windowFlags().testFlag(Qt::FramelessWindowHint)) return this->QDialog::mouseMoveEvent(event);
+
 	if (event->buttons() & Qt::LeftButton) {
 		this->move(event->globalPos() - dragpos);
 		event->accept();
@@ -44,6 +51,8 @@ void ParupaintDialog::mouseMoveEvent(QMouseEvent * event)
 
 void ParupaintDialog::mousePressEvent(QMouseEvent *event)
 {
+	if(!this->windowFlags().testFlag(Qt::FramelessWindowHint)) return this->QDialog::mousePressEvent(event);
+
 	if (event->button() == Qt::LeftButton) {
 		dragpos = event->globalPos() - frameGeometry().topLeft();
 		event->accept();
@@ -53,6 +62,8 @@ void ParupaintDialog::mousePressEvent(QMouseEvent *event)
 
 void ParupaintDialog::paintEvent(QPaintEvent * event)
 {
+	if(!this->windowFlags().testFlag(Qt::FramelessWindowHint)) return this->QDialog::paintEvent(event);
+
 	QPainter p(this);
 	QStyle* style = this->style();
 	QRect active_area = this->rect();
