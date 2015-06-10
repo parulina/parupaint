@@ -156,6 +156,7 @@ void ParupaintWindow::ColorChange(QColor col)
 
 void ParupaintWindow::ChatMessageReceived(QString name, QString msg)
 {
+	chat->show();
 	chat->AddMessage(msg, name);
 }
 

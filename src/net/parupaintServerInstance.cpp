@@ -77,6 +77,7 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 		
 		} else if(id == "disconnect") {
 			if(c && c->id){
+				this->BroadcastChat(brushes[c]->GetName() + " left.");
 				delete brushes[c];
 				brushes.remove(c);
 				// remove the brush
@@ -90,12 +91,14 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 			c->id = (connectid++);
 
 			auto name = obj["name"].toString();
+			if(name.isEmpty()) name = "Someone";
 			brushes[c] = new ParupaintBrush();
 			brushes[c]->SetName(name);
 
 			c->send(id, "{\"name\":\"sqnya\"}");
 			c->send("canvas", MarshalCanvas());
-			
+
+			this->BroadcastChat(name + " joined.");
 
 			foreach(auto c2, brushes.keys()){
 				auto * them = brushes.value(c2);
