@@ -254,14 +254,25 @@ void ParupaintWindow::NetworkKey()
 		QSettings cfg;
 		ParupaintFileDialog * dlg = new ParupaintFileDialog(this, ".png", "save as...");
 		dlg->show();
-		connect(dlg, &ParupaintFileDialog::EnterSignal, this, &ParupaintWindow::SaveAs);
+		connect(dlg, &ParupaintFileDialog::EnterSignal, [=](QString str){
+			this->SaveAs(str);
+			delete dlg;
+		});
 
 	} else if(seq == CanvasKeyConnect) {
 		ParupaintConnectionDialog * dlg = new ParupaintConnectionDialog(this);
 		dlg->show();
 		dlg->setEnabled(true);
-		connect(dlg, &ParupaintConnectionDialog::ConnectSignal, this, &ParupaintWindow::Connect);
-		connect(dlg, &ParupaintConnectionDialog::DisconnectSignal, this, &ParupaintWindow::Disconnect);
+
+		connect(dlg, &ParupaintConnectionDialog::ConnectSignal, [=](QString addr){
+			// i think i should use QDialog->done(); internally instead of deleting it...
+			this->Connect(addr);
+			delete dlg;
+		});
+		connect(dlg, &ParupaintConnectionDialog::DisconnectSignal, [=]{
+			this->Disconnect();
+			delete dlg;
+		});
 
 	} else if(seq == CanvasKeyOpen) {
 
@@ -269,7 +280,11 @@ void ParupaintWindow::NetworkKey()
 		auto lastopen = cfg.value("net/lastopen").toString();
 		ParupaintFileDialog * dlg = new ParupaintFileDialog(this, lastopen, "open...");
 		dlg->show();
-		connect(dlg, &ParupaintFileDialog::EnterSignal, this, &ParupaintWindow::Open);
+
+		connect(dlg, &ParupaintFileDialog::EnterSignal, [=](QString str){
+			this->Open(str);
+			delete dlg;
+		});
 	}
 }
 
@@ -388,7 +403,10 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			auto * dialog = new ParupaintNewDialog(this);
 			dialog->setOriginalDimensions(pool->GetCanvas()->GetWidth(), pool->GetCanvas()->GetHeight());
 			dialog->show();
-			connect(dialog, &ParupaintNewDialog::NewSignal, this, &ParupaintWindow::New);
+			connect(dialog, &ParupaintNewDialog::NewSignal, [=](int w, int h, bool resize){
+				this->New(w, h, resize);
+				delete dialog;
+			});
 
 		} else if(event->key() == CanvasKeySettings){
 			auto * dialog = new ParupaintSettingsDialog(this);
@@ -558,55 +576,34 @@ void ParupaintWindow::UpdateTitle()
 
 void ParupaintWindow::New(int w, int h, bool resize)
 {
-	auto * dialog = qobject_cast<ParupaintNewDialog*>(sender());
 	qDebug() << "New canvas" << w << h;
-
 	client->NewCanvas(w, h, resize);
-	delete dialog;
 }
 
 void ParupaintWindow::Connect(QString url)
 {
-	auto * dialog = qobject_cast<ParupaintConnectionDialog*>(sender());
 	QSettings cfg;
 	client->SetNickname(cfg.value("painter/username").toString());
 	client->Connect(url);
-
-	delete dialog;
 }
 
 void ParupaintWindow::Disconnect()
 {
-	auto * dialog = qobject_cast<ParupaintConnectionDialog*>(sender());
-
 	client->Connect("ws://localhost:1108");
-	delete dialog;
 }
 
 void ParupaintWindow::Open(QString filename)
 {
 	qDebug() << "Open" << filename;
-	auto * dialog = qobject_cast<ParupaintFileDialog*>(sender());
-
-	/*
-	QFileInfo info(filename);
-	QDir c = QDir::current();
-	if(info.isAbsolute() && info.dir().path().indexOf(c.path()) != 0){
-		return;
-	}
-	*/
-
 
 	QSettings cfg;
 	cfg.setValue("net/lastopen", filename);
 
 	client->LoadCanvasLocal(filename);
-	delete dialog;
 }
 void ParupaintWindow::SaveAs(QString filename)
 {
 	QSettings cfg;
-	auto * dialog = qobject_cast<ParupaintFileDialog*>(sender());
 	// TODO handle overwrite here
 
 	if(filename.isEmpty()) filename = ".png";
@@ -619,8 +616,6 @@ void ParupaintWindow::SaveAs(QString filename)
 
 	ParupaintPanvasWriter write(pool->GetCanvas());
 	write.Save(cfg.value("client/directory").toString(), filename);
-
-	delete dialog;
 }
 
 void ParupaintWindow::Command(QString cmd, QString params)
