@@ -29,6 +29,8 @@ enum OverlayStatus {
 class ParupaintWindow : public QMainWindow {
 Q_OBJECT
 	private:
+	quint16 local_port;
+
 	QKeySequence OverlayKeyShow;
 	QKeySequence OverlayKeyHide;
 	bool OverlayButtonDown;
@@ -91,6 +93,8 @@ Q_OBJECT
 	void HideOverlay();
 
 	void UpdateTitle();
+
+	void SetLocalHostPort(quint16);
 
 	// Dialogs
 	void Connect(QString);

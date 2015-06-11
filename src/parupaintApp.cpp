@@ -65,7 +65,8 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv), s
 	auto * win = new ParupaintWindow;
 	if(server_str.isEmpty()){
 		server = new ParupaintServerInstance(port_num);
-		win->Connect(QString("ws://localhost:%1").arg(port_num));
+		win->SetLocalHostPort(port_num);
+		win->Connect(QString("localhost:%1").arg(port_num));
 	} else {
 
 		qDebug() << "Connecting to" << server_str;

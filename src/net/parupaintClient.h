@@ -17,7 +17,8 @@ Q_OBJECT
 
 	public:
 	ParupaintClient(QObject * = nullptr);
-	void Connect(QString = "", quint16 = 0);
+	void Connect(QString = "localhost");
+	void Connect(QString, quint16);
 	void Disconnect();
 
 	void send(QString id, QString data = "");

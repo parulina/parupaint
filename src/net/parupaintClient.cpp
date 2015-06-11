@@ -6,6 +6,7 @@ using namespace QtWebsocket;
 
 ParupaintClient::ParupaintClient(QObject * parent) : QObject(parent), Connected(false), SwitchHost(false)
 {
+	socket.setSocketOption(QAbstractSocket::LowDelayOption, 1);
 	connect(&socket, &QWsSocket::connected, this, &ParupaintClient::onConnect);
 	connect(&socket, &QAbstractSocket::disconnected, this, &ParupaintClient::onDisconnect);
 	connect(&socket, SIGNAL(frameReceived(QString)), this, SLOT(textReceived(QString)));
@@ -13,25 +14,24 @@ ParupaintClient::ParupaintClient(QObject * parent) : QObject(parent), Connected(
 	connect(&socket, &QAbstractSocket::stateChanged, this, &ParupaintClient::onSocketStateChanged);
 }
 
+void ParupaintClient::Connect(QString u)
+{
+	this->Connect(u.section(":", 0, 0), u.section(":", 1, 1).toInt());
+}
+
 void ParupaintClient::Connect(QString u, quint16 p)
 {
-	QString prefix = "ws://";
-	if(u.indexOf(prefix) != 0){
-		u = prefix + u.section("/", -1);
-	}
+	if(p == 0) p = u.section(":", 1, 1).toInt();
+	if(p == 0) p = 1108;
 
-	QString pp = u.section(":", -1);
-	if(pp.length()){
-		port = pp.toInt();
-		u.resize(u.length() - (1+pp.length()));
-	}
-	if(port == 0) port = 1108;
-	if(p != 0) port = p;
+	u = u.section(":", 0, 0);
 
-	if(!u.isEmpty()) host = u;
+	host = "ws://" + u;
+	port = p;
+
 	qDebug() << "Connecting to" << host << port;
 
-	if(Connected){
+	if(socket.state() != QAbstractSocket::UnconnectedState){
 		SwitchHost = true;
 		return this->Disconnect();
 	} else {
@@ -41,16 +41,23 @@ void ParupaintClient::Connect(QString u, quint16 p)
 
 void ParupaintClient::Disconnect()
 {
-	if(!Connected) return;
-	// TODO FIXME
-	// Why doesn't disconnectFromHost work?? to reconnect
-	socket.abort();
+	if(socket.state() != QAbstractSocket::UnconnectedState) {
+		if(socket.state() == QAbstractSocket::ConnectedState){
+			// TODO FIXME
+			// Why doesn't disconnectFromHost work to reconnect?
+			// It enters DisconnectedState and it doesn't want to connect again
+			// pretty stupid.
+
+			//socket.disconnectFromHost();
+			socket.abort();
+		} else {
+			socket.abort();
+		}
+	}
 }
 
-void ParupaintClient::onSocketStateChanged(QAbstractSocket::SocketState socketState)
+void ParupaintClient::onSocketStateChanged(QAbstractSocket::SocketState)
 {
-	if(socketState == QAbstractSocket::UnconnectedState){
-	}
 }
 
 void ParupaintClient::onError(QAbstractSocket::SocketError)
@@ -59,17 +66,16 @@ void ParupaintClient::onError(QAbstractSocket::SocketError)
 }
 void ParupaintClient::send(QString id, QString data)
 {
+	if(!socket.isValid()) return;
 	socket.write(id + " " + data);
 }
 
 void ParupaintClient::onConnect()
 {
-	Connected = true;
 	emit onMessage("connect", "");
 }
 void ParupaintClient::onDisconnect()
 {
-	Connected = false;
 	emit onMessage("disconnect", "");
 
 	if(SwitchHost){

@@ -46,6 +46,7 @@ ParupaintWindow::~ParupaintWindow()
 }
 
 ParupaintWindow::ParupaintWindow() : QMainWindow(), 
+	local_port(1108),
 	// overlay keys
 	OverlayKeyShow(Qt::Key_Tab), OverlayKeyHide(Qt::Key_Tab + Qt::SHIFT), 
 	OverlayButtonDown(false), 
@@ -584,12 +585,13 @@ void ParupaintWindow::Connect(QString url)
 {
 	QSettings cfg;
 	client->SetNickname(cfg.value("painter/username").toString());
+
 	client->Connect(url);
 }
 
 void ParupaintWindow::Disconnect()
 {
-	client->Connect("ws://localhost:1108");
+	client->Connect("localhost", local_port);
 }
 
 void ParupaintWindow::Open(QString filename)
@@ -631,4 +633,9 @@ void ParupaintWindow::Command(QString cmd, QString params)
 
 	}
 	chat->AddMessage(">> " + cmd + " " + params);
+}
+
+void ParupaintWindow::SetLocalHostPort(quint16 port)
+{
+	local_port = port;
 }
