@@ -188,7 +188,7 @@ ParupaintCanvasPool * ParupaintWindow::GetCanvasPool()
 
 void ParupaintWindow::PenDrawStart(ParupaintBrush* brush){
 	client->SendBrushUpdate(brush);
-// 	pool->NewBrushStroke(brush);
+ 	pool->NewBrushStroke(brush);
 }
 
 void ParupaintWindow::PenMove(ParupaintBrush* brush){
@@ -196,21 +196,21 @@ void ParupaintWindow::PenMove(ParupaintBrush* brush){
 	cbrush->SetPosition(brush->GetPosition());
 	client->SendBrushUpdate(brush);
 
-// 	auto *stroke = brush->GetCurrentStroke();
-// 	if(stroke != nullptr){
-// 		stroke->AddStroke(new ParupaintStrokeStep(*brush));
-// 	}
+ 	auto *stroke = brush->GetCurrentStroke();
+ 	if(stroke != nullptr){
+ 		stroke->AddStroke(new ParupaintStrokeStep(*brush));
+ 	}
 }
 
 void ParupaintWindow::PenDrawStop(ParupaintBrush* brush){
 	client->SendBrushUpdate(brush);
-// 	pool->EndBrushStroke(brush);
+ 	pool->EndBrushStroke(brush);
+	pool->ClearStrokes();
 }
 
 
 void ParupaintWindow::ViewUpdate()
 {
-	auto brush = glass.GetCurrentBrush();
 	flayer->UpdateFromCanvas(pool->GetCanvas());
 }
 
