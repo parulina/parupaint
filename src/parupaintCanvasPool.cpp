@@ -213,6 +213,7 @@ void ParupaintCanvasPool::ClearBrushStrokes(ParupaintBrush * brush)
 	}
 	strokes.remove(brush);
 	brush->SetLastStroke(nullptr);
+	brush->SetCurrentStroke(nullptr);
 }
 
 int ParupaintCanvasPool::GetNumBrushStrokes(ParupaintBrush * brush)

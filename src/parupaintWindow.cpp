@@ -206,7 +206,7 @@ void ParupaintWindow::PenMove(ParupaintBrush* brush){
 void ParupaintWindow::PenDrawStop(ParupaintBrush* brush){
 	client->SendBrushUpdate(brush);
  	pool->EndBrushStroke(brush);
-	pool->ClearStrokes();
+	pool->ClearBrushStrokes(brush);
 }
 
 
@@ -306,6 +306,8 @@ void ParupaintWindow::BrushKey()
 
 	} else if(seq == BrushKeySwitchBrush) {
 
+		pool->EndBrushStroke(brush);
+
 		glass.ToggleBrush(0, 1);
 		view->SetCurrentBrush(glass.GetCurrentBrush());
 		picker->SetColor(glass.GetCurrentBrush()->GetColor());
@@ -353,6 +355,9 @@ void ParupaintWindow::UpdateOverlay()
 void ParupaintWindow::mousePressEvent(QMouseEvent * event)
 {
 	if(event->buttons() == Qt::RightButton) {
+		auto * brush = glass.GetCurrentBrush();
+		pool->EndBrushStroke(brush);
+
 		glass.ToggleBrush(0, 1);
 		view->SetCurrentBrush(glass.GetCurrentBrush());
 		picker->SetColor(glass.GetCurrentBrush()->GetColor());
