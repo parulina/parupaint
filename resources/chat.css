@@ -1,9 +1,7 @@
 
-/* TODO work on this */
-
-p {
+.chatmessage {
 	font-size:13px;
-	margin:5px 0;
+	margin:2px 0;
 	color:white;
 	background-color:rgba(0, 0, 0, 0.6);
 }

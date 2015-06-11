@@ -23,6 +23,10 @@ ParupaintChat::ParupaintChat(QWidget * parent) : ParupaintOverlayWidget(parent)
 
 	line = new ParupaintChatInput(this);
 	connect(line, &QLineEdit::returnPressed, this, &ParupaintChat::returnPressed);
+	connect(line, &ParupaintChatInput::pageNavigation, [=](bool up){
+		int scroll_weight = 20;
+		chat->Scroll(0, up ? -scroll_weight : scroll_weight);
+	});
 
 
 	layout->addWidget(chat);

@@ -3,6 +3,10 @@ ParupaintApp {
 	color:black;
 }
 
+#CanvasView {
+	margin-top:30px;
+}
+
 #InfoBar {
 	background:black;
 }
@@ -46,8 +50,16 @@ ParupaintApp {
 	font-family:Monospace;
 }
 
+#ChatContent QScrollBar:vertical {
+	width: 10px;
+}
+#ChatContent QScrollBar::handle {
+	background:#de9a3c;
+}
+
 #ChatEntry {
 	background-color:black;
+	color:white;
 	border:none;
 }
 
@@ -115,6 +127,9 @@ QComboBox {
 QScrollBar {
 	border: 2px solid grey;
 	background: #32CC99;
+}
+QScrollBar::handle:hover {
+	background:#de9a3c;
 }
 QScrollBar::handle {
 	background:white;

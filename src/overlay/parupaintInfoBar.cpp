@@ -60,6 +60,7 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 	title->setOpenLinks(false);
 	title->setFocusPolicy(Qt::ClickFocus);
 	title->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+	title->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
 	QLabel * tabtext = new QLabel("hold [tab] for help");
 	tabtext->setMaximumHeight(30);

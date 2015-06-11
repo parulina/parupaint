@@ -222,7 +222,7 @@ void ParupaintWindow::ChangedFrame(int l, int f)
 	brush->SetLayer(l);
 	brush->SetFrame(f);
 	flayer->SetMarkedLayerFrame(l, f);
-	infobar->SetCurrentLayerFrame(l, f);
+	infobar->SetCurrentLayerFrame(l+1, f+1);
 }
 
 void ParupaintWindow::SelectFrame(int l, int f)

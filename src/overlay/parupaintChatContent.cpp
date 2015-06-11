@@ -8,38 +8,39 @@
 
 #include "parupaintScrollBar.h"
 
-
-ParupaintChatContent::ParupaintChatContent(QWidget * parent) : QScrollArea(parent)
+ParupaintChatContent::ParupaintChatContent(QWidget * parent) : QTextBrowser(parent)
 {
+	this->setObjectName("ChatContent");
 	this->setFocusPolicy(Qt::NoFocus);
 	this->setStyleSheet("margin:0; padding:0; border:none; background-color:transparent;");
-	this->setWidgetResizable(true);
 	this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	this->setContextMenuPolicy(Qt::NoContextMenu);
-	
-	area = new QTextBrowser(this);
-	area->setOpenExternalLinks(true);
 
 	QFile file(":resources/chat.css");
 	file.open(QFile::ReadOnly);
-	area->document()->setDefaultStyleSheet(file.readAll());
-	area->setFocusPolicy(Qt::ClickFocus);
+	this->document()->setDefaultStyleSheet(file.readAll());
+	this->setFocusPolicy(Qt::ClickFocus);
+	this->setOpenExternalLinks(true);
 	
-	area->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-	this->setWidget(area);
+	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 void ParupaintChatContent::AddMessage(QString msg, QString who)
 {
 	QString str = "<span class=\"message\">" + msg + "</span>";
 	if(!who.isEmpty()){
-		str = "<span class=\"user\">" + who + "</span>: " + str;
+		str = "<span class=\"user\"> " + who + " </span>: " + str;
 	}
 	this->AddChatMessage(str);
 }
 
 void ParupaintChatContent::AddChatMessage(QString str)
 {
-	QString html = QString("<p>%1</p>\n\r").arg(str);
-	area->append(html);
+	QString html = QString("<div class=\"chatmessage\">%1</div>\n\r").arg(str);
+	this->append(html);
+}
+void ParupaintChatContent::Scroll(int x, int y)
+{
+	this->horizontalScrollBar()->setValue(this->horizontalScrollBar()->value() + x);
+	this->verticalScrollBar()->setValue(this->verticalScrollBar()->value() + y);
+	this->update();
 }
