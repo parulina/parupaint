@@ -213,6 +213,7 @@ void ParupaintWindow::PenDrawStop(ParupaintBrush* brush){
 void ParupaintWindow::ViewUpdate()
 {
 	flayer->UpdateFromCanvas(pool->GetCanvas());
+	infobar->SetCurrentDimensions(pool->GetCanvas()->GetWidth(), pool->GetCanvas()->GetHeight());
 }
 
 void ParupaintWindow::ChangedFrame(int l, int f)
@@ -221,6 +222,7 @@ void ParupaintWindow::ChangedFrame(int l, int f)
 	brush->SetLayer(l);
 	brush->SetFrame(f);
 	flayer->SetMarkedLayerFrame(l, f);
+	infobar->SetCurrentLayerFrame(l, f);
 }
 
 void ParupaintWindow::SelectFrame(int l, int f)
@@ -334,7 +336,7 @@ void ParupaintWindow::HideOverlay()
 }
 void ParupaintWindow::UpdateOverlay()
 {
-	auto visible = OverlayState == OVERLAY_STATUS_SHOWN_NORMAL ? infobar->height() : 35;
+	auto visible = OverlayState == OVERLAY_STATUS_SHOWN_NORMAL ? infobar->height() : 30;
 	infobar->move(0, visible - infobar->height());
 	infobar->resize(this->width(), infobar->height());
 
@@ -346,11 +348,6 @@ void ParupaintWindow::UpdateOverlay()
 	auto h2 = this->height() - flayer->height();
 	flayer->move(0, h2);
 	flayer->resize(this->width(), flayer->height());
-}
-
-bool ParupaintWindow::focusNextPrevChild(bool b)
-{
-	return QMainWindow::focusNextPrevChild(b);
 }
 
 void ParupaintWindow::mousePressEvent(QMouseEvent * event)

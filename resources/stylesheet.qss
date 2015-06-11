@@ -17,6 +17,7 @@ ParupaintApp {
 	padding:0 4px;
 	font-size:13px;
 	background:rgb(30, 30, 30);
+	color:white;
 }
 
 #InfoBar #parupaint-keys1

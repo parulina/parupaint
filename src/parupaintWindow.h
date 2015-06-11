@@ -75,7 +75,6 @@ Q_OBJECT
 	void mousePressEvent(QMouseEvent *event);
 	void keyPressEvent(QKeyEvent * event);
 	void keyReleaseEvent(QKeyEvent * event);
-	bool focusNextPrevChild(bool);
 	void resizeEvent(QResizeEvent * event);
 	void dropEvent(QDropEvent *ev);
 	void dragEnterEvent(QDragEnterEvent *ev);

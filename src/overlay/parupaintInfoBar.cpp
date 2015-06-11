@@ -19,7 +19,6 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 	box->setMargin(0);
 	box->setSpacing(0);
 	box->setAlignment(Qt::AlignBottom);
-	this->setLayout(box);
 
 
 	QFile file(":resources/chat.css");
@@ -53,7 +52,7 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 	ptext->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
 	ptext->setHtml(QStringLiteral("<p class=\"about\">Welcome to my painting program, parupaint. The program is designed to be quick and light, while still able to be a nice drawing platform. It is also able to do animations. You can read a tutorial for this program on my website: <a href=\"http://sqnya.se\">[ sqnya.se ]</a>. Thank you for downloading this and using my creation. :D</p>"));
 
-	QTextBrowser * title = new QTextBrowser;
+	title = new QTextBrowser;
 	title->setObjectName("title");
 	title->setMaximumHeight(30);
 	title->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -61,7 +60,6 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 	title->setOpenLinks(false);
 	title->setFocusPolicy(Qt::ClickFocus);
 	title->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
-	title->setHtml(QString("<titletext>· PARUPAINT ALPHA %1 · [<a href=\"#name\">unnamed</a>]  <a href=\"#dim\">&lt;100x100&gt;</a>  <flayer>{1 : 5}</flayer></titletext>").arg(PARUPAINT_VERSION));
 
 	QLabel * tabtext = new QLabel("hold [tab] for help");
 	tabtext->setMaximumHeight(30);
@@ -71,35 +69,15 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 
 
 
-
-// 	QWidget * topwidget = new QWidget;
-// 	topwidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-// 	topwidget->setMinimumHeight(0);
-// 	topwidget->setAutoFillBackground(true);
-// 
-// 	QWidget * bottomwidget = new QWidget;
-// 	bottomwidget->setMinimumHeight(30);
-// 	bottomwidget->setMaximumHeight(30);
-// 	bottomwidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-// 	
-
-// 	box->addWidget(topwidget);
-// 	box->addWidget(bottomwidget);
-
-
-
 	QHBoxLayout * topbox = new QHBoxLayout;
 	topbox->setMargin(0);
 	topbox->setSpacing(0);
 	topbox->setContentsMargins(0, 0, 0, 0);
-// 	topwidget->setLayout(topbox);
 
 	QHBoxLayout * bottombox = new QHBoxLayout;
 	bottombox->setMargin(0);
 	bottombox->setSpacing(0);
 	bottombox->setContentsMargins(0, 0, 0, 0);
-// 	bottomwidget->setLayout(bottombox);
-
 
 
 	topbox->addWidget(ptext);
@@ -111,5 +89,39 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 
 	box->addLayout(topbox);
 	box->addLayout(bottombox);
+	this->setLayout(box);
 
+	this->SetCurrentTitle("Home");
+	this->SetCurrentDimensions(500, 500);
+	this->SetCurrentLayerFrame(1, 5);
+	this->ReloadTitle();
 }
+
+void ParupaintInfoBar::ReloadTitle()
+{
+	QString text = "<titletext>"
+		"· PARUPAINT ALPHA " PARUPAINT_VERSION " · "
+		"[<a href=\"#name\">" + current_title + "</a>]  "
+		"<a href=\"#dim\">&lt;" + current_dimensions + "&gt;</a>  "
+		"<flayer>{" + current_lfstatus + "}</flayer>"
+	"</titletext>";
+	title->setHtml(text);
+}
+
+void ParupaintInfoBar::SetCurrentTitle(QString str)
+{
+	current_title = str;
+	this->ReloadTitle();
+}
+void ParupaintInfoBar::SetCurrentDimensions(int w, int h)
+{
+	current_dimensions = QString("%1 x %2").arg(w).arg(h);
+	this->ReloadTitle();
+}
+void ParupaintInfoBar::SetCurrentLayerFrame(int l, int f)
+{
+	current_lfstatus = QString("%1 : %2").arg(l).arg(f);
+	this->ReloadTitle();
+}
+
+

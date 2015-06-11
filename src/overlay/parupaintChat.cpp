@@ -30,6 +30,8 @@ ParupaintChat::ParupaintChat(QWidget * parent) : ParupaintOverlayWidget(parent)
 
 	this->setFocusProxy(line);
 	this->setLayout(layout);
+
+	this->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 }
 
 void ParupaintChat::AddMessage(QString msg, QString name)
@@ -43,3 +45,4 @@ void ParupaintChat::returnPressed()
 	line->setText("");
 	emit Message(text);
 }
+
