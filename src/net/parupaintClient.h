@@ -1,7 +1,7 @@
 #ifndef PARUPAINTCLIENT_H
 #define PARUPAINTCLIENT_H
 
-#include "QtWebsocket/QWsSocket.h"
+#include "../bundled/qtwebsocket/QWsSocket.h"
 #include <QUrl>
 #include <QObject>
 

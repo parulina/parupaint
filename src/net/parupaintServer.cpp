@@ -1,7 +1,8 @@
 
 #include "parupaintConnection.h"
 #include "parupaintServer.h"
-#include "QtWebsocket/QWsSocket.h"
+#include "../bundled/qtwebsocket/QWsServer.h"
+#include "../bundled/qtwebsocket/QWsSocket.h"
 
 using namespace QtWebsocket;
 

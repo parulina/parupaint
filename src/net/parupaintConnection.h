@@ -1,7 +1,7 @@
 #ifndef PARUPAINTCONNECTION_H
 #define PARUPAINTCONNECTION_H
 
-#include "QtWebsocket/QWsSocket.h"
+#include "../bundled/qtwebsocket/QWsSocket.h"
 
 struct ParupaintConnection
 {

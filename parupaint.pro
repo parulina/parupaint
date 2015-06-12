@@ -1,6 +1,6 @@
 QT += 		widgets network xml
 
-CONFIG+= 	c++11 debug
+CONFIG+= 	c++11 debug_and_release
 QMAKE_CXXFLAGS+= -std=c++11 -fdiagnostics-color=auto -Wfatal-errors
 OBJECTS_DIR=	.obj
 MOC_DIR=	.obj/moc
@@ -10,7 +10,7 @@ MOC_DIR=	.obj/moc
 
 win32 {
 	QMAKE_CXXFLAGS -= -fdiagnostics-color=auto
-	CONFIG -= debug
+	CONFIG -= debug debug_and_release
 	CONFIG += static
 }
 
@@ -18,20 +18,20 @@ LIBS += 	-lKF5Archive -lz
 HEADERS +=	src/core/*.h \
 		src/net/*.h \
 		src/overlay/*.h \
-		src/qtcolorpicker/*.hpp \
-		src/net/QtWebsocket/*.h \
+		src/bundled/qtcolorpicker/*.hpp \
+		src/bundled/qtwebsocket/*.h \
 		src/*.h
 
 SOURCES += 	src/core/*.cpp \
 		src/net/*.cpp \
 		src/overlay/*.cpp \
-		src/qtcolorpicker/*.cpp \
-		src/net/QtWebsocket/*.cpp \
+		src/bundled/qtcolorpicker/*.cpp \
+		src/bundled/qtwebsocket/*.cpp \
 		src/*.cpp
 
 video_export {
-	HEADERS += src/qtffmpeg/*.h
-	SOURCES += src/qtffmpeg/*.cpp
+	HEADERS += src/bundled/qtffmpeg/*.h
+	SOURCES += src/bundled/qtffmpeg/*.cpp
 	LIBS    += -lavutil -lavcodec -lavformat -lswscale
 
 	DEFINES += PARUPAINT_VIDEO_EXPORT __STDC_CONSTANT_MACROS

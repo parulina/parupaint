@@ -1,6 +1,6 @@
 
 #include "parupaintColorPicker.h"
-#include "../qtcolorpicker/Color_Wheel"
+#include "../bundled/qtcolorpicker/Color_Wheel"
 
 #include <QDebug>
 #include <QWheelEvent>
