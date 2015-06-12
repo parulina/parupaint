@@ -159,3 +159,19 @@ QScrollBar::down-arrow {
 	background:none;
 }
 
+#ColorBar::groove {
+	background:transparent;
+}
+#ColorBar::handle {
+	border:2px solid white;
+	border-bottom:none;
+	border-right:none;
+	background:black;
+}
+#ColorBar::handle:vertical {
+	border-left:none;
+}
+
+#ColorBar::handle:horizontal {
+	border-top:none;
+}

@@ -93,6 +93,8 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	flayer =  new ParupaintFlayer(this);
 	picker =  new ParupaintColorPicker(this);
 	infobar = new ParupaintInfoBar(this);
+
+	picker->SetColor(glass.GetCurrentBrush()->GetColor());
 	
 	// when canvas is updated, frames/layers are added - do a view update that updates the flayer panel
 	connect(pool, &ParupaintCanvasPool::UpdateCanvas, this, &ParupaintWindow::ViewUpdate);
