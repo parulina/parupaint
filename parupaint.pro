@@ -18,14 +18,12 @@ LIBS += 	-lKF5Archive -lz
 HEADERS +=	src/core/*.h \
 		src/net/*.h \
 		src/overlay/*.h \
-		src/bundled/qtcolorpicker/*.hpp \
 		src/bundled/qtwebsocket/*.h \
 		src/*.h
 
 SOURCES += 	src/core/*.cpp \
 		src/net/*.cpp \
 		src/overlay/*.cpp \
-		src/bundled/qtcolorpicker/*.cpp \
 		src/bundled/qtwebsocket/*.cpp \
 		src/*.cpp
 
