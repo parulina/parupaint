@@ -48,8 +48,8 @@ void ParupaintClient::Disconnect()
 			// It enters DisconnectedState and it doesn't want to connect again
 			// pretty stupid.
 
-			//socket.disconnectFromHost();
-			socket.abort();
+			socket.disconnectFromHost();
+			//socket.abort();
 		} else {
 			socket.abort();
 		}
@@ -66,7 +66,7 @@ void ParupaintClient::onError(QAbstractSocket::SocketError)
 }
 void ParupaintClient::send(QString id, QString data)
 {
-	if(!socket.isValid()) return;
+	if(socket.state() != QAbstractSocket::ConnectedState) return;
 	socket.write(id + " " + data);
 }
 
