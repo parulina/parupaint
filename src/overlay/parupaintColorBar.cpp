@@ -53,8 +53,6 @@ qreal ParupaintColorBar::getRealValue()
 void ParupaintColorBar::paintEvent(QPaintEvent * event)
 {
 	QPainter paint(this);
-	paint.fillRect(this->rect(), Qt::black);
-
 	if(bartype == COLOR_BAR_TYPE_ALPHA){
 
 		paint.fillRect(this->rect(), QColor::fromRgbF(1, 1, 1, this->getRealValue()));

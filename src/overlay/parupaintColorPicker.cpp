@@ -19,8 +19,6 @@ ParupaintColorPicker::ParupaintColorPicker(QWidget * parent) : ParupaintOverlayW
 	this->setObjectName("ColorPicker");
 	this->setMinimumSize(200, 200);
 
-	preview_color = QColor::fromHslF(0, 0.5, 0.5);
-
 	main_vlayout = new QVBoxLayout;
 	main_vlayout->setMargin(0);
 	main_vlayout->setSpacing(0);
@@ -51,8 +49,7 @@ ParupaintColorPicker::ParupaintColorPicker(QWidget * parent) : ParupaintOverlayW
 
 	this->setLayout(main_vlayout);
 
-	saturation_slider->setValue(128);
-	light_slider->setValue(128);
+	this->SetColor(QColor::fromHslF(0, 0.5, 0.5));
 }
 
 void ParupaintColorPicker::SetHue(qreal r)
@@ -63,6 +60,9 @@ void ParupaintColorPicker::SetHue(qreal r)
 	qreal alp = preview_color.alphaF();
 
 	preview_color = QColor::fromHslF(hue, sat, lit, alp);
+
+	this->light_slider->setRealValue(hue);
+	this->saturation_slider->setRealValue(hue);
 	this->update();
 	emit ColorChange(preview_color);
 }
