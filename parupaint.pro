@@ -11,19 +11,21 @@ MOC_DIR=	.obj/moc
 win32 {
 	QMAKE_CXXFLAGS -= -fdiagnostics-color=auto
 	CONFIG -= debug debug_and_release
-	CONFIG += static
+	CONFIG += static console
 }
 
-LIBS += 	-lKF5Archive -lz
+LIBS += 	-lz
 HEADERS +=	src/core/*.h \
 		src/net/*.h \
 		src/overlay/*.h \
+		src/bundled/karchive/*.h \
 		src/bundled/qtwebsocket/*.h \
 		src/*.h
 
 SOURCES += 	src/core/*.cpp \
 		src/net/*.cpp \
 		src/overlay/*.cpp \
+		src/bundled/karchive/*.cpp \
 		src/bundled/qtwebsocket/*.cpp \
 		src/*.cpp
 

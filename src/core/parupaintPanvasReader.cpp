@@ -15,8 +15,8 @@
 #include "parupaintLayer.h"
 #include "parupaintFrame.h"
 
-#include "../karchive/KTar"
-#include "../karchive/KZip"
+#include "../bundled/karchive/KTar"
+#include "../bundled/karchive/KZip"
 
 
 ParupaintPanvasReader::ParupaintPanvasReader(ParupaintPanvas * p)
