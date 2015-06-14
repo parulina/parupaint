@@ -5,6 +5,8 @@
 #include <QCommandLineOption>
 #include <QSettings>
 #include <QFile>
+#include <QFont>
+#include <QFontDatabase>
 #include <QUrl>
 
 #include "src/net/parupaintServerInstance.h"
@@ -72,6 +74,11 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv), s
 		qDebug() << "Connecting to" << server_str;
 		win->Connect(server_str);
 	}
+
+	QFontDatabase db;
+	db.addApplicationFont(":/resources/parufont.ttf");
+	this->setFont(QFont("parufont", 12));
+
 
 	QFile file(":resources/stylesheet.qss");
 	if(file.open(QIODevice::ReadOnly | QIODevice::Text))
