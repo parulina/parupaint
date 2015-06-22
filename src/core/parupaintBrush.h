@@ -14,8 +14,8 @@ class ParupaintBrush {
 	QColor 	color;
 	QString	name;
 	QPointF position;
-	float 	width;
-	float   pressure;
+	double 	width;
+	double   pressure;
 	_lint	layer;
 	_fint	frame;
 	bool 	drawing;
@@ -28,7 +28,7 @@ class ParupaintBrush {
 
 	public:
 	ParupaintBrush();
-	ParupaintBrush(QString, float, QColor);
+	ParupaintBrush(QString, double, QColor);
 
 	QPen ToPen();
 
@@ -36,9 +36,9 @@ class ParupaintBrush {
 	void SetName(QString);
 	void SetColor(QColor);
 	void SetPosition(QPointF);
-	void SetPosition(float, float);
-	void SetWidth(float);
-	void SetPressure(float);
+	void SetPosition(double, double);
+	void SetWidth(double);
+	void SetPressure(double);
 	void SetLayer(_lint);
 	void SetFrame(_fint);
 	void SetDrawing(bool);
@@ -50,8 +50,9 @@ class ParupaintBrush {
 	QString GetColorString() const;
 	QPointF GetPosition() const;
 	QString GetName() const;
-	float GetWidth() const;
-	float GetPressure() const;
+	double GetWidth() const;
+	double GetPressure() const;
+	double GetPressureWidth() const;
 	_lint GetLayer() const;
 	_fint GetFrame() const;
 	bool IsDrawing() const;

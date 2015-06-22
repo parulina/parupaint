@@ -87,13 +87,15 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 
 			QColor color = HexToColor(object["c"].toString());
 			auto drawing(object["d"].toBool());
-			auto width(object["s"].toDouble());
+			auto width(object["w"].toDouble());
+			auto pressure(object["p"].toDouble());
 			auto x(object["x"].toDouble());
 			auto y(object["y"].toDouble());
 			auto t(object["t"].toInt());
 
 			brush->SetColor(color);
 			brush->SetWidth(width);
+			brush->SetPressure(pressure);
 			brush->SetToolType(t);
 			brush->SetDrawing(drawing);
 
@@ -241,7 +243,8 @@ void ParupaintClientInstance::SendBrushUpdate(ParupaintBrush * brush)
 	QJsonObject obj;
 	obj["x"] = brush->GetPosition().x();
 	obj["y"] = brush->GetPosition().y();
-	obj["s"] = brush->GetWidth() * brush->GetPressure();
+	obj["w"] = brush->GetWidth();
+	obj["p"] = brush->GetPressure();
 	obj["c"] = brush->GetColorString();
 	obj["d"] = brush->IsDrawing();
 	if(brush->GetToolType() != 0){

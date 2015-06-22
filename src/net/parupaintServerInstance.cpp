@@ -187,7 +187,9 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 
 				QColor color = HexToColor(obj["c"].toString());
 				auto drawing(obj["d"].toBool());
-				auto width(obj["s"].toDouble());
+				auto width(obj["w"].toDouble());
+				auto pressure(obj["p"].toDouble());
+
 				auto x(obj["x"].toDouble());
 				auto y(obj["y"].toDouble());
 				auto t(obj["t"].toInt());
@@ -199,6 +201,7 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 
 				brush->SetColor(color);
 				brush->SetWidth(width);
+				brush->SetPressure(pressure);
 				brush->SetToolType(t);
 
 

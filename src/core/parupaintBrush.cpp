@@ -17,7 +17,7 @@ ParupaintBrush::ParupaintBrush()
 	SetToolType(0);
 }
 
-ParupaintBrush::ParupaintBrush(QString name, float w, QColor col) : ParupaintBrush()
+ParupaintBrush::ParupaintBrush(QString name, double w, QColor col) : ParupaintBrush()
 {
 	SetName(name);
 	SetWidth(w);
@@ -38,13 +38,13 @@ void ParupaintBrush::SetName(QString str)
 	name = str;
 }
 
-void ParupaintBrush::SetWidth(float w)
+void ParupaintBrush::SetWidth(double w)
 {
 	if(w <= 0) w = 0.1;
 	else if(w >= 512) w = 512;
 	width = w;
 }
-void ParupaintBrush::SetPressure(float p)
+void ParupaintBrush::SetPressure(double p)
 {
 	pressure = p;
 }
@@ -53,7 +53,7 @@ void ParupaintBrush::SetColor(QColor col)
 {
 	color = col;
 }
-void ParupaintBrush::SetPosition(float x, float y)
+void ParupaintBrush::SetPosition(double x, double y)
 {
 	position = QPointF(x, y);
 }
@@ -90,11 +90,11 @@ void ParupaintBrush::SetToolType(int t)
 	tooltype=t;
 }
 
-float ParupaintBrush::GetWidth() const
+double ParupaintBrush::GetWidth() const
 {
 	return width;
 }
-float ParupaintBrush::GetPressure() const
+double ParupaintBrush::GetPressure() const
 {
 	return pressure;
 }
@@ -150,5 +150,10 @@ ParupaintStroke * ParupaintBrush::GetLastStroke() const
 int ParupaintBrush::GetToolType() const
 {
 	return tooltype;
+}
+
+double ParupaintBrush::GetPressureWidth() const
+{
+	return width * pressure;
 }
 
