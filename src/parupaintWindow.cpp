@@ -63,6 +63,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	// brush keys
 	BrushKeyUndo(Qt::Key_Z), BrushKeyRedo(Qt::SHIFT + Qt::Key_Z),
 	BrushKeySwitchBrush(Qt::Key_E), BrushKeyPickColor(Qt::Key_R),
+	BrushKeyFillTool(Qt::Key_G), BrushKeyPatternTool(Qt::Key_Y),
 	//internal stuff?
 	OverlayState(OVERLAY_STATUS_HIDDEN)
 
@@ -191,12 +192,21 @@ ParupaintCanvasPool * ParupaintWindow::GetCanvasPool()
 
 void ParupaintWindow::PenDrawStart(ParupaintBrush* brush){
 	client->SendBrushUpdate(brush);
+	if(brush->GetToolType() == 1){
+		//special
+		glass.GetCurrentBrush()->SetDrawing(false);
+		view->UpdateCurrentBrush(glass.GetCurrentBrush());
+		return;
+	}
  	pool->NewBrushStroke(brush);
 }
 
 void ParupaintWindow::PenMove(ParupaintBrush* brush){
 	auto * cbrush = glass.GetCurrentBrush();
 	cbrush->SetPosition(brush->GetPosition());
+
+	if(brush->GetToolType() == 1) return;
+
 	client->SendBrushUpdate(brush);
 
  	auto *stroke = brush->GetCurrentStroke();
@@ -206,6 +216,9 @@ void ParupaintWindow::PenMove(ParupaintBrush* brush){
 }
 
 void ParupaintWindow::PenDrawStop(ParupaintBrush* brush){
+
+	if(brush->GetToolType() == 1) return;
+
 	client->SendBrushUpdate(brush);
  	pool->EndBrushStroke(brush);
 	pool->ClearBrushStrokes(brush);
@@ -502,6 +515,19 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 		brush->SetColor(col);
 		view->UpdateCurrentBrush(brush);
 		picker->SetColor(col);
+	}
+	//BrushKeyFillTool(Qt::Key_G), BrushKeyPatternTool(Qt::Key_Y),
+	if(!event->isAutoRepeat() && (event->key() == BrushKeyFillTool || event->key() == BrushKeyPatternTool)){
+		int tool = 0;
+		if(event->key() == BrushKeyFillTool) tool = 1;
+		if(event->key() == BrushKeyPatternTool) tool = 2;
+
+		auto * brush = glass.GetCurrentBrush();
+		if(brush->GetToolType() != 0) tool = 0;
+
+		brush->SetToolType(tool);
+		view->UpdateCurrentBrush(brush);
+		chat->AddMessage(QString("Switched to tool %1.").arg(tool));
 	}
 	if(event->key() == Qt::Key_F1 && !event->isAutoRepeat()){
 		OverlayState = OVERLAY_STATUS_SHOWN_NORMAL;

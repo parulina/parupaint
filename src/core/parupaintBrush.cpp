@@ -14,6 +14,7 @@ ParupaintBrush::ParupaintBrush()
 	SetLayer(0);
 	SetFrame(0);
 	SetDrawing(false);
+	SetToolType(0);
 }
 
 ParupaintBrush::ParupaintBrush(QString name, float w, QColor col) : ParupaintBrush()
@@ -84,6 +85,11 @@ void ParupaintBrush::SetDrawing(bool d)
 	drawing = d;
 }
 
+void ParupaintBrush::SetToolType(int t)
+{
+	tooltype=t;
+}
+
 float ParupaintBrush::GetWidth() const
 {
 	return width;
@@ -140,3 +146,9 @@ ParupaintStroke * ParupaintBrush::GetLastStroke() const
 {
 	return LastStroke;
 }
+
+int ParupaintBrush::GetToolType() const
+{
+	return tooltype;
+}
+

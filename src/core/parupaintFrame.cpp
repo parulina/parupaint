@@ -66,6 +66,53 @@ void ParupaintFrame::DrawStep(float x, float y, float x2, float y2, float width,
 	this->DrawStep(x, y, x2, y2, pen);
 }
 
+void p_fill(QImage & img, int x, int y, QRgb orig, QRgb to)
+{
+	if(orig == to) return;
+
+	const QRect r = img.rect();
+	if(!r.contains(x, y)) return;
+
+	QRgb pp = img.pixel(x, y);
+	if(pp != orig) return;
+
+	QList<QPoint> plist = {QPoint(x, y)};
+
+	while(!plist.isEmpty()){
+		auto w = plist.front(), e = w;
+
+		QRgb temp_color;
+		temp_color = img.pixel(w);
+		while(temp_color == orig){
+			if(w.x() <= 0) break;
+			w.setX(w.x()-1);
+			temp_color = img.pixel(w);
+		}
+		temp_color = img.pixel(e);
+		while(temp_color == orig){
+			if(e.x() >= r.width()-1) break;
+			e.setX(e.x()+1);
+			temp_color = img.pixel(e);
+		}
+
+		for(int x = w.x(); x < e.x(); x++){
+			int px = x;
+			int py = plist.front().y();
+
+			img.setPixel(px, py, to);
+			if(py > 0 && img.pixel(px, py - 1) == orig) plist.append(QPoint(px, py-1));
+			if(py < r.height()-1 && img.pixel(px, py + 1) == orig) plist.append(QPoint(px, py+1));
+		}
+		plist.pop_front();
+
+	}
+}
+
+void ParupaintFrame::Fill(int x, int y, QColor color)
+{
+	p_fill(Frame, x, y, Frame.pixel(x, y), color.rgba());
+}
+
 
 void ParupaintFrame::SetOpacity(float o)
 {

@@ -19,6 +19,7 @@ class ParupaintBrush {
 	_lint	layer;
 	_fint	frame;
 	bool 	drawing;
+	int 	tooltype;
 
 
 	ParupaintStroke * CurrentStroke;
@@ -43,6 +44,7 @@ class ParupaintBrush {
 	void SetDrawing(bool);
 	void SetCurrentStroke(ParupaintStroke *);
 	void SetLastStroke(ParupaintStroke *);
+	void SetToolType(int t);
 
 	QColor GetColor() const;
 	QString GetColorString() const;
@@ -55,7 +57,7 @@ class ParupaintBrush {
 	bool IsDrawing() const;
 	ParupaintStroke * GetCurrentStroke() const;
 	ParupaintStroke * GetLastStroke() const;
-
+	int GetToolType() const;
 
 };
 

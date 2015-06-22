@@ -58,6 +58,8 @@ Q_OBJECT
 	QKeySequence BrushKeyRedo;
 	QKeySequence BrushKeySwitchBrush;
 	int BrushKeyPickColor;
+	int BrushKeyFillTool;
+	int BrushKeyPatternTool;
 
 
 	void UpdateOverlay();

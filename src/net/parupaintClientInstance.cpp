@@ -18,6 +18,8 @@
 #include "../parupaintCanvasBrush.h"
 #include "../core/parupaintBrush.h"
 
+#include "../core/parupaintFrameBrushOps.h"
+
 #include "qcompressor.h"
 
 #include <QDebug>
@@ -88,9 +90,12 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 			auto width(object["s"].toDouble());
 			auto x(object["x"].toDouble());
 			auto y(object["y"].toDouble());
+			auto t(object["t"].toInt());
 
 			brush->SetColor(color);
 			brush->SetWidth(width);
+			brush->SetToolType(t);
+			brush->SetDrawing(drawing);
 
 			if(drawing){
 				if(DrawMethod == DRAW_MODE_DIRECT){
@@ -103,14 +108,12 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 					if(layer) {
 						auto * frame = layer->GetFrame(f);
 						if(frame){
-							frame->DrawStep(old_x, old_y, x, y, width, color);
+							QRect r = ParupaintFrameBrushOps::stroke(old_x, old_y, x, y, brush, frame);
+							pool->GetCanvas()->RedrawCache(r);
+							if(t == 1) brush->SetDrawing(false);
 						}
 					}
 
-					// Calculate updated area and update the cache accordingly
-					QRect urect(old_x - width, old_y - width, old_x + width, old_y + width);
-					urect |= QRect(x - width, y - width, x + width, y + width);
-					pool->GetCanvas()->RedrawCache(urect);
 				} else {
 					if(!brush->GetCurrentStroke()) pool->NewBrushStroke(brush);
 					if(brush->GetCurrentStroke()) {
@@ -133,7 +136,6 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 			}
 
 			brush->SetPosition(QPointF(x, y));
-			brush->SetDrawing(drawing);
 			pool->TriggerViewUpdate();
 		}
 	} else if (id == "canvas") {
@@ -242,6 +244,9 @@ void ParupaintClientInstance::SendBrushUpdate(ParupaintBrush * brush)
 	obj["s"] = brush->GetWidth() * brush->GetPressure();
 	obj["c"] = brush->GetColorString();
 	obj["d"] = brush->IsDrawing();
+	if(brush->GetToolType() != 0){
+		obj["t"] = brush->GetToolType();
+	}
 	this->send("draw", obj);
 }
 

@@ -26,6 +26,7 @@ class ParupaintFrame {
 	void ClearColor(QColor);
 	void DrawStep(float x, float y, float x2, float y2, float width, QColor color);
 	void DrawStep(float x, float y, float x2, float y2, QPen &);
+	void Fill(int, int, QColor);
 
 	void SetOpacity(float);
 	void SetExtended(bool);

@@ -15,6 +15,7 @@
 #include "../core/parupaintLayer.h"
 #include "../core/parupaintFrame.h"
 
+#include "../core/parupaintFrameBrushOps.h"
 #include "../core/parupaintBrush.h"
 
 #include "qcompressor.h"
@@ -189,6 +190,7 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 				auto width(obj["s"].toDouble());
 				auto x(obj["x"].toDouble());
 				auto y(obj["y"].toDouble());
+				auto t(obj["t"].toInt());
 
 				auto old_x = brush->GetPosition().x();
 				auto old_y = brush->GetPosition().y();
@@ -197,23 +199,26 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 
 				brush->SetColor(color);
 				brush->SetWidth(width);
+				brush->SetToolType(t);
+
 
 				if(drawing && !brush->IsDrawing()){
 					x = old_x;
 					y = old_y;
 				}
+				brush->SetDrawing(drawing);
 				if(drawing){
 					auto * layer = canvas->GetLayer(l);
 					if(layer) {
 						auto * frame = layer->GetFrame(f);
 						if(frame){
-							frame->DrawStep(old_x, old_y, x, y, width, color);
+							ParupaintFrameBrushOps::stroke(old_x, old_y, x, y, brush, frame);
+							if(t == 1) brush->SetDrawing(false);
 						}
 					}
 				}
 
 				brush->SetPosition(QPointF(x, y));
-				brush->SetDrawing(drawing);
 
 				obj["id"] = c->id;
 				this->Broadcast(id, obj);
