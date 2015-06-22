@@ -6,5 +6,6 @@
     <file>resources/stylesheet.qss</file>
     <file>resources/chat.css</file>
     <file>resources/parufont.ttf</file>
+    <file>resources/icons.png</file>
 </qresource>
 </RCC>

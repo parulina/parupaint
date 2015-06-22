@@ -5,10 +5,10 @@ Makefile*
 .*
 qrc_*
 
-*.png
-*.gif
-*.apng
-*.avi
-*.tar.gz
-*.ora
-*.ppa
+/*.png
+/*.gif
+/*.apng
+/*.avi
+/*.tar.gz
+/*.ora
+/*.ppa
