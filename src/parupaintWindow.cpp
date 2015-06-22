@@ -206,8 +206,8 @@ void ParupaintWindow::PenMove(ParupaintBrush* brush){
 	cbrush->SetPosition(brush->GetPosition());
 
 	if(brush->GetToolType() == 1) return;
-
 	client->SendBrushUpdate(brush);
+	if(brush->GetToolType() != 0) return;
 
  	auto *stroke = brush->GetCurrentStroke();
  	if(stroke != nullptr){
