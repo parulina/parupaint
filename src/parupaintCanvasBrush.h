@@ -10,12 +10,24 @@
 #include "core/parupaintBrush.h"
 
 // todo: extends ParupaintBrush?
-class ParupaintCanvasBrush : public QGraphicsItem, public ParupaintBrush
+class ParupaintCanvasBrush : public QGraphicsObject, public ParupaintBrush
 {
+Q_OBJECT
+	Q_PROPERTY(qreal LabelHeight READ nameLabelHeight WRITE setNameLabelHeight)
+
+	protected:
+	qreal label_height;
+	void setNameLabelHeight(qreal);
+	qreal nameLabelHeight() const;
+
 	private:
 	QRgb current_col;
 	QPixmap current_icons;
 	QImage icons;
+
+	QRectF boundingRect() const;
+	void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
+
 	public:
 	~ParupaintCanvasBrush();
 	ParupaintCanvasBrush();
@@ -24,10 +36,7 @@ class ParupaintCanvasBrush : public QGraphicsItem, public ParupaintBrush
 	void Paint(QPainter *);
 	virtual void SetPosition(QPointF);
 	void UpdateIcon();
-
-	private:
-	QRectF boundingRect() const;
-	void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
+	void ShowName(double time = -1);
 
 };
 

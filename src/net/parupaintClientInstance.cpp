@@ -52,7 +52,8 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 		if(!d) {
 			auto idd = (c < 0) ? -c : c;
 			brushes[idd] = new ParupaintCanvasBrush;
-			brushes[idd]->SetPressure(-1); // use width only
+			brushes[idd]->SetName(n);
+			brushes[idd]->ShowName(-1);
 			if(c < 0) me = idd;
 
 

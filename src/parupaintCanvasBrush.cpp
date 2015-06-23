@@ -1,7 +1,11 @@
 
+#include <QFontMetrics>
 #include <QPainter>
 #include <QPalette>
 #include <QPen>
+#include <QPropertyAnimation>
+#include <QDebug>
+
 #include "parupaintCanvasBrush.h"
 #include "core/parupaintBrush.h"
 
@@ -13,6 +17,7 @@ ParupaintCanvasBrush::~ParupaintCanvasBrush()
 ParupaintCanvasBrush::ParupaintCanvasBrush() : current_col(0), icons(":/resources/icons.png")
 {
 	this->setZValue(1);
+	this->setNameLabelHeight(0);
 }
 
 void ParupaintCanvasBrush::UpdateIcon()
@@ -87,19 +92,60 @@ void ParupaintCanvasBrush::Paint(QPainter * painter)
 
 QRectF ParupaintCanvasBrush::boundingRect() const
 {
-	const float w = this->GetWidth();
+	// have a minimum of 250 workable area (for label etc)
+	const qreal min = 250;
+	float w = this->GetWidth() < min ? min : this->GetWidth();
 	return QRectF(-w/2.0, -w/2.0, w, w);
 }
 
-void ParupaintCanvasBrush::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget*)
+void ParupaintCanvasBrush::setNameLabelHeight(qreal h)
+{
+	this->label_height = h;
+	this->update();
+}
+
+qreal ParupaintCanvasBrush::nameLabelHeight() const
+{
+	return label_height;
+}
+
+void ParupaintCanvasBrush::ShowName(double time)
+{
+	if(time < 0){
+		this->setNameLabelHeight(1);
+		return;
+	}
+	auto *anim = new QPropertyAnimation(this, "LabelHeight");
+	anim->setDuration(time);
+	anim->setKeyValueAt(0.0, 1.0);
+	anim->setKeyValueAt(0.9, 1.0);
+	anim->setKeyValueAt(1.0, 0.0);
+	anim->start();
+}
+
+void ParupaintCanvasBrush::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
 	painter->save();
 
 	Paint(painter);
 	
 	painter->setRenderHint(QPainter::Antialiasing, false);
-	painter->setPen(Qt::black);
-	painter->drawText(boundingRect(), Qt::AlignCenter, this->GetName());
+	painter->setPen(Qt::white);
+
+	auto tm = painter->fontMetrics();
+	const auto str = this->GetName();
+
+	auto ts = tm.size(Qt::TextSingleLine, str);
+	ts.setHeight(ts.height() * this->nameLabelHeight());
+
+	if(ts.width() > this->boundingRect().width()) ts.setWidth(this->boundingRect().width());
+	const QRect rrr(QPoint(-ts.width()/2, -ts.height()), ts);
+
+	QColor col = this->GetColor();
+	col.setHslF(col.hslHueF(), 0.5, 0.3, 0.9);
+	painter->fillRect(rrr, col);
+	painter->drawText(rrr, Qt::AlignCenter | Qt::AlignTop, this->GetName());
 	
 	painter->restore();
 }
+

@@ -71,7 +71,9 @@ void ParupaintCanvasView::SetCurrentBrush(ParupaintBrush * brush)
 		ParupaintCanvasBrush * cursor = new ParupaintCanvasBrush;
 		viewport()->setCursor(Qt::BlankCursor);
 		CurrentBrush = cursor;
+
 		this->UpdateCurrentBrush(brush);
+		CurrentBrush->ShowName(1000);
 		CurrentBrush->SetPosition(brush->GetPosition());
 		CurrentBrush->SetDrawing(brush->IsDrawing());
 		// copy the options

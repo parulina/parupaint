@@ -15,6 +15,7 @@ class ParupaintBrushGlass
 	ParupaintBrushGlass();
 
 	ParupaintBrush * GetCurrentBrush() ;
+	int GetCurrentBrushNum() const;
 	void ToggleBrush(int, int);
 	void SetBrush(int);
 };

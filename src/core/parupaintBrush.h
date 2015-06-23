@@ -28,7 +28,7 @@ class ParupaintBrush {
 
 	public:
 	ParupaintBrush();
-	ParupaintBrush(QString, double, QColor);
+	ParupaintBrush(QString, double=1, QColor=Qt::black, int=0);
 
 	QPen ToPen();
 

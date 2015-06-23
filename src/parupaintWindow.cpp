@@ -46,7 +46,7 @@ ParupaintWindow::~ParupaintWindow()
 }
 
 ParupaintWindow::ParupaintWindow() : QMainWindow(), 
-	local_port(1108),
+	local_port(1108), old_brush_switch(0),
 	// overlay keys
 	OverlayKeyShow(Qt::Key_Tab), OverlayKeyHide(Qt::Key_Tab + Qt::SHIFT), 
 	OverlayButtonDown(false), 
@@ -321,11 +321,14 @@ void ParupaintWindow::BrushKey()
 
 	} else if(seq == BrushKeySwitchBrush) {
 
+		// Todo: move to keyPress and make shift mod force eraser mode
 		pool->EndBrushStroke(brush);
 
-		glass.ToggleBrush(0, 1);
+		glass.ToggleBrush(old_brush_switch, 1);
 		view->SetCurrentBrush(glass.GetCurrentBrush());
 		picker->SetColor(glass.GetCurrentBrush()->GetColor());
+
+		old_brush_switch = 0;
 	}
 
 }
@@ -373,10 +376,11 @@ void ParupaintWindow::mousePressEvent(QMouseEvent * event)
 		auto * brush = glass.GetCurrentBrush();
 		pool->EndBrushStroke(brush);
 
-		glass.ToggleBrush(0, 1);
+		glass.ToggleBrush(old_brush_switch, 1);
 		view->SetCurrentBrush(glass.GetCurrentBrush());
 		picker->SetColor(glass.GetCurrentBrush()->GetColor());
 
+		old_brush_switch = 0;
 		event->accept();
 	}
 	return QMainWindow::mousePressEvent(event);
@@ -527,6 +531,31 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 
 		brush->SetToolType(tool);
 		view->UpdateCurrentBrush(brush);
+	}
+	if(!event->isAutoRepeat() && event->key() >= Qt::Key_0 && event->key() <= Qt::Key_9) {
+		int tool = 4;
+
+		if(event->key() >= Qt::Key_1 && event->key() <= Qt::Key_4){
+			tool = event->key() - Qt::Key_1;
+
+		} else if(event->key() >= Qt::Key_6 && event->key() <= Qt::Key_9) {
+			tool -= (event->key() - Qt::Key_5);
+		}
+		tool += 2;
+
+		if(glass.GetCurrentBrushNum() != tool){
+			if(glass.GetCurrentBrushNum() <= 1){
+				old_brush_switch = glass.GetCurrentBrushNum();
+			} else {
+				// set it to previous, so that it switch to tool
+				glass.SetBrush(old_brush_switch);
+			}
+
+		}
+
+		glass.ToggleBrush(old_brush_switch, tool);
+		view->SetCurrentBrush(glass.GetCurrentBrush());
+		picker->SetColor(glass.GetCurrentBrush()->GetColor());
 	}
 	if(event->key() == Qt::Key_F1 && !event->isAutoRepeat()){
 		OverlayState = OVERLAY_STATUS_SHOWN_NORMAL;

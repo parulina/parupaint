@@ -17,11 +17,12 @@ ParupaintBrush::ParupaintBrush()
 	SetToolType(0);
 }
 
-ParupaintBrush::ParupaintBrush(QString name, double w, QColor col) : ParupaintBrush()
+ParupaintBrush::ParupaintBrush(QString name, double w, QColor col, int tool) : ParupaintBrush()
 {
 	SetName(name);
 	SetWidth(w);
 	SetColor(col);
+	SetToolType(tool);
 }
 
 QPen ParupaintBrush::ToPen()

@@ -30,6 +30,7 @@ class ParupaintWindow : public QMainWindow {
 Q_OBJECT
 	private:
 	quint16 local_port;
+	int old_brush_switch;
 
 	QKeySequence OverlayKeyShow;
 	QKeySequence OverlayKeyHide;
