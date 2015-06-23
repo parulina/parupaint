@@ -640,7 +640,7 @@ void ParupaintWindow::SaveAs(QString filename)
 	if(filename.isEmpty()) filename = ".png";
 	if(filename.section(".", 0, 0).isEmpty()) {
 		QDateTime time = QDateTime::currentDateTime();
-		filename = "drawing_at_"+ time.toString("yyyy-MM-dd_HH.mm") + filename;
+		filename = "drawing_at_"+ time.toString("yyyy-MM-dd_HH.mm.ss") + filename;
 	}
 
 	qDebug() << "Saving canvas as" << filename;
