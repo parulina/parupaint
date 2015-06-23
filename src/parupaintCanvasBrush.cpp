@@ -57,6 +57,10 @@ void ParupaintCanvasBrush::Paint(QPainter * painter)
 		painter->drawEllipse(cp);
 
 	}
+
+	painter->restore();
+	painter->save();
+
 	QPen pen(Qt::white);
 	pen.setCosmetic(true);
 	if(this->GetColor().alpha() == 0){

@@ -516,7 +516,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 		view->UpdateCurrentBrush(brush);
 		picker->SetColor(col);
 	}
-	//BrushKeyFillTool(Qt::Key_G), BrushKeyPatternTool(Qt::Key_Y),
+	// tool
 	if(!event->isAutoRepeat() && (event->key() == BrushKeyFillTool || event->key() == BrushKeyPatternTool)){
 		int tool = 0;
 		if(event->key() == BrushKeyFillTool) tool = 1;
@@ -527,7 +527,6 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 
 		brush->SetToolType(tool);
 		view->UpdateCurrentBrush(brush);
-		chat->AddMessage(QString("Switched to tool %1.").arg(tool));
 	}
 	if(event->key() == Qt::Key_F1 && !event->isAutoRepeat()){
 		OverlayState = OVERLAY_STATUS_SHOWN_NORMAL;

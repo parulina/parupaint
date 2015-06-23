@@ -53,6 +53,7 @@ void ParupaintCanvasView::UpdateCurrentBrush(ParupaintBrush * brush)
 {
 	if(CurrentBrush){
 		*((ParupaintBrush*)CurrentBrush) = *brush;
+		this->viewport()->update();
 	}
 }
 
