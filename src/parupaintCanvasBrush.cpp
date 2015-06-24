@@ -139,12 +139,12 @@ void ParupaintCanvasBrush::paint(QPainter* painter, const QStyleOptionGraphicsIt
 	ts.setHeight(ts.height() * this->nameLabelHeight());
 
 	if(ts.width() > this->boundingRect().width()) ts.setWidth(this->boundingRect().width());
-	const QRect rrr(QPoint(-ts.width()/2, -ts.height()), ts);
+	const QRect rrr(QPoint(-ts.width()/2, 0), ts);
 
 	QColor col = this->GetColor();
 	col.setHslF(col.hslHueF(), 0.5, 0.3, 0.9);
 	painter->fillRect(rrr, col);
-	painter->drawText(rrr, Qt::AlignCenter | Qt::AlignTop, this->GetName());
+	painter->drawText(rrr, Qt::AlignCenter | Qt::AlignBottom, this->GetName());
 	
 	painter->restore();
 }
