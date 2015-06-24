@@ -3,16 +3,13 @@
 
 ParupaintBrushGlass::ParupaintBrushGlass() : brushptr(nullptr), currentBrush(0)
 {
-	// this needs fromHslF, don't remove it.
-	// otherwise brush->color.toHsl produces negative hue() and it messes up everything.
-	// Qt bug perhaps?
-	brushes += ParupaintBrush("Pencil",  1, Qt::black);
-	brushes += ParupaintBrush("Eraser", 30, Qt::white);
-	brushes += ParupaintBrush("Brush 1",  3, Qt::gray);
-	brushes += ParupaintBrush("Brush 2", 30, Qt::transparent);
-	brushes += ParupaintBrush("Brush 3",  3, Qt::red);
-	brushes += ParupaintBrush("Brush 4",  3, Qt::green);
-	brushes += ParupaintBrush("Brush 5",  3, Qt::blue);
+	brushes += ParupaintBrush("",  1, Qt::black);
+	brushes += ParupaintBrush("", 30, Qt::white);
+	brushes += ParupaintBrush("",  3, Qt::gray);
+	brushes += ParupaintBrush("", 30, Qt::transparent);
+	brushes += ParupaintBrush("",  3, Qt::red);
+	brushes += ParupaintBrush("",  3, Qt::green);
+	brushes += ParupaintBrush("",  3, Qt::blue);
 	SetBrush(0);
 }
 
