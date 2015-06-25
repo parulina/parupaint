@@ -47,7 +47,8 @@ QRect ParupaintFrameBrushOps::stroke(float ox, float oy, float nx, float ny, Par
 		}
 
 		// carries on to default
-		case 3: color.setAlphaF(brush->GetPressure());
+		// ternarny check because if alpha is 0 it assumed we're erasing
+		case 3: color.setAlphaF(brush->GetPressure() <= 0.01 ? 0.01 : brush->GetPressure());
 		default:
 		{
 			frame->DrawStep(ox, oy, nx, ny, width, color);

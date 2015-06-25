@@ -61,6 +61,7 @@ Q_OBJECT
 	int BrushKeyPickColor;
 	int BrushKeyFillTool;
 	int BrushKeyPatternTool;
+	int BrushKeyOpacityTool;
 
 
 	void UpdateOverlay();

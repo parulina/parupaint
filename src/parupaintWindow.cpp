@@ -63,7 +63,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	// brush keys
 	BrushKeyUndo(Qt::Key_Z), BrushKeyRedo(Qt::SHIFT + Qt::Key_Z),
 	BrushKeySwitchBrush(Qt::Key_E), BrushKeyPickColor(Qt::Key_R),
-	BrushKeyFillTool(Qt::Key_G), BrushKeyPatternTool(Qt::Key_Y),
+	BrushKeyFillTool(Qt::Key_G), BrushKeyPatternTool(Qt::Key_T), BrushKeyOpacityTool(Qt::Key_Y),
 	//internal stuff?
 	OverlayState(OVERLAY_STATUS_HIDDEN)
 
@@ -521,10 +521,14 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 		picker->SetColor(col);
 	}
 	// tool
-	if(!event->isAutoRepeat() && (event->key() == BrushKeyFillTool || event->key() == BrushKeyPatternTool)){
+	if(!event->isAutoRepeat() &&
+			(event->key() == BrushKeyFillTool ||
+			 event->key() == BrushKeyPatternTool ||
+			 event->key() == BrushKeyOpacityTool)){
 		int tool = 0;
 		if(event->key() == BrushKeyFillTool) tool = 1;
 		if(event->key() == BrushKeyPatternTool) tool = 2;
+		if(event->key() == BrushKeyOpacityTool) tool = 3;
 
 		auto * brush = glass.GetCurrentBrush();
 		if(brush->GetToolType() != 0) tool = 0;
