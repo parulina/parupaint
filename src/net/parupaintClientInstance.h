@@ -40,6 +40,8 @@ Q_OBJECT
 	void SetNickname(QString);
 	void SendChat(QString);
 
+	DrawMode GetDrawMode() const;
+
 	private slots:
 	void Message(const QString, const QByteArray);
 

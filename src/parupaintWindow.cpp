@@ -36,6 +36,8 @@
 #include "parupaintNewDialog.h"
 #include "parupaintSettingsDialog.h"
 
+#include "core/parupaintFrameBrushOps.h"
+
 #include "net/parupaintClientInstance.h"
 
 #include <QDebug>
@@ -191,6 +193,7 @@ ParupaintCanvasPool * ParupaintWindow::GetCanvasPool()
 }
 
 void ParupaintWindow::PenDrawStart(ParupaintBrush* brush){
+
 	client->SendBrushUpdate(brush);
 	if(brush->GetToolType() == 1){
 		//special
@@ -198,21 +201,45 @@ void ParupaintWindow::PenDrawStart(ParupaintBrush* brush){
 		view->UpdateCurrentBrush(glass.GetCurrentBrush());
 		return;
 	}
- 	pool->NewBrushStroke(brush);
+	if(client->GetDrawMode() != DRAW_MODE_DIRECT){
+		pool->NewBrushStroke(brush);
+	}
 }
 
 void ParupaintWindow::PenMove(ParupaintBrush* brush){
 	auto * cbrush = glass.GetCurrentBrush();
+
+	if(brush->IsDrawing() && client->GetDrawMode() == DRAW_MODE_DIRECT){
+		auto 	old_x = cbrush->GetPosition().x(),
+			old_y = cbrush->GetPosition().y(),
+			x = brush->GetPosition().x(),
+			y = brush->GetPosition().y();
+
+		auto 	l = brush->GetLayer(),
+			f = brush->GetFrame();
+
+		auto * layer = pool->GetCanvas()->GetLayer(l);
+		if(layer) {
+			auto * frame = layer->GetFrame(f);
+			if(frame){
+				QRect r = ParupaintFrameBrushOps::stroke(old_x, old_y, x, y, brush, frame);
+				pool->GetCanvas()->RedrawCache(r);
+			}
+		}
+
+	}
 	cbrush->SetPosition(brush->GetPosition());
 
 	if(brush->GetToolType() == 1) return;
 	client->SendBrushUpdate(brush);
 	if(brush->GetToolType() != 0) return;
 
- 	auto *stroke = brush->GetCurrentStroke();
- 	if(stroke != nullptr){
- 		stroke->AddStroke(new ParupaintStrokeStep(*brush));
- 	}
+	if(client->GetDrawMode() != DRAW_MODE_DIRECT){
+		auto *stroke = brush->GetCurrentStroke();
+		if(stroke != nullptr){
+			stroke->AddStroke(new ParupaintStrokeStep(*brush));
+		}
+	}
 }
 
 void ParupaintWindow::PenDrawStop(ParupaintBrush* brush){
@@ -220,8 +247,10 @@ void ParupaintWindow::PenDrawStop(ParupaintBrush* brush){
 	if(brush->GetToolType() == 1) return;
 
 	client->SendBrushUpdate(brush);
- 	pool->EndBrushStroke(brush);
-	pool->ClearBrushStrokes(brush);
+	if(client->GetDrawMode() != DRAW_MODE_DIRECT){
+		pool->EndBrushStroke(brush);
+		pool->ClearBrushStrokes(brush);
+	}
 }
 
 

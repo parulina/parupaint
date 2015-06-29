@@ -306,3 +306,8 @@ void ParupaintClientInstance::send(const QString id, const QJsonObject & obj)
 {
 	this->ParupaintClient::send(id, QJsonDocument(obj).toJson(QJsonDocument::Compact));
 }
+
+DrawMode ParupaintClientInstance::GetDrawMode() const
+{
+	return DrawMethod;
+}
