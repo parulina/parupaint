@@ -1,9 +1,9 @@
-## PARUPAINT 0.75 ALPHA PREVIEW
-This is my painting program. You can paint with others! And there's even a web client! See [parupaint-web](paruluna/parupaint-web) for that.
+## PARUPAINT 0.80 ALPHA PREVIEW
+This is my painting program. You can paint with others! And there's even a [web client](http://github.com/paruluna/parupaint-web)!
 
 It has support for wacom tablets.
 
-Parupaint is pretty barebones, please don't be surprised if something breaks.
+qtpp is pretty barebones, please don't be surprised if something breaks.
 
 ### FEATURES
 - Multiplayer painting
@@ -11,18 +11,14 @@ Parupaint is pretty barebones, please don't be surprised if something breaks.
 - Animation abilities
 - Key focused navigation
 - Multiple save and export options:
- - Save as OpenRaster (ORA)
- - Save as Parupaint archive (PPA)
- - Export to PNG (PNG)
- - Export to PNG Sequence (ZIP)
- - Export to movie (AVI, ...?)
+ - Save as OpenRaster (ORA), Parupaint archive (PPA)
+ - Export to PNG (PNG), PNG Sequence (ZIP), movie (AVI)
 
 
 ### TODO
 - Undo/redo support in multiplayer
 - Left-handed support (mirror the keys)
 - Proper tutorial
-- Create new canvas
 
 ### KEYS
 
@@ -35,6 +31,7 @@ Parupaint is pretty barebones, please don't be surprised if something breaks.
 - Press `Ctrl` + `K` to quicksave the image as a png.
 - Press `Ctrl` + `L` to save the canvas as something.
 - Press `Ctrl` + `O` to open a file.
+- Press `Ctrl` + `M` to set parupaint settings.
 
 #### Canvas keys
 - Hold `Space` to move canvas (you can also zoom with the mousewheel while holding it!).
@@ -49,5 +46,7 @@ Parupaint is pretty barebones, please don't be surprised if something breaks.
 
 #### Brush keys
 - `Mouse wheel` to change brush size.
-- Press `E` key to switch between eraser and brush. 
+- Press `1-5`/`9-5` keys to select either of the 5 custom brushes.
+- Press `G` for flood fill tool, `T` for dot pattern tool, and `Y` for opacity drawing tool.
+- Press `E` key or `Right mouse button` to switch between eraser and brush. 
 - Press `Right mouse button` to also switch between eraser and brush.
