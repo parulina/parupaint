@@ -50,7 +50,18 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 	ptext->document()->setDefaultStyleSheet(stylesheet);
 	ptext->setFocusPolicy(Qt::ClickFocus);
 	ptext->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
-	ptext->setHtml(QStringLiteral("<p class=\"about\">Welcome to my painting program, parupaint. The program is designed to be quick and light, while still able to be a nice drawing platform. It is also able to do animations. You can read a tutorial for this program on my website: <a href=\"http://sqnya.se\">[ sqnya.se ]</a>. Thank you for downloading this and using my creation. :D</p>"));
+	ptext->setHtml(QStringLiteral(
+"<p class=\"about\">"
+	"Welcome to my painting program, parupaint. The program is designed to be quick and light, "
+	"while still able to be a nice drawing platform. It is also able to do animations."
+"<br />"
+	"You can read a tutorial for this program on my website: <a href=\"http://sqnya.se#parupaint\">[ sqnya.se ]</a>."
+	"Thank you for downloading this and using my creation!"
+"<br />"
+"<br />"
+	"Please note that this program is alpha and is constantly adding/removing features."
+"</p>"
+	));
 
 	title = new QTextBrowser;
 	title->setObjectName("title");
