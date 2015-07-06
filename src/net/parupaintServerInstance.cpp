@@ -196,29 +196,16 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 
 				auto old_x = brush->GetPosition().x();
 				auto old_y = brush->GetPosition().y();
-				auto l = brush->GetLayer();
-				auto f = brush->GetFrame();
 
 				brush->SetColor(color);
 				brush->SetWidth(width);
 				brush->SetPressure(pressure);
 				brush->SetToolType(t);
-
-
-				if(drawing && !brush->IsDrawing()){
-					x = old_x;
-					y = old_y;
-				}
 				brush->SetDrawing(drawing);
+
 				if(drawing){
-					auto * layer = canvas->GetLayer(l);
-					if(layer) {
-						auto * frame = layer->GetFrame(f);
-						if(frame){
-							ParupaintFrameBrushOps::stroke(old_x, old_y, x, y, brush, frame);
-							if(t == 1) brush->SetDrawing(false);
-						}
-					}
+					ParupaintFrameBrushOps::stroke(canvas, old_x, old_y, x, y, brush);
+					if(t == 1) brush->SetDrawing(false);
 				}
 
 				brush->SetPosition(QPointF(x, y));

@@ -104,18 +104,10 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 				if(DrawMethod == DRAW_MODE_DIRECT){
 					auto 	old_x = brush->GetPosition().x(),
 						old_y = brush->GetPosition().y();
-					auto 	l = brush->GetLayer(),
-						f = brush->GetFrame();
 
-					auto * layer = pool->GetCanvas()->GetLayer(l);
-					if(layer) {
-						auto * frame = layer->GetFrame(f);
-						if(frame){
-							QRect r = ParupaintFrameBrushOps::stroke(old_x, old_y, x, y, brush, frame);
-							pool->GetCanvas()->RedrawCache(r);
-							if(t == 1) brush->SetDrawing(false);
-						}
-					}
+					QRect r = ParupaintFrameBrushOps::stroke(pool->GetCanvas(), old_x, old_y, x, y, brush);
+					pool->GetCanvas()->RedrawCache(r);
+					if(t == 1) brush->SetDrawing(false);
 
 				} else {
 					if(!brush->GetCurrentStroke()) pool->NewBrushStroke(brush);

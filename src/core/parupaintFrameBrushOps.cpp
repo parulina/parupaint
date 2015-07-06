@@ -1,13 +1,19 @@
 
 #include "parupaintFrameBrushOps.h"
 #include "parupaintFrame.h"
+#include "parupaintLayer.h"
+#include "parupaintPanvas.h"
 #include "parupaintBrush.h"
 
 #include <QtMath>
 #include <QDebug>
 
-QRect ParupaintFrameBrushOps::stroke(float ox, float oy, float nx, float ny, ParupaintBrush * brush, ParupaintFrame * frame)
+QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, float ox, float oy, float nx, float ny, ParupaintBrush * brush)
 {
+	ParupaintLayer * layer = panvas->GetLayer(brush->GetLayer());
+	if(!layer) return QRect();
+
+	ParupaintFrame * frame = layer->GetFrame(brush->GetFrame());
 	if(!frame) return QRect();
 
 	auto width = brush->GetPressureWidth();

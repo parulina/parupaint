@@ -215,17 +215,8 @@ void ParupaintWindow::PenMove(ParupaintBrush* brush){
 			x = brush->GetPosition().x(),
 			y = brush->GetPosition().y();
 
-		auto 	l = brush->GetLayer(),
-			f = brush->GetFrame();
-
-		auto * layer = pool->GetCanvas()->GetLayer(l);
-		if(layer) {
-			auto * frame = layer->GetFrame(f);
-			if(frame){
-				QRect r = ParupaintFrameBrushOps::stroke(old_x, old_y, x, y, brush, frame);
-				pool->GetCanvas()->RedrawCache(r);
-			}
-		}
+		QRect r = ParupaintFrameBrushOps::stroke(pool->GetCanvas(), old_x, old_y, x, y, brush);
+		pool->GetCanvas()->RedrawCache(r);
 
 	}
 	cbrush->SetPosition(brush->GetPosition());
