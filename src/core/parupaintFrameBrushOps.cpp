@@ -30,8 +30,8 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, float ox, float o
 		case 2:
 		{
 			QColor d_col = brush->GetColor();
-			d_col.setAlphaF(0.1);
-			const float dot_width = 1 + (brush->GetPressure() > 0.75 ? brush->GetPressure() * 2 : 0);
+			//const float dot_width = 1 + (brush->GetPressure() > 0.75 ? brush->GetPressure() * 2 : 0);
+			const float dot_width = 1;
 
 			for(int x = 0; x < width; x++){
 				for(int y = 0; y < width/2; y++){
@@ -39,13 +39,14 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, float ox, float o
 					const int ax = int(nx) + qRound(cos(aa) * width/2);
 					const int ay = int(ny) + qRound(sin(aa) * y);
 					const int ay2 = int(ny) - qRound(sin(aa) * y);
-					const int m = 10; // every nth pixel
+					// every nth pixel
+					const int m = 4; // + (brush->GetPressure() > 0.75 ? brush->GetPressure() * 2 : 0);
 
 					if(ax % m == 0){
 						if(ay % m == 0)
-							frame->DrawStep(ax, ay, ax+1, ay+1, dot_width, d_col);
+							frame->DrawStep(ax, ay, ax, ay, dot_width, d_col);
 						if(ay2 % m == 0)
-							frame->DrawStep(ax, ay2, ax+1, ay2+1, dot_width, d_col);
+							frame->DrawStep(ax, ay2, ax, ay2, dot_width, d_col);
 					}
 				}
 			}
