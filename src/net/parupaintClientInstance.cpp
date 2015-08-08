@@ -47,12 +47,19 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 	} else if(id == "peer") { // TODO join this with join pls?
 		auto c = object["id"].toInt();
 		auto d = object["disconnect"].toBool();
-		auto n = object["name"].toString();
+
+		auto n(object["name"].toString());
+		auto x(object["x"].toDouble());
+		auto y(object["y"].toDouble());
+		auto w(object["w"].toDouble());
 
 		if(!d) {
 			auto idd = (c < 0) ? -c : c;
 			brushes[idd] = new ParupaintCanvasBrush;
 			brushes[idd]->SetName(n);
+			brushes[idd]->SetPosition(QPointF(x, y));
+			brushes[idd]->SetWidth(w);
+
 			brushes[idd]->ShowName(-1);
 			if(c < 0) me = idd;
 

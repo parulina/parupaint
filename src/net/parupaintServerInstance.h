@@ -25,6 +25,7 @@ class ParupaintServerInstance : public ParupaintServer
 	void BroadcastChat(QString);
 	
 	QString MarshalCanvas();
+	QJsonObject MarshalConnection(ParupaintConnection*);
 	ParupaintPanvas * GetCanvas();
 	int GetNumConnections();
 

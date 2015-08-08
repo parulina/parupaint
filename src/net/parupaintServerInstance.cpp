@@ -64,6 +64,19 @@ QString ParupaintServerInstance::MarshalCanvas()
 	return QJsonDocument(obj).toJson(QJsonDocument::Compact);
 }
 
+QJsonObject ParupaintServerInstance::MarshalConnection(ParupaintConnection* connection)
+{
+	QJsonObject obj;
+	obj["id"] = connection->id;
+
+	obj["name"] = brushes[connection]->GetName();
+	obj["x"] = brushes[connection]->GetPosition().x();
+	obj["y"] = brushes[connection]->GetPosition().y();
+	obj["w"] = brushes[connection]->GetWidth();
+	
+	return obj;
+}
+
 int ParupaintServerInstance::GetNumConnections()
 {
 	return brushes.size();
@@ -102,23 +115,19 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 			this->BroadcastChat(name + " joined.");
 
 			foreach(auto c2, brushes.keys()){
-				auto * them = brushes.value(c2);
 
-				QJsonObject obj2;
-				obj2["disconnect"] = false;
+				QJsonObject obj_me = this->MarshalConnection(c);
+				if(c2 == c) obj_me["id"] = -(c->id);
+				obj_me["disconnect"] = false;
 				
 				// send me to others
-				obj2["name"] = brushes[c]->GetName();
-				obj2["id"] = c->id;
-				if(c2 == c) obj2["id"] = -(c->id);
-				c2->send("peer", QJsonDocument(obj2).toJson(QJsonDocument::Compact));
+				c2->send("peer", QJsonDocument(obj_me).toJson(QJsonDocument::Compact));
 
 				if(c2 == c) continue;
 
 				// send them to me
-				obj["name"] = them->GetName();
-				obj["id"] = c2->id;
-				c->send("peer", QJsonDocument(obj).toJson(QJsonDocument::Compact));
+				QJsonObject obj_them = this->MarshalConnection(c2);
+				c->send("peer", QJsonDocument(obj_them).toJson(QJsonDocument::Compact));
 				
 			}
 
