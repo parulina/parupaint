@@ -6,6 +6,7 @@
 class ParupaintStroke;
 
 #include <QPointF>
+#include <QPen>
 #include <QColor>
 
 class ParupaintBrush {
