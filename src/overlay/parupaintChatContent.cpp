@@ -26,9 +26,9 @@ ParupaintChatContent::ParupaintChatContent(QWidget * parent) : QTextBrowser(pare
 
 void ParupaintChatContent::AddMessage(QString msg, QString who)
 {
-	QString str = "<span class=\"message\">" + msg + "</span>";
+	QString str = "<span class=\"message\">" + msg.toHtmlEscaped() + "</span>";
 	if(!who.isEmpty()){
-		str = "<span class=\"user\"> " + who + " </span>: " + str;
+		str = "<span class=\"user\"> " + who.toHtmlEscaped() + " </span>: " + str;
 	}
 	this->AddChatMessage(str);
 }
