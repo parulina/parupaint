@@ -19,7 +19,6 @@ ParupaintChat::ParupaintChat(QWidget * parent) : ParupaintOverlayWidget(parent)
 	layout->setMargin(0);
 	
 	chat = new ParupaintChatContent(this);
-	chat->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 
 	line = new ParupaintChatInput(this);
 	connect(line, &QLineEdit::returnPressed, this, &ParupaintChat::returnPressed);

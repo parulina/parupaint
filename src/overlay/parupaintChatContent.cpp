@@ -5,6 +5,7 @@
 #include <QTextBrowser>
 #include <QSizePolicy>
 #include <QFile>
+#include <QDesktopServices>
 
 #include "parupaintScrollBar.h"
 
@@ -19,8 +20,12 @@ ParupaintChatContent::ParupaintChatContent(QWidget * parent) : QTextBrowser(pare
 	file.open(QFile::ReadOnly);
 	this->document()->setDefaultStyleSheet(file.readAll());
 	this->setOpenExternalLinks(true);
+	this->setOpenLinks(false);
+	connect(this, &QTextBrowser::anchorClicked, [=](const QUrl & url){
+		QDesktopServices::openUrl(url);
+	});
 	
-	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 }
 
 void ParupaintChatContent::AddMessage(QString msg, QString who)
