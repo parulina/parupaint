@@ -37,8 +37,6 @@ void ParupaintCanvasBrush::SetPosition(QPointF pos)
 
 void ParupaintCanvasBrush::Paint(QPainter * painter)
 {
-	painter->save();
-
 	const auto p = this->GetPressure();
 	auto w = this->GetWidth();
 	// bucket is just one pix
@@ -46,7 +44,7 @@ void ParupaintCanvasBrush::Paint(QPainter * painter)
 
 	const QRectF cc((-QPointF(w/2, w/2)), 		QSizeF(w, w));
 	const QRectF cp((-QPointF((w*p)/2, (w*p)/2)),	QSizeF(w*p, w*p));
-	if(p > 0 && p < 1){
+	if(w > 1 && p > 0 && p < 1){
 		QPen pen_inner(this->GetColor());
 		pen_inner.setCosmetic(true);
 		pen_inner.setWidthF(2);
@@ -63,15 +61,8 @@ void ParupaintCanvasBrush::Paint(QPainter * painter)
 
 	}
 
-	painter->restore();
-	painter->save();
-
-	QPen pen(Qt::white);
-	pen.setCosmetic(true);
-	if(this->GetColor().alpha() == 0){
-		pen.setStyle(Qt::DashLine);
-	}
-
+	// Draw icon
+	painter->setCompositionMode(QPainter::CompositionMode_SourceOver);
 	if(current_col != this->GetColor().rgba()){
 		current_col = this->GetColor().rgba();
 		this->UpdateIcon();
@@ -82,11 +73,27 @@ void ParupaintCanvasBrush::Paint(QPainter * painter)
 			current_icons,
 			QRectF(QPointF(r_h * this->GetToolType(), 0), QSizeF(r_h, r_h)));
 
+
+	// Draw outline
+	QPen pen(Qt::white);
+	pen.setCosmetic(true);
+	if(this->GetColor().alpha() == 0){
+		pen.setStyle(Qt::DashLine);
+	}
 	painter->setPen(pen);
 	painter->setCompositionMode(QPainter::CompositionMode_Exclusion);
-	painter->drawEllipse(cc); // brush width
 
-	painter->restore();
+	if(w > 1) painter->drawEllipse(cc); // round brush width
+	else if(w <= 1) {
+		painter->drawRect(QRectF(-QPointF(0.5, 0.5), QSizeF(1, 1))); // round brush width
+
+		// Draw some crosshair
+		const qreal ch_size = 5;
+		painter->drawLine(QLineF(0, -ch_size, 0, -2));
+		painter->drawLine(QLineF(0, ch_size, 0, 2));
+		painter->drawLine(QLineF(-ch_size, 0, -2, 0));
+		painter->drawLine(QLineF(ch_size, 0, 2, 0));
+	}
 }
 
 
