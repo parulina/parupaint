@@ -60,12 +60,12 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	CanvasKeySettings(Qt::Key_M), CanvasKeyReload(Qt::Key_R), 
 	CanvasKeyOpen(Qt::Key_O + Qt::CTRL), CanvasKeyNew(Qt::Key_N),
 	CanvasKeyQuicksave(Qt::Key_K + Qt::CTRL), CanvasKeySaveProject(Qt::Key_L + Qt::CTRL),
-	CanvasKeyPreview(Qt::Key_Q), CanvasKeyConnect(Qt::Key_I + Qt::CTRL),
+	CanvasKeyPreview(Qt::Key_G), CanvasKeyConnect(Qt::Key_I + Qt::CTRL),
 	CanvasKeyChat(Qt::Key_Return),
 	// brush keys
 	BrushKeyUndo(Qt::Key_Z), BrushKeyRedo(Qt::SHIFT + Qt::Key_Z),
 	BrushKeySwitchBrush(Qt::Key_E), BrushKeyPickColor(Qt::Key_R),
-	BrushKeyFillTool(Qt::Key_G), BrushKeyPatternTool(Qt::Key_T), BrushKeyOpacityTool(Qt::Key_Y),
+	BrushKeyToolKey1(Qt::Key_Q), BrushKeyToolKey2(Qt::Key_W),
 	//internal stuff?
 	OverlayState(OVERLAY_STATUS_HIDDEN)
 
@@ -508,11 +508,9 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 	if(!event->isAutoRepeat() && event->key() == CanvasKeyPreview){
 
 		if(event->modifiers() & Qt::ControlModifier){
-			pool->GetCanvas()->SetPreview(true);
-
+			// TODO play the animation
 		} else if(event->modifiers() & Qt::ShiftModifier){
-			pool->GetCanvas()->SetPreview(false);
-
+			view->SetZoom(1.0);
 		} else {
 			pool->GetCanvas()->TogglePreview();
 		}
@@ -549,13 +547,11 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 	}
 	// tool
 	if(!event->isAutoRepeat() &&
-			(event->key() == BrushKeyFillTool ||
-			 event->key() == BrushKeyPatternTool ||
-			 event->key() == BrushKeyOpacityTool)){
+			(event->key() == BrushKeyToolKey1 ||
+			 event->key() == BrushKeyToolKey2)){
 		int tool = 0;
-		if(event->key() == BrushKeyFillTool) tool = 1;
-		if(event->key() == BrushKeyPatternTool) tool = 2;
-		if(event->key() == BrushKeyOpacityTool) tool = 3;
+		if(event->key() == BrushKeyToolKey1) tool = (event->modifiers() & Qt::CTRL) ? 3 : 2;
+		if(event->key() == BrushKeyToolKey2) tool = (event->modifiers() & Qt::CTRL) ? 1 : 1;
 
 		auto * brush = glass.GetCurrentBrush();
 		if(brush->GetToolType() != 0) tool = 0;
