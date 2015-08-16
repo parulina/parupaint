@@ -456,6 +456,9 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 
 		} else if(event->key() == CanvasKeySettings){
 			auto * dialog = new ParupaintSettingsDialog(this);
+			connect(dialog, &ParupaintSettingsDialog::pixelgridChanged, [=](bool b){
+				view->SetPixelGrid(b);
+			});
 			dialog->show();
 		}
 	}

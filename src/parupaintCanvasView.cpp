@@ -8,6 +8,7 @@
 #include <QObject>
 #include <cmath>
 
+#include <QSettings>
 #include <QDebug>
 #include <QTimer>
 
@@ -28,7 +29,7 @@ ParupaintCanvasView::~ParupaintCanvasView()
 
 ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(parent), CurrentCanvas(nullptr),
 	// Canvas stuff
-	CanvasState(CANVAS_STATUS_IDLE), PenState(PEN_STATE_UP), Zoom(1.0), Drawing(false),
+	CanvasState(CANVAS_STATUS_IDLE), PenState(PEN_STATE_UP), Zoom(1.0), Drawing(false), pixelgrid(true),
 	// Brush stuff
 	CurrentBrush(nullptr),
 	// Button stuff
@@ -45,7 +46,22 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 	
 	SetZoom(Zoom);
 
+	QSettings cfg;
+	if(!cfg.contains("client/pixelgrid")){
+		cfg.setValue("client/pixelgrid", true);
+	}
+	this->SetPixelGrid(cfg.value("client/pixelgrid").toBool());
+
 	this->setAcceptDrops(false);
+}
+void ParupaintCanvasView::SetPixelGrid(bool b)
+{
+	pixelgrid = b;
+	viewport()->update();
+}
+bool ParupaintCanvasView::GetPixelGrid() const
+{
+	return pixelgrid;
 }
 
 
@@ -313,7 +329,7 @@ QPointF ParupaintCanvasView::RealPosition(const QPointF &pos)
 // Qt events
 
 
-void ParupaintCanvasView::drawForeground(QPainter *painter, const QRectF & )
+void ParupaintCanvasView::drawForeground(QPainter *painter, const QRectF & rect)
 {
 	if(CurrentBrush == nullptr) return;
 
@@ -336,6 +352,17 @@ void ParupaintCanvasView::drawForeground(QPainter *painter, const QRectF & )
 
 		painter->restore();
 
+	}
+	if(pixelgrid && this->GetZoom() > 8 && !this->CurrentCanvas->GetCanvas()->IsPreview()){
+		QPen pen(Qt::gray);
+		pen.setCosmetic(true);
+		painter->setPen(pen);
+		for(int x = rect.left(); x <= rect.right(); ++x){
+			painter->drawLine(x, rect.top(), x, rect.bottom()+1);
+		}
+		for(int y = rect.top(); y <= rect.bottom(); ++y){
+			painter->drawLine(rect.left(), y, rect.right()+1, y);
+		}
 	}
 }
 

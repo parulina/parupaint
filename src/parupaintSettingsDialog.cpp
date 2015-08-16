@@ -21,10 +21,19 @@ ParupaintSettingsDialog::ParupaintSettingsDialog(QWidget * parent):
 		this->SetFrameless(check_frameless->isChecked());
 		this->show();
 	});
+	auto * check_pixelgrid = new QCheckBox("pixel grid");
+	connect(check_pixelgrid, &QCheckBox::stateChanged, [=](int){
+		QSettings cfg;
+		cfg.setValue("client/pixelgrid", check_pixelgrid->isChecked());
+
+		emit pixelgridChanged(check_pixelgrid->isChecked());
+	});
 
 	this->layout()->addWidget(check_frameless);
+	this->layout()->addWidget(check_pixelgrid);
 
 	QSettings cfg;
 	check_frameless->setChecked(cfg.value("window/frameless").toBool());
+	check_pixelgrid->setChecked(cfg.value("client/pixelgrid").toBool());
 
 }

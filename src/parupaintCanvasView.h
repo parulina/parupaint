@@ -34,6 +34,7 @@ Q_OBJECT
 
 	float		Zoom;
 	bool		Drawing;
+	bool 		pixelgrid;
 
 	ParupaintCanvasBrush* CurrentBrush;
 
@@ -65,6 +66,9 @@ Q_OBJECT
 	float GetZoom() const;
 	void SetZoom(float z);
 	void AddZoom(float z);
+
+	void SetPixelGrid(bool);
+	bool GetPixelGrid() const;
 
 
 	QPointF RealPosition(const QPointF &pos);
