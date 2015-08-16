@@ -286,14 +286,18 @@ void ParupaintWindow::NetworkKey()
 	QKeySequence seq = shortcut->key();
 
 	if(seq == CanvasKeyQuicksave){
-		this->SaveAs(".png");
+		QString saved = this->SaveAs(".png");
+		QString filelink = QDir(this->GetSaveDirectory()).filePath(saved);
+		chat->AddMessage("Quicksaved to '<a href=\""+filelink+"\">"+saved+"</a>'.");
 	
 	} else if(seq == CanvasKeySaveProject) {
 		QSettings cfg;
 		ParupaintFileDialog * dlg = new ParupaintFileDialog(this, ".png", "save as...");
 		dlg->show();
 		connect(dlg, &ParupaintFileDialog::EnterSignal, [=](QString str){
-			this->SaveAs(str);
+			QString saved = this->SaveAs(str);
+			QString filelink = QDir(this->GetSaveDirectory()).filePath(saved);
+			chat->AddMessage("Saved as '<a href=\"file:///"+filelink+"\">"+saved+"</a>'.");
 			delete dlg;
 		});
 
@@ -685,9 +689,8 @@ void ParupaintWindow::Open(QString filename)
 
 	client->LoadCanvasLocal(filename);
 }
-void ParupaintWindow::SaveAs(QString filename)
+QString ParupaintWindow::SaveAs(QString filename)
 {
-	QSettings cfg;
 	// TODO handle overwrite here
 
 	if(filename.isEmpty()) filename = ".png";
@@ -699,7 +702,18 @@ void ParupaintWindow::SaveAs(QString filename)
 	qDebug() << "Saving canvas as" << filename;
 
 	ParupaintPanvasWriter write(pool->GetCanvas());
-	write.Save(cfg.value("client/directory").toString(), filename);
+	write.Save(this->GetSaveDirectory(), filename);
+
+	return filename;
+}
+
+QString ParupaintWindow::GetSaveDirectory() const
+{
+	QSettings cfg;
+	QDir saved = cfg.value("client/directory").toString();
+	if(!saved.exists()) saved = QDir::current();
+
+	return saved.path();
 }
 
 void ParupaintWindow::Command(QString cmd, QString params)

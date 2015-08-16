@@ -26,9 +26,11 @@ ParupaintChatContent::ParupaintChatContent(QWidget * parent) : QTextBrowser(pare
 
 void ParupaintChatContent::AddMessage(QString msg, QString who)
 {
-	QString str = "<span class=\"message\">" + msg.toHtmlEscaped() + "</span>";
+	// if it's a system message, don't escape
+	// TODO make sure you can't join without a valid name
+	QString str = "<span class=\"message\">" + (who.isEmpty() ? msg : msg.toHtmlEscaped()) + "</span>";
 	if(!who.isEmpty()){
-		str = "<span class=\"user\"> " + who.toHtmlEscaped() + " </span>: " + str;
+		str.prepend("<span class=\"user\"> " + who.toHtmlEscaped() + " </span>: ");
 	}
 	this->AddChatMessage(str);
 }

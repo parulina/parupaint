@@ -98,12 +98,13 @@ Q_OBJECT
 	void UpdateTitle();
 
 	void SetLocalHostPort(quint16);
+	QString GetSaveDirectory() const;
 
 	// Dialogs
 	void Connect(QString);
 	void Disconnect();
 	void Open(QString);
-	void SaveAs(QString);
+	QString SaveAs(QString);
 	void New(int, int, bool=false);
 
 	private slots:
