@@ -11,14 +11,13 @@
 ParupaintChatContent::ParupaintChatContent(QWidget * parent) : QTextBrowser(parent)
 {
 	this->setObjectName("ChatContent");
-	this->setFocusPolicy(Qt::NoFocus);
+	this->setFocusPolicy(Qt::ClickFocus);
 	this->setStyleSheet("margin:0; padding:0; border:none; background-color:transparent;");
 	this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
 	QFile file(":resources/chat.css");
 	file.open(QFile::ReadOnly);
 	this->document()->setDefaultStyleSheet(file.readAll());
-	this->setFocusPolicy(Qt::ClickFocus);
 	this->setOpenExternalLinks(true);
 	
 	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -45,4 +44,13 @@ void ParupaintChatContent::Scroll(int x, int y)
 	this->horizontalScrollBar()->setValue(this->horizontalScrollBar()->value() + x);
 	this->verticalScrollBar()->setValue(this->verticalScrollBar()->value() + y);
 	this->update();
+}
+
+void ParupaintChatContent::focusInEvent(QFocusEvent*)
+{
+	emit focusIn();
+}
+void ParupaintChatContent::focusOutEvent(QFocusEvent*)
+{
+	emit focusOut();
 }

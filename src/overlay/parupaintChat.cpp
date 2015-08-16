@@ -27,6 +27,11 @@ ParupaintChat::ParupaintChat(QWidget * parent) : ParupaintOverlayWidget(parent)
 		int scroll_weight = 20;
 		chat->Scroll(0, up ? -scroll_weight : scroll_weight);
 	});
+	connect(line, &ParupaintChatInput::focusIn, this, &ParupaintChat::chatInFocus);
+	connect(line, &ParupaintChatInput::focusOut, this, &ParupaintChat::chatOutFocus);
+
+	connect(chat, &ParupaintChatContent::focusIn, this, &ParupaintChat::chatInFocus);
+	connect(chat, &ParupaintChatContent::focusOut, this, &ParupaintChat::chatOutFocus);
 
 
 	layout->addWidget(chat);
@@ -35,6 +40,14 @@ ParupaintChat::ParupaintChat(QWidget * parent) : ParupaintOverlayWidget(parent)
 	this->setFocusProxy(line);
 	this->setLayout(layout);
 
+	this->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+}
+void ParupaintChat::chatInFocus()
+{
+	this->setAttribute(Qt::WA_TransparentForMouseEvents, false);
+}
+void ParupaintChat::chatOutFocus()
+{
 	this->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 }
 

@@ -19,6 +19,8 @@ Q_OBJECT
 
 	private slots:
 	void returnPressed();
+	void chatInFocus();
+	void chatOutFocus();
 
 	signals:
 	void Message(QString);
