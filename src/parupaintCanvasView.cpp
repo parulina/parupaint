@@ -118,6 +118,8 @@ float ParupaintCanvasView::GetZoom() const
 void ParupaintCanvasView::SetZoom(float z)
 {
 	if(z < 0.2) z = 0.2;
+
+	this->setRenderHint(QPainter::SmoothPixmapTransform, !(z > 3));
 	Zoom = z;
 	
 	QMatrix nm(1,0,0,1, matrix().dx(), matrix().dy());
