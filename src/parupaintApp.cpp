@@ -64,15 +64,15 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv), s
 	}
 
 
-	auto * win = new ParupaintWindow;
+	main_window = new ParupaintWindow;
 	if(server_str.isEmpty()){
 		server = new ParupaintServerInstance(port_num);
-		win->SetLocalHostPort(port_num);
-		win->Connect(QString("localhost:%1").arg(port_num));
+		main_window->SetLocalHostPort(port_num);
+		main_window->Connect(QString("localhost:%1").arg(port_num));
 	} else {
 
 		qDebug() << "Connecting to" << server_str;
-		win->Connect(server_str);
+		main_window->Connect(server_str);
 	}
 
 	QFontDatabase db;
@@ -86,4 +86,10 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv), s
 		this->setStyleSheet(file.readAll());
 		file.close();
 	}
+}
+
+bool ParupaintApp::event(QEvent *event)
+{
+	this->QApplication::event(event);
+	return true;
 }

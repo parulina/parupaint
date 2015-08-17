@@ -1,6 +1,7 @@
 #ifndef PARUPAINTCANVASVIEW_H
 #define PARUPAINTCANVASVIEW_H
 
+#include <QTabletEvent>
 #include <QGraphicsView>
 class QWidget;
 class QPainter;
@@ -28,6 +29,7 @@ Q_OBJECT
 	ParupaintCanvasPool *CurrentCanvas;
 	CanvasStatus	CanvasState;
 	PenStatus	PenState;
+	QTabletEvent::PointerType	LastTabletPointerType;
 	QPointF		OldPosition;
 	QPointF		OriginPosition; // origin for zoom/bzoom
 	float		OriginZoom;
@@ -87,6 +89,7 @@ Q_OBJECT
 	void PenDrawStart(ParupaintBrush *);
 	void PenMove(ParupaintBrush *);
 	void PenDrawStop(ParupaintBrush *);
+	void PenPointerType(QTabletEvent::PointerType old, QTabletEvent::PointerType nuw);
 
 	void CursorChange(ParupaintBrush *);
 

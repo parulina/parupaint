@@ -1,7 +1,6 @@
 
 #include <QScrollBar>
 #include <QMouseEvent>
-#include <QTabletEvent>
 #include <QBitmap>
 #include <QShortcut>
 #include <QKeySequence>
@@ -29,7 +28,8 @@ ParupaintCanvasView::~ParupaintCanvasView()
 
 ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(parent), CurrentCanvas(nullptr),
 	// Canvas stuff
-	CanvasState(CANVAS_STATUS_IDLE), PenState(PEN_STATE_UP), Zoom(1.0), Drawing(false), pixelgrid(true),
+	CanvasState(CANVAS_STATUS_IDLE), PenState(PEN_STATE_UP), LastTabletPointerType(QTabletEvent::UnknownPointer),
+	Zoom(1.0), Drawing(false), pixelgrid(true),
 	// Brush stuff
 	CurrentBrush(nullptr),
 	// Button stuff
@@ -373,7 +373,13 @@ bool ParupaintCanvasView::viewportEvent(QEvent * event)
 	if(event->type() == QEvent::TabletPress){
 		QTabletEvent *tevent = static_cast<QTabletEvent*>(event);
 
+		if(tevent->pointerType() != LastTabletPointerType){
+			emit PenPointerType(LastTabletPointerType, tevent->pointerType());
+			LastTabletPointerType = tevent->pointerType();
+		}
+
 		PenState = PEN_STATE_TABLET_DOWN;
+		LastTabletPointerType = tevent->pointerType();
 		tevent->accept();
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
 			OnPenDown(tevent->posF(),

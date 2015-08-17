@@ -4,6 +4,7 @@
 #include "core/parupaintBrushGlass.h"
 
 #include <QHash>
+#include <QTabletEvent>
 #include <QMainWindow>
 
 class ParupaintCanvasView;
@@ -122,6 +123,7 @@ Q_OBJECT
 	void PenDrawStart(ParupaintBrush*);
 	void PenMove(ParupaintBrush*);
 	void PenDrawStop(ParupaintBrush*);
+	void PenPointerType(QTabletEvent::PointerType old, QTabletEvent::PointerType nuw);
 
 	void CursorChange(ParupaintBrush*);
 	void ColorChange(QColor);

@@ -83,6 +83,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	connect(view, &ParupaintCanvasView::PenMove, this, &ParupaintWindow::PenMove);
 	connect(view, &ParupaintCanvasView::PenDrawStart, this, &ParupaintWindow::PenDrawStart);
 	connect(view, &ParupaintCanvasView::PenDrawStop, this, &ParupaintWindow::PenDrawStop);
+	connect(view, &ParupaintCanvasView::PenPointerType, this, &ParupaintWindow::PenPointerType);
 
 	setCentralWidget(view);
 
@@ -241,6 +242,19 @@ void ParupaintWindow::PenDrawStop(ParupaintBrush* brush){
 	if(client->GetDrawMode() != DRAW_MODE_DIRECT){
 		pool->EndBrushStroke(brush);
 		pool->ClearBrushStrokes(brush);
+	}
+}
+void ParupaintWindow::PenPointerType(QTabletEvent::PointerType, QTabletEvent::PointerType nuw)
+{
+	if(nuw == QTabletEvent::Eraser) {
+		glass.SetBrush(1);
+		view->SetCurrentBrush(glass.GetCurrentBrush());
+		picker->SetColor(glass.GetCurrentBrush()->GetColor());
+
+	} else if(nuw == QTabletEvent::Pen) {
+		glass.SetBrush(0);
+		view->SetCurrentBrush(glass.GetCurrentBrush());
+		picker->SetColor(glass.GetCurrentBrush()->GetColor());
 	}
 }
 
