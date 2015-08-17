@@ -209,6 +209,9 @@ void ParupaintWindow::PenDrawStart(ParupaintBrush* brush){
 
 void ParupaintWindow::PenMove(ParupaintBrush* brush){
 	auto * cbrush = glass.GetCurrentBrush();
+	cbrush->SetPosition(brush->GetPosition());
+
+	if(brush->GetToolType() == 1) return;
 
 	if(brush->IsDrawing() && client->GetDrawMode() == DRAW_MODE_DIRECT){
 		auto 	old_x = cbrush->GetPosition().x(),
@@ -220,9 +223,6 @@ void ParupaintWindow::PenMove(ParupaintBrush* brush){
 		pool->GetCanvas()->RedrawCache(r);
 
 	}
-	cbrush->SetPosition(brush->GetPosition());
-
-	if(brush->GetToolType() == 1) return;
 	client->SendBrushUpdate(brush);
 	if(brush->GetToolType() != 0) return;
 

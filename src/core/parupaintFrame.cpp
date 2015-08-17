@@ -1,4 +1,5 @@
 
+#include <QDebug>
 #include <QPainter>
 #include <QPen>
 
@@ -77,24 +78,25 @@ void p_fill(QImage & img, int x, int y, QRgb orig, QRgb to)
 	if(pp != orig) return;
 
 	QList<QPoint> plist = {QPoint(x, y)};
+	const auto ww = r.width();
 
 	while(!plist.isEmpty()){
 		auto w = plist.front(), e = w;
 
-		QRgb temp_color;
-		temp_color = img.pixel(w);
-		while(temp_color == orig){
-			if(w.x() <= 0) break;
+		while(w.x() > 0){
 			w.setX(w.x()-1);
-			temp_color = img.pixel(w);
+			if(img.pixel(w) != orig){
+				w.setX(w.x() + 1);
+				break;
+			}
 		}
-		temp_color = img.pixel(e);
-		while(temp_color == orig){
-			if(e.x() >= r.width()-1) break;
+		while(e.x() < ww){
 			e.setX(e.x()+1);
-			temp_color = img.pixel(e);
+			if(e.x() >= ww) break; // .pixel(.width) doesn't work for some reason
+			if(img.pixel(e) != orig){
+				break;
+			}
 		}
-
 		for(int x = w.x(); x < e.x(); x++){
 			int px = x;
 			int py = plist.front().y();
