@@ -1,14 +1,12 @@
-## PARUPAINT 0.80 ALPHA PREVIEW
+## PARUPAINT ALPHA PREVIEW
 This is my painting program. You can paint with others! And there's even a [web client](http://github.com/paruluna/parupaint-web)!
 
 It has support for wacom tablets.
 
-qtpp is pretty barebones, please don't be surprised if something breaks.
-
 ### FEATURES
 - Multiplayer painting
 - Websocket, allowing web clients
-- Animation abilities
+- Animation
 - Key focused navigation
 - Multiple save and export options:
  - Save as OpenRaster (ORA), Parupaint archive (PPA)
@@ -42,11 +40,11 @@ qtpp is pretty barebones, please don't be surprised if something breaks.
 - Hold `Tab` with either of `A`, `S`, `D`, `F` to create, remove the respective things.
  - Example: `Tab` + `F` creates a new frame.
  - `Tab` + `A` removes the current frame.
-- Press `Q` to toggle preview mode.
+- Press `G` to toggle preview mode.
 
 #### Brush keys
 - `Mouse wheel` to change brush size.
 - Press `1-5`/`9-5` keys to select either of the 5 custom brushes.
-- Press `G` for flood fill tool, `T` for dot pattern tool, and `Y` for opacity drawing tool.
+- Press `W` for flood fill tool, `Q` for dot pattern tool, and `Ctrl` + `Q` for opacity drawing tool.
 - Press `E` key or `Right mouse button` to switch between eraser and brush. 
 - Press `Right mouse button` to also switch between eraser and brush.
