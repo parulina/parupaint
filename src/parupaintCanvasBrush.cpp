@@ -132,11 +132,10 @@ void ParupaintCanvasBrush::ShowName(double time)
 
 void ParupaintCanvasBrush::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
-	painter->save();
-
 	Paint(painter);
 	
 	painter->setRenderHint(QPainter::Antialiasing, false);
+	painter->setCompositionMode(QPainter::CompositionMode_SourceOver);
 	painter->setPen(Qt::white);
 
 	auto tm = painter->fontMetrics();
@@ -148,11 +147,7 @@ void ParupaintCanvasBrush::paint(QPainter* painter, const QStyleOptionGraphicsIt
 	if(ts.width() > this->boundingRect().width()) ts.setWidth(this->boundingRect().width());
 	const QRect rrr(QPoint(-ts.width()/2, 0), ts);
 
-	QColor col = this->GetColor();
-	col.setHslF(col.hslHueF(), 0.5, 0.3, 0.9);
-	painter->fillRect(rrr, col);
+	painter->fillRect(rrr, QColor::fromHsl(this->GetColor().hslHue(), 127, 75, 230));
 	painter->drawText(rrr, Qt::AlignCenter | Qt::AlignBottom, this->GetName());
-	
-	painter->restore();
 }
 
