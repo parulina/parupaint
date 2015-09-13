@@ -313,7 +313,7 @@ void ParupaintWindow::NetworkKey()
 	} else if(seq == CanvasKeySaveProject) {
 		QSettings cfg;
 		ParupaintFileDialog * dlg = new ParupaintFileDialog(this, ".png", "save as...");
-		dlg->show();
+		dlg->exec();
 		connect(dlg, &ParupaintFileDialog::EnterSignal, [=](QString str){
 			QString saved = this->SaveAs(str);
 			QString filelink = QDir(this->GetSaveDirectory()).filePath(saved);
@@ -323,8 +323,7 @@ void ParupaintWindow::NetworkKey()
 
 	} else if(seq == CanvasKeyConnect) {
 		ParupaintConnectionDialog * dlg = new ParupaintConnectionDialog(this);
-		dlg->show();
-		dlg->setEnabled(true);
+		dlg->exec();
 
 		connect(dlg, &ParupaintConnectionDialog::ConnectSignal, [=](QString addr){
 			// i think i should use QDialog->done(); internally instead of deleting it...
@@ -341,7 +340,7 @@ void ParupaintWindow::NetworkKey()
 		QSettings cfg;
 		auto lastopen = cfg.value("net/lastopen").toString();
 		ParupaintFileDialog * dlg = new ParupaintFileDialog(this, lastopen, "open...");
-		dlg->show();
+		dlg->exec();
 
 		connect(dlg, &ParupaintFileDialog::EnterSignal, [=](QString str){
 			this->Open(str);
@@ -468,7 +467,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 		if(event->key() == CanvasKeyNew){
 			auto * dialog = new ParupaintNewDialog(this);
 			dialog->setOriginalDimensions(pool->GetCanvas()->GetWidth(), pool->GetCanvas()->GetHeight());
-			dialog->show();
+			dialog->exec();
 			connect(dialog, &ParupaintNewDialog::NewSignal, [=](int w, int h, bool resize){
 				this->New(w, h, resize);
 				delete dialog;
@@ -479,7 +478,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			connect(dialog, &ParupaintSettingsDialog::pixelgridChanged, [=](bool b){
 				view->SetPixelGrid(b);
 			});
-			dialog->show();
+			dialog->exec();
 		}
 	}
 

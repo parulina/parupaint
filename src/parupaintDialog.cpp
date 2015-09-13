@@ -20,7 +20,6 @@ ParupaintDialog::ParupaintDialog(QWidget * parent, QString title, QString helpte
 
 	this->move(parent->rect().center());
 	this->setWindowTitle(title);
-	this->setFocusPolicy(Qt::NoFocus);
 	this->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 
 	auto * layout = new QVBoxLayout(this);
@@ -34,6 +33,8 @@ ParupaintDialog::ParupaintDialog(QWidget * parent, QString title, QString helpte
 		layout->setAlignment(label, Qt::AlignVCenter);
 	}
 	
+	this->raise();
+	this->activateWindow();
 	this->setLayout(layout);
 }
 
