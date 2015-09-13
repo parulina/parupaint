@@ -215,8 +215,11 @@ void ParupaintWindow::PenDrawStart(ParupaintBrush* brush){
 void ParupaintWindow::PenMove(ParupaintBrush* brush){
 	auto * cbrush = glass.GetCurrentBrush();
 
-	if(brush->GetToolType() == ParupaintBrushToolTypes::BrushToolFloodFill) return;
-
+	if(brush->GetToolType() == ParupaintBrushToolTypes::BrushToolFloodFill && brush->IsDrawing()) {
+		// just for safety
+		brush->SetDrawing(false);
+	}
+	cbrush->SetPosition(brush->GetPosition());
 	if(brush->IsDrawing() && client->GetDrawMode() == DRAW_MODE_DIRECT){
 		auto 	old_x = cbrush->GetPosition().x(),
 			old_y = cbrush->GetPosition().y(),
@@ -227,11 +230,10 @@ void ParupaintWindow::PenMove(ParupaintBrush* brush){
 		pool->GetCanvas()->RedrawCache(r);
 
 	}
-	cbrush->SetPosition(brush->GetPosition());
-
 	client->SendBrushUpdate(brush);
-	if(brush->GetToolType() != ParupaintBrushToolTypes::BrushToolNone) return;
 
+	// only normal brush for strokes plz
+	if(brush->GetToolType() != ParupaintBrushToolTypes::BrushToolNone) return;
 	if(client->GetDrawMode() != DRAW_MODE_DIRECT){
 		auto *stroke = brush->GetCurrentStroke();
 		if(stroke != nullptr){
