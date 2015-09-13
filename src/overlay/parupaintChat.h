@@ -12,6 +12,7 @@ Q_OBJECT
 	private:
 	ParupaintChatInput *	line;
 	ParupaintChatContent *	chat;
+	void clearFocusAndReturn();
 
 	public:
 	ParupaintChat(QWidget * parent = nullptr);

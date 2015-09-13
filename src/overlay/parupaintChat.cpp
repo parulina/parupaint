@@ -1,4 +1,5 @@
 
+#include <QKeyEvent>
 #include "parupaintChat.h"
 
 #include "parupaintChatInput.h"
@@ -22,9 +23,24 @@ ParupaintChat::ParupaintChat(QWidget * parent) : ParupaintOverlayWidget(parent)
 
 	line = new ParupaintChatInput(this);
 	connect(line, &QLineEdit::returnPressed, this, &ParupaintChat::returnPressed);
-	connect(line, &ParupaintChatInput::pageNavigation, [=](bool up){
-		int scroll_weight = 20;
-		chat->Scroll(0, up ? -scroll_weight : scroll_weight);
+
+	auto page_up = Qt::Key_PageUp,
+	     page_down = Qt::Key_PageDown,
+	     exit_input = Qt::Key_Escape;
+
+	connect(line, &ParupaintChatInput::keyPress, [=](QKeyEvent * event){
+
+		if(event->key() == page_up || event->key() == page_down){
+			int scroll_weight = (event->modifiers() & Qt::SHIFT) ? 40 : 20;
+			chat->Scroll(0, (event->key() == page_up) ? -scroll_weight : scroll_weight);
+
+			event->accept();
+		} else if(event->key() == exit_input) {
+
+			this->clearFocusAndReturn();
+			event->accept();
+		}
+
 	});
 	connect(line, &ParupaintChatInput::focusIn, this, &ParupaintChat::chatInFocus);
 	connect(line, &ParupaintChatInput::focusOut, this, &ParupaintChat::chatOutFocus);
@@ -57,8 +73,16 @@ void ParupaintChat::AddMessage(QString msg, QString name)
 
 void ParupaintChat::returnPressed()
 {
+	if(line->text().isEmpty()) {
+		this->clearFocusAndReturn();
+		return;
+	}
 	QString text = line->text();
 	line->setText("");
 	emit Message(text);
 }
 
+void ParupaintChat::clearFocusAndReturn() {
+	line->clearFocus();
+	this->parentWidget()->setFocus();
+}

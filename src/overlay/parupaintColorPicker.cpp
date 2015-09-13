@@ -17,6 +17,10 @@ ParupaintColorPicker::ParupaintColorPicker(QWidget * parent) : ParupaintOverlayW
 {
 	this->setFocusPolicy(Qt::NoFocus);
 	this->setObjectName("ColorPicker");
+
+	// slider styling doesn't work otherwise...
+	this->setStyleSheet("background:transparent;");
+
 	this->setMinimumSize(200, 200);
 
 	main_vlayout = new QVBoxLayout;

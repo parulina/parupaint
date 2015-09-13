@@ -15,7 +15,7 @@ Q_OBJECT
 	ParupaintChatInput(QWidget * = nullptr);
 
 	signals:
-	void pageNavigation(bool up, bool faster=false);
+	void keyPress(QKeyEvent *);
 	void focusIn();
 	void focusOut();
 };

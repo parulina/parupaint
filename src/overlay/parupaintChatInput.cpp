@@ -9,29 +9,25 @@ ParupaintChatInput::ParupaintChatInput(QWidget * parent) : QLineEdit(parent)
 	this->setObjectName("ChatEntry");
 }
 
-void ParupaintChatInput::focusInEvent(QFocusEvent*)
+void ParupaintChatInput::focusInEvent(QFocusEvent* e)
 {
 	emit focusIn();
+	this->QLineEdit::focusInEvent(e);
 }
-void ParupaintChatInput::focusOutEvent(QFocusEvent*)
+void ParupaintChatInput::focusOutEvent(QFocusEvent* e)
 {
 	emit focusOut();
+	this->QLineEdit::focusOutEvent(e);
 }
 
 
 void ParupaintChatInput::keyPressEvent(QKeyEvent * event)
 {
 	if(event->key() == Qt::Key_Return){
-		if(!this->text().isEmpty()){
-			emit returnPressed();
-		}
+		emit returnPressed();
 		event->accept();
 		return;
 	}
-	if(event->key() == Qt::Key_PageUp || event->key() == Qt::Key_PageDown){
-		emit pageNavigation((event->key() == Qt::Key_PageUp), (event->modifiers() & Qt::SHIFT));
-		event->accept();
-		return;
-	}
+	emit keyPress(event);
 	QLineEdit::keyPressEvent(event);
 }

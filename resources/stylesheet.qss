@@ -39,8 +39,9 @@ ParupaintApp {
 
 
 #Flayer,
-#ColorPicker {
-	background:rgba(0, 0, 0, 0.6);
+#ChatEntry{
+	background-color:rgba(0, 0, 0, 0.5);
+	color:white;
 }
 
 #Chat {
@@ -58,9 +59,10 @@ ParupaintApp {
 }
 
 #ChatEntry {
-	background-color:black;
-	color:white;
 	border:none;
+}
+#ChatEntry:focus {
+	background:rgba(0, 0, 0, 0.8);
 }
 
 #FlayerList {
