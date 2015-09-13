@@ -54,8 +54,8 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	OverlayButtonDown(false), 
 	// general keys
 	CanvasKeySquash(Qt::Key_Space),
-	CanvasKeyNextLayer(Qt::Key_D), CanvasKeyPreviousLayer(Qt::Key_S),
-	CanvasKeyNextFrame(Qt::Key_F), CanvasKeyPreviousFrame(Qt::Key_A),
+	CanvasKeyNextLayer(Qt::Key_F), CanvasKeyPreviousLayer(Qt::Key_D),
+	CanvasKeyNextFrame(Qt::Key_S), CanvasKeyPreviousFrame(Qt::Key_A),
 	// network keys
 	CanvasKeySettings(Qt::Key_M), CanvasKeyReload(Qt::Key_R), 
 	CanvasKeyOpen(Qt::Key_O + Qt::CTRL), CanvasKeyNew(Qt::Key_N),
