@@ -22,12 +22,12 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, float ox, float o
 	urect |= QRect(nx - width, ny - width, nx + width, ny + width);
 
 	switch(brush->GetToolType()){
-		case 1:
+		case ParupaintBrushToolTypes::BrushToolFloodFill:
 		{
 			frame->Fill(nx, ny, brush->GetColor());
 			return frame->GetImage().rect();
 		}
-		case 2:
+		case ParupaintBrushToolTypes::BrushToolDotPattern:
 		{
 			QColor d_col = brush->GetColor();
 			//const float dot_width = 1 + (brush->GetPressure() > 0.75 ? brush->GetPressure() * 2 : 0);
@@ -55,7 +55,7 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, float ox, float o
 
 		// carries on to default
 		// ternarny check because if alpha is 0 it assumed we're erasing
-		case 3: color.setAlphaF((brush->GetPressure() <= 0.1 ? 0.1 : brush->GetPressure())*color.alphaF());
+		case ParupaintBrushToolTypes::BrushToolOpacityDrawing: color.setAlphaF((brush->GetPressure() <= 0.1 ? 0.1 : brush->GetPressure())*color.alphaF());
 		default:
 		{
 			frame->DrawStep(ox, oy, nx, ny, width, color);

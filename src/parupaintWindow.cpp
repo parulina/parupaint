@@ -196,7 +196,7 @@ ParupaintCanvasPool * ParupaintWindow::GetCanvasPool()
 void ParupaintWindow::PenDrawStart(ParupaintBrush* brush){
 
 	client->SendBrushUpdate(brush);
-	if(brush->GetToolType() == 1){
+	if(brush->GetToolType() == ParupaintBrushToolTypes::BrushToolFloodFill){
 		//special
 		glass.GetCurrentBrush()->SetDrawing(false);
 		view->UpdateCurrentBrush(glass.GetCurrentBrush());
@@ -209,9 +209,8 @@ void ParupaintWindow::PenDrawStart(ParupaintBrush* brush){
 
 void ParupaintWindow::PenMove(ParupaintBrush* brush){
 	auto * cbrush = glass.GetCurrentBrush();
-	cbrush->SetPosition(brush->GetPosition());
 
-	if(brush->GetToolType() == 1) return;
+	if(brush->GetToolType() == ParupaintBrushToolTypes::BrushToolFloodFill) return;
 
 	if(brush->IsDrawing() && client->GetDrawMode() == DRAW_MODE_DIRECT){
 		auto 	old_x = cbrush->GetPosition().x(),
@@ -223,8 +222,10 @@ void ParupaintWindow::PenMove(ParupaintBrush* brush){
 		pool->GetCanvas()->RedrawCache(r);
 
 	}
+	cbrush->SetPosition(brush->GetPosition());
+
 	client->SendBrushUpdate(brush);
-	if(brush->GetToolType() != 0) return;
+	if(brush->GetToolType() != ParupaintBrushToolTypes::BrushToolNone) return;
 
 	if(client->GetDrawMode() != DRAW_MODE_DIRECT){
 		auto *stroke = brush->GetCurrentStroke();
@@ -236,7 +237,7 @@ void ParupaintWindow::PenMove(ParupaintBrush* brush){
 
 void ParupaintWindow::PenDrawStop(ParupaintBrush* brush){
 
-	if(brush->GetToolType() == 1) return;
+	if(brush->GetToolType() == ParupaintBrushToolTypes::BrushToolFloodFill) return;
 
 	client->SendBrushUpdate(brush);
 	if(client->GetDrawMode() != DRAW_MODE_DIRECT){
@@ -568,7 +569,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 		if(event->key() == BrushKeyToolKey2) tool = (event->modifiers() & Qt::CTRL) ? 1 : 1;
 
 		auto * brush = glass.GetCurrentBrush();
-		if(brush->GetToolType() != 0) tool = 0;
+		if(brush->GetToolType() != ParupaintBrushToolTypes::BrushToolNone) tool = ParupaintBrushToolTypes::BrushToolNone;
 
 		brush->SetToolType(tool);
 		view->UpdateCurrentBrush(brush);

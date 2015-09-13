@@ -40,7 +40,7 @@ void ParupaintCanvasBrush::Paint(QPainter * painter)
 	const auto p = this->GetPressure();
 	auto w = this->GetWidth();
 	// bucket is just one pix
-	if(this->GetToolType() == 1) w = 1;
+	if(this->GetToolType() == ParupaintBrushToolTypes::BrushToolFloodFill) w = 1;
 
 	const QRectF cc((-QPointF(w/2, w/2)), 		QSizeF(w, w));
 	const QRectF cp((-QPointF((w*p)/2, (w*p)/2)),	QSizeF(w*p, w*p));

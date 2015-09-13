@@ -247,7 +247,7 @@ void ParupaintClientInstance::SendBrushUpdate(ParupaintBrush * brush)
 	obj["p"] = brush->GetPressure();
 	obj["c"] = brush->GetColorString();
 	obj["d"] = brush->IsDrawing();
-	if(brush->GetToolType() != 0){
+	if(brush->GetToolType() != ParupaintBrushToolTypes::BrushToolNone){
 		obj["t"] = brush->GetToolType();
 	}
 	this->send("draw", obj);

@@ -9,6 +9,13 @@ class ParupaintStroke;
 #include <QPen>
 #include <QColor>
 
+enum ParupaintBrushToolTypes {
+	BrushToolNone = 0,
+	BrushToolFloodFill,
+	BrushToolDotPattern,
+	BrushToolOpacityDrawing
+};
+
 class ParupaintBrush {
 
 	private:
