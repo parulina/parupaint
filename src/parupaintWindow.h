@@ -133,7 +133,9 @@ Q_OBJECT
 	void SelectFrame(int, int);
 	void ChangedFrame(int, int);
 	void ChatMessage(QString);
+
 	void ChatMessageReceived(QString, QString);
+	void OnNetworkDisconnect();
 };
 
 

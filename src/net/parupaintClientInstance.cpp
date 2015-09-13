@@ -42,6 +42,8 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 		obj["name"] = nickname;
 		this->send("join", obj);
 
+	} else if(id == "disconnect"){
+		emit OnDisconnect();
 	} else if(id == "join"){
 
 	} else if(id == "peer") { // TODO join this with join pls?

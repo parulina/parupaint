@@ -93,6 +93,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 
 	client = new ParupaintClientInstance(pool, this);
 	connect(client, &ParupaintClientInstance::ChatMessageReceived, this, &ParupaintWindow::ChatMessageReceived);
+	connect(client, &ParupaintClientInstance::OnDisconnect, this, &ParupaintWindow::OnNetworkDisconnect);
 
 	canvas_banner = new ParupaintCanvasBanner(this);
 
@@ -169,6 +170,13 @@ void ParupaintWindow::ChatMessageReceived(QString name, QString msg)
 {
 	chat->show();
 	chat->AddMessage(msg, name);
+}
+
+// on net disconnect
+void ParupaintWindow::OnNetworkDisconnect()
+{
+	chat->show();
+	chat->AddMessage("You were disconnected from the server.");
 }
 
 void ParupaintWindow::ChatMessage(QString str)

@@ -47,6 +47,7 @@ Q_OBJECT
 
 	signals:
 	void ChatMessageReceived(QString, QString);
+	void OnDisconnect();
 };
 
 #endif
