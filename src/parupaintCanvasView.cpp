@@ -18,6 +18,7 @@
 #include "parupaintCanvasPool.h"
 #include "parupaintCanvasBrushPool.h"
 #include "parupaintCanvasObject.h"
+#include "parupaintCanvasBanner.h"
 
 //QGraphicsView for canvas view
 
@@ -37,7 +38,6 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 {
 	// mouse pointers and canvas itself
 	//
-	
 	this->setObjectName("CanvasView");
 
 	this->setFocusPolicy(Qt::WheelFocus);
@@ -53,7 +53,11 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 	this->SetPixelGrid(cfg.value("client/pixelgrid").toBool());
 
 	this->setAcceptDrops(false);
+	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+	this->show();
 }
+
 void ParupaintCanvasView::SetPixelGrid(bool b)
 {
 	pixelgrid = b;

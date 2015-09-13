@@ -20,6 +20,7 @@
 #include "parupaintCanvasPool.h"
 #include "parupaintCanvasObject.h"
 #include "parupaintCanvasBrush.h"
+#include "parupaintCanvasBanner.h"
 
 #include "core/parupaintLayer.h"
 #include "core/parupaintFrame.h"
@@ -92,6 +93,8 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 
 	client = new ParupaintClientInstance(pool, this);
 	connect(client, &ParupaintClientInstance::ChatMessageReceived, this, &ParupaintWindow::ChatMessageReceived);
+
+	canvas_banner = new ParupaintCanvasBanner(this);
 
 	chat =	  new ParupaintChat(this);
 	flayer =  new ParupaintFlayer(this);
@@ -402,6 +405,8 @@ void ParupaintWindow::HideOverlay()
 }
 void ParupaintWindow::UpdateOverlay()
 {
+	canvas_banner->move(this->width()/2 - canvas_banner->width()/2, 0);
+
 	auto visible = OverlayState == OVERLAY_STATUS_SHOWN_NORMAL ? infobar->height() : 30;
 	infobar->move(0, visible - infobar->height());
 	infobar->resize(this->width(), infobar->height());
@@ -460,9 +465,11 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 		if((event->modifiers() & (Qt::ShiftModifier)) &&
 		   (event->modifiers() & (Qt::ControlModifier))){
 
+			canvas_banner->Show(2000, "reloaded canvas");
 			return client->ReloadCanvas();
 
 		} else if(event->modifiers() & (Qt::ShiftModifier)) {
+			canvas_banner->Show(2000, "reloaded image");
 			return client->ReloadImage();
 		}
 	}
@@ -535,6 +542,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			view->SetZoom(1.0);
 		} else {
 			pool->GetCanvas()->TogglePreview();
+			canvas_banner->Show(2000, QString("preview ") + (pool->GetCanvas()->IsPreview() ? "on" : "off"));
 		}
 		pool->TriggerViewUpdate();
 	}
@@ -579,6 +587,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 		if(brush->GetToolType() != ParupaintBrushToolTypes::BrushToolNone) tool = ParupaintBrushToolTypes::BrushToolNone;
 
 		brush->SetToolType(tool);
+		//banner message on tool switch?
 		view->UpdateCurrentBrush(brush);
 	}
 	if(!event->isAutoRepeat() && event->key() >= Qt::Key_0 && event->key() <= Qt::Key_9) {

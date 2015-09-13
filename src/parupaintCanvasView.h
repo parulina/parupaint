@@ -10,7 +10,6 @@ class ParupaintBrush;
 class ParupaintCanvasPool;
 class ParupaintCanvasBrush;
 
-
 enum PenStatus {
 	PEN_STATE_UP,
 	PEN_STATE_MOUSE_DOWN,
@@ -37,6 +36,7 @@ Q_OBJECT
 	float		Zoom;
 	bool		Drawing;
 	bool 		pixelgrid;
+	// TODO: rename all vars to lowercase_underscore?
 
 	ParupaintCanvasBrush* CurrentBrush;
 
@@ -71,7 +71,6 @@ Q_OBJECT
 
 	void SetPixelGrid(bool);
 	bool GetPixelGrid() const;
-
 
 	QPointF RealPosition(const QPointF &pos);
 

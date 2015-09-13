@@ -10,6 +10,7 @@
 class ParupaintCanvasView;
 class ParupaintCanvasPool;
 class ParupaintCanvasBrush;
+class ParupaintCanvasBanner;
 
 class ParupaintClientInstance;
 
@@ -70,6 +71,7 @@ Q_OBJECT
 	
 	ParupaintBrushGlass glass;
 
+	ParupaintCanvasBanner * canvas_banner;
 	ParupaintChat * chat;
 	ParupaintFlayer * flayer;
 	ParupaintColorPicker * picker;
