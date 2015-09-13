@@ -70,6 +70,9 @@ void ParupaintChat::AddMessage(QString msg, QString name)
 {
 	chat->AddMessage(msg, name);
 }
+void ParupaintChat::setChatInputPlaceholder(QString str){
+	line->setPlaceholderText(str);
+}
 
 void ParupaintChat::returnPressed()
 {

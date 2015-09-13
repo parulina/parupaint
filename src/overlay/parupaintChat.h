@@ -17,6 +17,7 @@ Q_OBJECT
 	public:
 	ParupaintChat(QWidget * parent = nullptr);
 	void AddMessage(QString, QString = "");
+	void setChatInputPlaceholder(QString);
 
 	private slots:
 	void returnPressed();

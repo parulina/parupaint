@@ -98,6 +98,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(),
 	picker =  new ParupaintColorPicker(this);
 	infobar = new ParupaintInfoBar(this);
 
+	chat->setChatInputPlaceholder(QString("press [%1] to chat.").arg(QKeySequence(CanvasKeyChat).toString(QKeySequence::NativeText)).toLower());
 	picker->SetColor(glass.GetCurrentBrush()->GetColor());
 	
 	// when canvas is updated, frames/layers are added - do a view update that updates the flayer panel
