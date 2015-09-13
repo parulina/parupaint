@@ -36,6 +36,8 @@ ParupaintDialog::ParupaintDialog(QWidget * parent, QString title, QString helpte
 	this->raise();
 	this->activateWindow();
 	this->setLayout(layout);
+
+	this->setAttribute(Qt::WA_DeleteOnClose);
 }
 
 void ParupaintDialog::SetSaveName(QString str)
