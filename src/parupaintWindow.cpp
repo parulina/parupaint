@@ -198,6 +198,11 @@ void ParupaintWindow::PenDrawStart(ParupaintBrush* brush){
 	client->SendBrushUpdate(brush);
 	if(brush->GetToolType() == ParupaintBrushToolTypes::BrushToolFloodFill){
 		//special
+
+		auto x = brush->GetPosition().x(), y = brush->GetPosition().y();
+		QRect r = ParupaintFrameBrushOps::stroke(pool->GetCanvas(), x, y, x, y, brush);
+		pool->GetCanvas()->RedrawCache(r);
+
 		glass.GetCurrentBrush()->SetDrawing(false);
 		view->UpdateCurrentBrush(glass.GetCurrentBrush());
 		return;
