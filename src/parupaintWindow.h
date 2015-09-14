@@ -18,6 +18,7 @@ class ParupaintChat;
 class ParupaintFlayer;
 class ParupaintColorPicker;
 class ParupaintInfoBar;
+class ParupaintKeys;
 
 class QDropEvent;
 
@@ -34,36 +35,11 @@ Q_OBJECT
 	quint16 local_port;
 	int old_brush_switch;
 
-	QKeySequence OverlayKeyShow;
-	QKeySequence OverlayKeyHide;
+	ParupaintKeys *key_shortcuts;
+
 	bool OverlayButtonDown;
 	QTimer * OverlayTimer;
 	QTimer * OverlayButtonTimer;
-	
-	
-	QKeySequence CanvasKeySquash;
-	int CanvasKeyNextLayer;
-	int CanvasKeyPreviousLayer;
-	int CanvasKeyNextFrame;
-	int CanvasKeyPreviousFrame;
-
-	int CanvasKeySettings;
-	int CanvasKeyReload;
-	QKeySequence CanvasKeyOpen;
-	int CanvasKeyNew;
-	QKeySequence CanvasKeyQuicksave;
-	QKeySequence CanvasKeySaveProject;
-	int CanvasKeyPreview;
-	QKeySequence CanvasKeyConnect;
-	int CanvasKeyChat;
-
-	QKeySequence BrushKeyUndo;
-	QKeySequence BrushKeyRedo;
-	QKeySequence BrushKeySwitchBrush;
-	int BrushKeyPickColor;
-	int BrushKeyToolKey1;
-	int BrushKeyToolKey2;
-
 
 	void UpdateOverlay();
 	
@@ -116,9 +92,6 @@ Q_OBJECT
 
 	void OverlayTimeout();
 	void ButtonTimeout();
-
-	void BrushKey();
-	void NetworkKey();
 
 	void ViewUpdate();
 
