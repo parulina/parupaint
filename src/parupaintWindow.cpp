@@ -155,18 +155,8 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(), local_port(1108), old_brush_
 	// PARUPAINTKEY_TO_SHORTCUT is a macro that turns keys from key_shortcuts
 	// to global shortcuts
 
-	PARUPAINTKEY_TO_SHORTCUT("eraser_switch", [=]{
-		auto brush = glass.GetCurrentBrush();
+	key_shortcuts->Load();
 
-		// safety
-		pool->EndBrushStroke(brush);
-
-		glass.ToggleBrush(old_brush_switch, 1);
-		view->SetCurrentBrush(glass.GetCurrentBrush());
-		picker->SetColor(glass.GetCurrentBrush()->GetColor());
-
-		old_brush_switch = 0;
-	});
 	PARUPAINTKEY_TO_SHORTCUT("dialog_quicksave", [=]{
 		QString saved = this->SaveAs(".png");
 		QString filelink = QDir(this->GetSaveDirectory()).filePath(saved);
@@ -237,7 +227,6 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(), local_port(1108), old_brush_
 		});
 	});
 
-	key_shortcuts->Load();
 	key_shortcuts->Save();
 
 	this->setAcceptDrops(true);
@@ -504,6 +493,18 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			ShowOverlay(true);
 			//
 		// canvas stuff
+		} else if(shortcut_name == "eraser_switch") {
+			auto brush = glass.GetCurrentBrush();
+
+			// safety
+			pool->EndBrushStroke(brush);
+
+			glass.ToggleBrush(old_brush_switch, 1);
+			view->SetCurrentBrush(glass.GetCurrentBrush());
+			picker->SetColor(glass.GetCurrentBrush()->GetColor());
+
+			old_brush_switch = 0;
+
 		} else if(shortcut_name == "reload_canvas"){
 			canvas_banner->Show(2000, "reloaded canvas");
 			client->ReloadCanvas();
@@ -775,15 +776,27 @@ QString ParupaintWindow::GetSaveDirectory() const
 
 void ParupaintWindow::Command(QString cmd, QString params)
 {
-	if(params.isEmpty()) return;
-	
 	qDebug() << cmd << params;
-	if(cmd == "load"){
-		client->LoadCanvas(params);
+	if(!params.isEmpty()){
+		if(cmd == "load"){
+			client->LoadCanvas(params);
 
-	} else if(cmd == "save"){
-		client->SaveCanvas(params);
-
+		} else if(cmd == "save"){
+			client->SaveCanvas(params);
+		}
+	}
+	
+	if(cmd == "key"){
+		if(params.isEmpty()){
+			auto list = key_shortcuts->GetKeys();
+			QString str = list.join("<br/>");
+			str.append("<br/>List of keys, page up and down to scroll.<br/>Keys ending with ! are global and requires restart.<br/>Usage: /key name=shortcut");
+			str.prepend("<ul>");
+			str.append("</ul>");
+			return chat->AddMessage(str);
+		}
+		key_shortcuts->AddKey(params);
+		key_shortcuts->Save();
 	}
 	chat->AddMessage(">> " + cmd + " " + params);
 }

@@ -26,6 +26,8 @@ class ParupaintKeys
 	public:
 	ParupaintKeys(QStringList);
 	void AddKey(QString);
+	QStringList GetKeys();
+
 	ParupaintKey 	Get(QString);
 	QKeySequence 	GetKeySequence(QString);
 

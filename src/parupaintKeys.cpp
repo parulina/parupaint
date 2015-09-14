@@ -26,7 +26,18 @@ void ParupaintKeys::AddKey(QString entry) {
 	QStringList sep = entry.simplified().split("=");
 	if(sep.length() == 2 && !sep.first().isEmpty() && !sep.last().isEmpty()){
 		keys.insert(sep.first(), ParupaintKey(sep.last()));
+	} else if(!sep.first().isEmpty() && sep.last().isEmpty()){
+		keys.remove(sep.first());
 	}
+}
+QStringList ParupaintKeys::GetKeys() {
+	QStringList list;
+	for(auto i = keys.constBegin(); i != keys.constEnd(); ++i){
+		ParupaintKey key = *i;
+		QString name = i.key();
+		list << (name + "=" + key.GetString());
+	}
+	return list;
 }
 
 QKeySequence ParupaintKey::GetKeySequence() {
