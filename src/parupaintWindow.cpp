@@ -57,39 +57,39 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(), local_port(1108), old_brush_
 	// default keys
 	key_shortcuts = new ParupaintKeys(QStringList{
 
-		"sticky_overlay: F1",
-		"show_overlay: Tab",
-		"hide_overlay: Shift+Tab",
+		"sticky_overlay=F1",
+		"show_overlay=Tab",
+		"hide_overlay=Shift+Tab",
 
-		"dialog_quicksave: Ctrl+K",
-		"dialog_open: Ctrl+O",
-		"dialog_saveas: Ctrl+L",
-		"dialog_new: Ctrl+N",
+		"dialog_quicksave=Ctrl+K",
+		"dialog_open=Ctrl+O",
+		"dialog_saveas=Ctrl+L",
+		"dialog_new=Ctrl+N",
 
-		"dialog_settings: Ctrl+M",
-		"dialog_connect: Ctrl+O",
+		"dialog_settings=Ctrl+M",
+		"dialog_connect=Ctrl+O",
 
-		"prev_frame: A",
-		"next_frame: S",
-		"prev_layer: D",
-		"next_layer: F",
+		"prev_frame=A",
+		"next_frame=S",
+		"prev_layer=D",
+		"next_layer=F",
 
-		"play_animation: Shift+G",
-		"reset_view: Ctrl+G!",
-		"toggle_preview: G",
+		"play_animation=Shift+G",
+		"reset_view=Ctrl+G!",
+		"toggle_preview=G",
 
-		"eraser_switch: E",
-		"pick_color: R",
-		"pick_global_color: Shift+R",
+		"eraser_switch=E",
+		"pick_color=R",
+		"pick_global_color=Shift+R",
 
-		"toolswitch_fill: W",
-		"toolswitch_dotpattern: Ctrl+W",
-		"toolswitch_opacity: Shift+W",
+		"toolswitch_fill=W",
+		"toolswitch_dotpattern=Ctrl+W",
+		"toolswitch_opacity=Shift+W",
 
-		"reload_canvas: Ctrl+Shift+R",
-		"reload_image: Ctrl+R",
+		"reload_canvas=Ctrl+Shift+R",
+		"reload_image=Ctrl+R",
 
-		"chat: Return"
+		"chat=Return"
 	});
 	auto * version_check = new ParupaintVersionCheck();
 	connect(version_check, &ParupaintVersionCheck::Response, this, &ParupaintWindow::VersionResponse);
@@ -236,6 +236,9 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(), local_port(1108), old_brush_
 			delete dlg;
 		});
 	});
+
+	key_shortcuts->Load();
+	key_shortcuts->Save();
 
 	this->setAcceptDrops(true);
 

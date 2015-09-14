@@ -13,6 +13,9 @@ struct ParupaintKey
 	ParupaintKey() : key(0), mod(Qt::NoModifier), shortcut(false) {}
 	ParupaintKey(int, bool = false, Qt::KeyboardModifiers = Qt::NoModifier);
 	ParupaintKey(QString);
+
+	QKeySequence GetKeySequence();
+	QString GetString();
 };
 
 class ParupaintKeys
@@ -22,6 +25,7 @@ class ParupaintKeys
 
 	public:
 	ParupaintKeys(QStringList);
+	void AddKey(QString);
 	ParupaintKey 	Get(QString);
 	QKeySequence 	GetKeySequence(QString);
 
@@ -29,6 +33,9 @@ class ParupaintKeys
 	Qt::KeyboardModifiers GetModifiers(QString);
 
 	QString Match(int, Qt::KeyboardModifiers = Qt::NoModifier);
+
+	void Save();
+	void Load();
 };
 
 #endif
