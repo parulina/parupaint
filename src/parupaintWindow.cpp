@@ -323,7 +323,6 @@ void ParupaintWindow::PenMove(ParupaintBrush* brush){
 		// just for safety
 		brush->SetDrawing(false);
 	}
-	cbrush->SetPosition(brush->GetPosition());
 	if(brush->IsDrawing() && client->GetDrawMode() == DRAW_MODE_DIRECT){
 		auto 	old_x = cbrush->GetPosition().x(),
 			old_y = cbrush->GetPosition().y(),
@@ -334,6 +333,7 @@ void ParupaintWindow::PenMove(ParupaintBrush* brush){
 		pool->GetCanvas()->RedrawCache(r);
 
 	}
+	cbrush->SetPosition(brush->GetPosition());
 	client->SendBrushUpdate(brush);
 
 	// only normal brush for strokes plz
