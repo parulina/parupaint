@@ -5,6 +5,7 @@
 #include <QTextBrowser>
 #include <QLabel>
 #include <QFile>
+#include <QDebug>
 
 #include "../parupaintVersion.h"
 
@@ -26,21 +27,13 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 	QString stylesheet(file.readAll());
 
 
-
-	QTextBrowser * keys1 = new QTextBrowser;
-	keys1->setObjectName("parupaint-keys1");
-	keys1->setFocusPolicy(Qt::ClickFocus);
-	keys1->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
-	keys1->document()->setDefaultStyleSheet(stylesheet);
-	keys1->setHtml(QStringLiteral(
-	"<keys>"
-		"<p><key>1-4</key>  <desc>brush size</desc></p>"
-		"<p><key>A F</key>  <desc>← frames →</desc></p>"
-		"<p><key>S D</key>  <desc>↑ layers ↓</desc></p>"
-	"</keys>"
-
-	));
-
+	key_list = new QLabel(this);
+	key_list->setObjectName("parupaint-keys");
+	key_list->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+	key_list->setStyleSheet(stylesheet);
+	key_list->setWordWrap(false);
+	key_list->setTextFormat(Qt::RichText);
+	key_list->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
 	QTextBrowser * ptext = new QTextBrowser;
 	ptext->setObjectName("parupaint-description");
@@ -93,7 +86,7 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 
 
 	topbox->addWidget(ptext);
-	topbox->addWidget(keys1);
+	topbox->addWidget(key_list);
 	bottombox->addWidget(title);
 	bottombox->addWidget(tabtext);
 
@@ -107,6 +100,19 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 	this->SetCurrentDimensions(500, 500);
 	this->SetCurrentLayerFrame(1, 5);
 	this->ReloadTitle();
+}
+void ParupaintInfoBar::SetKeyList(QStringList list)
+{
+	int a = 0;
+	for(auto i = list.begin(); i != list.end(); ++i){
+		(*i).append("<br/>");
+		if(a && a % 9 == 0){ i = list.insert(i, "</td><td>"); }
+		a++;
+	}
+	list.prepend("<table id=\"keytable\" cellpadding=5 cellspacing=3><tr valign=\"top\"><td>");
+	list.append("</td></tr></table>");
+	QString res = list.join("").prepend("<html>").append("</html>");
+	key_list->setText(res);
 }
 
 void ParupaintInfoBar::ReloadTitle()

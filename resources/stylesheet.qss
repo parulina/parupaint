@@ -33,12 +33,11 @@ ParupaintApp {
 	color:white;
 }
 
-#InfoBar #parupaint-keys1
+#InfoBar #parupaint-keys
 {
 	background:transparent;
 	color:rgb(190, 190, 190);
 }
-
 #InfoBar #parupaint-description
 {
 	background:transparent;

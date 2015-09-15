@@ -12,6 +12,9 @@
 
 #include "parupaintWindow.h"
 #include "parupaintKeys.h"
+
+#include <algorithm>
+
 #include "core/parupaintPanvasWriter.h"
 
 #include "core/parupaintStrokeStep.h"
@@ -228,6 +231,16 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(), local_port(1108), old_brush_
 	});
 
 	key_shortcuts->Save();
+	QStringList keylist_html;
+	foreach(QString s,key_shortcuts->GetKeys()){
+		s.replace("=", ": ").replace("_", " ");
+		if(s.endsWith('!')){
+			s.chop(1);
+		}
+		keylist_html << s;
+	}
+	std::sort(keylist_html.begin(), keylist_html.end());
+	infobar->SetKeyList(keylist_html);
 
 	this->setAcceptDrops(true);
 

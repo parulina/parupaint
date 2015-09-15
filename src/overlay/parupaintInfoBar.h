@@ -1,9 +1,11 @@
 #ifndef PARUPAINTINFOBAR_H
 #define PARUPAINTINFOBAR_H
 
+#include <QStringList>
 #include <QWidget>
 
 class QTextBrowser;
+class QLabel;
 
 class ParupaintInfoBar : public QWidget
 {
@@ -12,6 +14,7 @@ class ParupaintInfoBar : public QWidget
 	QString current_lfstatus;
 
 	QTextBrowser * title;
+	QLabel * key_list;
 	
 	void ReloadTitle();
 
@@ -20,6 +23,7 @@ class ParupaintInfoBar : public QWidget
 	void SetCurrentTitle(QString);
 	void SetCurrentDimensions(int, int);
 	void SetCurrentLayerFrame(int, int);
+	void SetKeyList(QStringList);
 };
 
 #endif
