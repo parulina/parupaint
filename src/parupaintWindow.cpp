@@ -78,7 +78,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(), local_port(1108), old_brush_
 		"next_layer=F",
 
 		"play_animation=Shift+G",
-		"reset_view=Ctrl+G!",
+		"reset_view=Ctrl+G",
 		"toggle_preview=G",
 
 		"eraser_switch=E",
@@ -234,9 +234,6 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(), local_port(1108), old_brush_
 	QStringList keylist_html;
 	foreach(QString s,key_shortcuts->GetKeys()){
 		s.replace("=", ": ").replace("_", " ");
-		if(s.endsWith('!')){
-			s.chop(1);
-		}
 		keylist_html << s;
 	}
 	std::sort(keylist_html.begin(), keylist_html.end());

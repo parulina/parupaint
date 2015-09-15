@@ -5,18 +5,13 @@
 #include <QDebug>
 
 
-ParupaintKey::ParupaintKey(int k, bool sc, Qt::KeyboardModifiers km) : ParupaintKey()
+ParupaintKey::ParupaintKey(int k, Qt::KeyboardModifiers km) : ParupaintKey()
 {
 	key = k;
-	shortcut = sc;
 	mod = km;
 }
 
 ParupaintKey::ParupaintKey(QString str) : ParupaintKey() {
-	if(str.endsWith("!")){
-		str.chop(1);
-		shortcut = true;
-	}
 	if(str.contains("CTRL", Qt::CaseInsensitive)) mod |= Qt::ControlModifier;
 	if(str.contains("SHIFT", Qt::CaseInsensitive)) mod |= Qt::ShiftModifier;
 	if(str.contains("ALT", Qt::CaseInsensitive)) mod |= Qt::AltModifier;
@@ -45,7 +40,7 @@ QKeySequence ParupaintKey::GetKeySequence() {
 }
 
 QString ParupaintKey::GetString() {
-	return GetKeySequence().toString() + (shortcut ? "!" : "");
+	return GetKeySequence().toString();
 }
 
 
@@ -75,7 +70,6 @@ QString ParupaintKeys::Match(int k, Qt::KeyboardModifiers m)
 	// match direct key
 	for(auto i = keys.constBegin(); i != keys.constEnd(); ++i){
 		ParupaintKey key = *i;
-		if(key.shortcut) continue;
 		if(key.key == k && key.mod == m) return i.key();
 	}
 	return "";

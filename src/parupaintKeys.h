@@ -9,9 +9,8 @@ struct ParupaintKey
 {
 	int key;
 	Qt::KeyboardModifiers mod;
-	bool shortcut;
-	ParupaintKey() : key(0), mod(Qt::NoModifier), shortcut(false) {}
-	ParupaintKey(int, bool = false, Qt::KeyboardModifiers = Qt::NoModifier);
+	ParupaintKey() : key(0), mod(Qt::NoModifier) {}
+	ParupaintKey(int, Qt::KeyboardModifiers = Qt::NoModifier);
 	ParupaintKey(QString);
 
 	QKeySequence GetKeySequence();
