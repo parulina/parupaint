@@ -38,6 +38,9 @@ video_export {
 }
 
 RC_ICONS = 	resources/parupaint.ico
+macx {
+	ICON =	resources/parupaint.icns
+}
 RESOURCES +=	*.qrc
 
 VERSION_MAJOR =	0
