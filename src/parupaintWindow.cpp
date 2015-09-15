@@ -548,7 +548,9 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			brush->SetToolType(tool);
 			view->UpdateCurrentBrush(brush);
 		}
-	} else {
+	}
+	// repeating hotkeys
+	if(true) {
 		// can repeat
 		if(shortcut_name.endsWith("_frame") ||
 		shortcut_name.endsWith("_layer")) {
