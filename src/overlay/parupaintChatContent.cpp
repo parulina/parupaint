@@ -6,6 +6,12 @@
 #include <QSizePolicy>
 #include <QFile>
 #include <QDesktopServices>
+#include <QContextMenuEvent>
+#include <QMenu>
+#include <QDebug>
+#include <QDateTime>
+#include <QTextCursor>
+#include <QFileDialog>
 
 #include "parupaintScrollBar.h"
 
@@ -58,4 +64,24 @@ void ParupaintChatContent::focusInEvent(QFocusEvent*)
 void ParupaintChatContent::focusOutEvent(QFocusEvent*)
 {
 	emit focusOut();
+}
+
+void ParupaintChatContent::contextMenuEvent(QContextMenuEvent* e)
+{
+	auto * menu = this->createStandardContextMenu();
+	QAction * action = new QAction("&Save to log file...", this);
+	connect(action, &QAction::triggered, [&menu, this](bool){
+		QDateTime time = QDateTime::currentDateTime();
+		QString filename = "chatlog_at_" + time.toString("yyyy-MM-dd_HH.mm.ss") + ".html";
+		QString file = QFileDialog::getSaveFileName(this, "Save log file as...", "./" + filename, "HTML Files (*.html);; Text files (*.txt)");
+
+		QFile file_write(file);
+		if(file_write.open(QIODevice::WriteOnly)){
+			QString text = file.endsWith(".html", Qt::CaseInsensitive) ? this->toHtml() : this->toPlainText();
+			file_write.write(text.toUtf8());
+			file_write.close();
+		}
+	});
+	menu->addAction(action);
+	menu->exec(e->globalPos());
 }

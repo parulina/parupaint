@@ -11,6 +11,7 @@ Q_OBJECT
 	void AddChatMessage(QString);
 	void focusInEvent(QFocusEvent*);
 	void focusOutEvent(QFocusEvent*);
+	void contextMenuEvent(QContextMenuEvent*);
 
 	public:
 	ParupaintChatContent(QWidget * = nullptr);

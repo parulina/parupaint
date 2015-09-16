@@ -457,16 +457,18 @@ void ParupaintWindow::UpdateOverlay()
 
 void ParupaintWindow::mousePressEvent(QMouseEvent * event)
 {
-	if(event->buttons() == Qt::RightButton) {
-		auto * brush = glass.GetCurrentBrush();
-		pool->EndBrushStroke(brush);
+	if(this->hasFocus()){
+		if(event->buttons() == Qt::RightButton) {
+			auto * brush = glass.GetCurrentBrush();
+			pool->EndBrushStroke(brush);
 
-		glass.ToggleBrush(old_brush_switch, 1);
-		view->SetCurrentBrush(glass.GetCurrentBrush());
-		picker->SetColor(glass.GetCurrentBrush()->GetColor());
+			glass.ToggleBrush(old_brush_switch, 1);
+			view->SetCurrentBrush(glass.GetCurrentBrush());
+			picker->SetColor(glass.GetCurrentBrush()->GetColor());
 
-		old_brush_switch = 0;
-		event->accept();
+			old_brush_switch = 0;
+			event->accept();
+		}
 	}
 	return QMainWindow::mousePressEvent(event);
 }
