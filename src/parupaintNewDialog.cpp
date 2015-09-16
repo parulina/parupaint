@@ -18,6 +18,7 @@ class ParupaintCanvasPreviewWidget : public QWidget
 	{
 		size = QSize(128, 128);
 		this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+		this->setObjectName("CanvasPreviewWidget");
 	}
 	void setPreviewHeight(int height){
 		size.setHeight(height);
@@ -48,7 +49,7 @@ class ParupaintCanvasPreviewWidget : public QWidget
 				temp_size.height() > scale_rect.size().height()){
 
 				painter.setCompositionMode(QPainter::CompositionMode_Difference);
-				painter.drawText(0, 10, "* SCALED");
+				painter.drawText(5, 15, "* SCALED");
 
 				if(temp_size.width() > scale_rect.size().width()){
 					double factor = (double(scale_rect.size().width()) / double(temp_size.width()));
@@ -71,7 +72,7 @@ class ParupaintCanvasPreviewWidget : public QWidget
 };
 
 ParupaintNewDialog::ParupaintNewDialog(QWidget * parent) : 
-	ParupaintDialog(parent, "new..."), cwidth(0), cheight(0)
+	ParupaintDialog(parent, "new canvas..."), cwidth(0), cheight(0)
 {
 
 	this->SetSaveName("newDialog");
@@ -89,53 +90,58 @@ ParupaintNewDialog::ParupaintNewDialog(QWidget * parent) :
 
 	auto * preview = new ParupaintCanvasPreviewWidget;
 
+	// create width, height, middle buttons
 	width = new QComboBox;
 	width->addItems(dim_list);
 	width->setEditable(true);
 	width->setCompleter(nullptr);
-	height = new QComboBox;
-	height->addItems(dim_list);
-	height->setEditable(true);
-	height->setCompleter(nullptr);
-
 	connect(width, &QComboBox::editTextChanged,
 	       [=](const QString & str){
 			QSettings cfg;
 			cfg.setValue("canvas/lastwidth", str.toInt());
 			preview->setPreviewWidth(str.toInt());
 		});
+	height = new QComboBox;
+	height->addItems(dim_list);
+	height->setEditable(true);
+	height->setCompleter(nullptr);
 	connect(height, &QComboBox::editTextChanged,
 	       [=](const QString & str){
 			QSettings cfg;
 			cfg.setValue("canvas/lastheight", str.toInt());
 			preview->setPreviewHeight(str.toInt());
 		});
-	auto * label = new QPushButton("← x →");
-	label->setToolTip("flip the values.");
-	connect(label, &QPushButton::pressed, 
-			[=]{
-				auto hh = height->currentText();
-				height->setEditText(width->currentText());
-				width->setEditText(hh);
-			});
 
-	auto * wcont = new QWidget;
-	auto * wlay = new QHBoxLayout;
-	wlay->setMargin(0);
+	auto * flip_button = new QPushButton("flip");
+	flip_button->setToolTip("Flip the values.");
+	connect(flip_button, &QPushButton::pressed, [=]{
+		auto hh = height->currentText();
+		height->setEditText(width->currentText());
+		width->setEditText(hh);
+	});
+	auto * cres_button = new QPushButton("take");
+	cres_button->setToolTip("Take the current canvas dimensions.");
+	connect(cres_button, &QPushButton::pressed, [this]{
+		if(cwidth && cheight){
+			this->width->setEditText(QString::number(cwidth));
+			this->height->setEditText(QString::number(cheight));
+		}
+	});
+	flip_button->setMaximumWidth(40);
+	cres_button->setMaximumWidth(40);
 
-	wlay->addWidget(width);
-	wlay->addWidget(label);
-	wlay->setAlignment(label, Qt::AlignCenter);
-	wlay->addWidget(height);
+	auto * res_layout = new QHBoxLayout;
+	res_layout->setMargin(0);
 
-	wcont->setFocusProxy(width);
-	wcont->setLayout(wlay);
+	res_layout->addWidget(width);
+	res_layout->addWidget(flip_button, Qt::AlignCenter);
+	res_layout->addWidget(cres_button, Qt::AlignCenter);
+	res_layout->addWidget(height);
 
-	wcont->setTabOrder(width, height);
 
-	auto * wbutton = new QWidget;
-	auto * wbuttonlayout = new QHBoxLayout;
-	wbuttonlayout->setMargin(0);
+	// create buttons
+	auto * button_layout = new QHBoxLayout;
+	button_layout->setMargin(0);
 
 	auto * enter = new QPushButton("new");
 	enter->setDefault(true);
@@ -170,21 +176,22 @@ ParupaintNewDialog::ParupaintNewDialog(QWidget * parent) :
 		emit NewSignal(cwidth, cheight, false);
 	});
 
-	wbuttonlayout->addWidget(enter);
-	wbuttonlayout->addWidget(resize);
-	wbuttonlayout->addWidget(reset);
+	button_layout->addWidget(enter);
+	button_layout->addWidget(resize);
+	button_layout->addWidget(reset);
 
-	wbutton->setLayout(wbuttonlayout);
+	// vboxlayout is set in ParupaintDialog();
+	auto * main_layout = ((QVBoxLayout*)this->layout());
+	main_layout->addWidget(preview);
+	main_layout->addLayout(res_layout);
+	main_layout->addLayout(button_layout);
 
-	this->layout()->addWidget(preview);
-	this->layout()->addWidget(wcont);
-	this->layout()->addWidget(wbutton);
+	this->setTabOrder(width, height);
 
 	QSettings cfg;
 	width->setEditText(cfg.value("canvas/lastwidth").toString());
 	height->setEditText(cfg.value("canvas/lastheight").toString());
 
-	this->setFocusProxy(wcont);
 	this->setFocus();
 }
 

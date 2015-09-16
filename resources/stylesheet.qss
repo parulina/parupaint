@@ -119,10 +119,13 @@ QDialog QLineEdit, QDialog QComboBox {
 
 QDialog QPushButton {
 	border-radius:0;
-	padding:6px 6px;
+	padding:6px 4px;
 	color:white;
 	background:#8a2f1d;
 	font-size:16px;
+}
+QDialog #CanvasPreviewWidget {
+	color:white;
 }
 
 #ErrorLabel {
