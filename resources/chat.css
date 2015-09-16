@@ -1,20 +1,28 @@
-
-.chatmessage {
-	font-size:13px;
-	margin:2px 0;
-	color:white;
-	background-color:rgba(0, 0, 0, 0.6);
-}
-
 a {
 	color:#BBE;
 }
 
-.user {
+/* chat */
+.chat-entry {
+	font-size:15px;
+	margin-top:1px;
+	margin-left:4px;
+	color:white;
+	background:rgba(0, 0, 0, 0.6);
+}
+.chat-user, .chat-message {
+	font-size:13px;
+	margin-bottom:4px;
+}
+.chat-user {
 	background-color:#B1A087;
+}
+.chat-message {
+	background-color:transparent;
 }
 
 
+/* infobar */
 titletext {
 	color:white;
 	font-size:18px;
