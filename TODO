@@ -1,0 +1,2 @@
+List of feature ideas:
+- Use QLibrary to make use of ffmpeg dll, so the program doesn't require recompilation?
