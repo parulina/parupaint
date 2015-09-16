@@ -70,7 +70,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(), local_port(1108), old_brush_
 		"dialog_new=Ctrl+N",
 
 		"dialog_settings=Ctrl+M",
-		"dialog_connect=Ctrl+O",
+		"dialog_connect=Ctrl+I",
 
 		"prev_frame=A",
 		"next_frame=S",
