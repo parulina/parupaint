@@ -40,6 +40,7 @@ video_export {
 RC_ICONS = 	resources/parupaint.ico
 macx {
 	ICON =	resources/parupaint.icns
+	QMAKE_INFO_PLIST = resources/Info.plist
 }
 RESOURCES +=	*.qrc
 
