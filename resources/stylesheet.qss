@@ -110,7 +110,7 @@ QDialog QLabel{
 	font-size:15px;
 	text-decoration:underline;
 }
-QDialog QLineEdit {
+QDialog QLineEdit, QDialog QComboBox {
 	padding:4px 0;
 	border:1px solid #333;
 	background:black;
@@ -127,10 +127,6 @@ QDialog QPushButton {
 
 #ErrorLabel {
 	color:red;
-}
-
-QComboBox {
-	background:black;
 }
 
 
