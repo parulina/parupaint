@@ -1,0 +1,12 @@
+
+0.84
++ Mac build!!
+* Performance improvements: less net data to transfer and improved zoomed in view.
++ Customizable hotkeys: keys are now settable and saved.
++ Overlay parts keep visible after using them.
++ Flash when navigating layers.
+* Fixed dialog issues: dialogs not being focused and black text on windows build.
++ Can save chatlog by right clicking the chat area.
+* Disconnect message
++ Small message appears when switching preview modes and other similar things.
+* Flood fill works faster.
