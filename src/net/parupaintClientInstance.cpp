@@ -80,21 +80,6 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 				brushes.remove(c);
 			}
 		}
-
-	} else if(id == "lf") {
-		auto c = object["id"].toInt();
-		auto * brush = brushes.value(c);
-		if(brush) {
-			auto l = object["l"].toInt();
-			auto f = object["f"].toInt();
-			brush->SetLayer(l);
-			brush->SetFrame(f);
-			if(c == me){
-				pool->GetCanvas()->SetLayerFrame(l, f);
-				pool->TriggerViewUpdate();
-			}
-		}
-
 	} else if(id == "draw"){
 		auto c = object["id"].toInt();
 		auto * brush = brushes.value(c);
@@ -108,6 +93,8 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 			if(object["w"].isDouble())	brush->SetWidth(object["w"].toDouble(1));
 			if(object["p"].isDouble())	brush->SetPressure(object["p"].toDouble(0.0));
 			if(object["t"].isDouble())	brush->SetToolType(object["t"].toInt(0));
+			if(object["l"].isDouble())	brush->SetLayer(object["l"].toInt(0));
+			if(object["f"].isDouble())	brush->SetFrame(object["f"].toInt(0));
 
 			if(object["x"].isDouble())	x = object["x"].toDouble();
 			if(object["y"].isDouble())	y = object["y"].toDouble();
@@ -247,6 +234,12 @@ void ParupaintClientInstance::SendBrushUpdate(ParupaintBrush * brush)
 	if(brush->GetPosition() != shadow_brush->GetPosition()){
 		obj["x"] = brush->GetPosition().x();
 		obj["y"] = brush->GetPosition().y();
+	}
+	if(brush->GetLayer() != shadow_brush->GetLayer()){
+		obj["l"] = brush->GetLayer();
+	}
+	if(brush->GetFrame() != shadow_brush->GetFrame()){
+		obj["f"] = brush->GetFrame();
 	}
 	if(brush->GetWidth() != shadow_brush->GetWidth()){
 		obj["w"] = brush->GetWidth();

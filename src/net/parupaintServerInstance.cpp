@@ -187,7 +187,7 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 				obj["l"] = layer;
 				obj["f"] = frame;
 				obj["id"] = c->id;
-				this->Broadcast(id, obj);
+				this->Broadcast("draw", obj);
 
 			}
 
@@ -203,6 +203,9 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 				if(obj["w"].isDouble()) brush->SetWidth(obj["w"].toDouble());
 				if(obj["p"].isDouble()) brush->SetPressure(obj["p"].toDouble());
 				if(obj["t"].isDouble()) brush->SetToolType(obj["t"].toInt());
+
+				if(obj["l"].isDouble()) brush->SetLayer(obj["l"].toInt());
+				if(obj["f"].isDouble()) brush->SetFrame(obj["f"].toInt());
 
 				if(obj["x"].isDouble()) x = obj["x"].toDouble();
 				if(obj["y"].isDouble()) y = obj["y"].toDouble();

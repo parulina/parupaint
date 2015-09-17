@@ -392,6 +392,7 @@ void ParupaintWindow::ChangedFrame(int l, int f)
 	auto brush = glass.GetCurrentBrush();
 	brush->SetLayer(l);
 	brush->SetFrame(f);
+	view->UpdateCurrentBrush(brush);
 	flayer->SetMarkedLayerFrame(l, f);
 	infobar->SetCurrentLayerFrame(l+1, f+1);
 }
@@ -401,7 +402,8 @@ void ParupaintWindow::SelectFrame(int l, int f)
 	auto brush = glass.GetCurrentBrush();
 	brush->SetLayer(l);
 	brush->SetFrame(f);
-	client->SendLayerFrame(l, f);
+	view->UpdateCurrentBrush(brush);
+	client->SendBrushUpdate(brush);
 }
 
 void ParupaintWindow::OverlayTimeout()
@@ -584,8 +586,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 				auto brush = glass.GetCurrentBrush();
 				brush->SetLayer(pool->GetCanvas()->GetCurrentLayer());
 				brush->SetFrame(pool->GetCanvas()->GetCurrentFrame());
-				client->SendLayerFrame(pool->GetCanvas()->GetCurrentLayer(),
-							pool->GetCanvas()->GetCurrentFrame());
+				client->SendBrushUpdate(brush);
 			} else {
 				auto current_layer = pool->GetCanvas()->GetCurrentLayer(),
 				     current_frame = pool->GetCanvas()->GetCurrentFrame();
