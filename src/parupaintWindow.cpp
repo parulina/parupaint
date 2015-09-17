@@ -800,6 +800,7 @@ void ParupaintWindow::Command(QString cmd, QString params)
 	if(cmd == "key"){
 		if(params.isEmpty()){
 			auto list = key_shortcuts->GetKeys();
+			list.sort();
 			QString str = list.join("<br/>");
 			str.append("<br/>List of keys, page up and down to scroll.<br/>Keys ending with ! are global and requires restart.<br/>Usage: /key name=shortcut");
 			return chat->AddMessage(str);
