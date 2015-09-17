@@ -33,7 +33,11 @@ void ParupaintVersionCheck::completed(QNetworkReply* reply)
 
 			QString current = "v" + QString(PARUPAINT_VERSION);
 
-			if(version != current){
+			bool k;
+			qreal real_cur = current.replace(QRegularExpression("[^0-9\\.]"), "").toDouble(&k);
+			qreal real_ver = version.replace(QRegularExpression("[^0-9\\.]"), "").toDouble(&k);
+
+			if(k && real_ver > real_cur){
 				QString msg = QString("New update is available! [<a href=\"%1\">%2 (%3)</a>]").arg(url, name, version);
 				emit Response(true, msg);
 				return;
