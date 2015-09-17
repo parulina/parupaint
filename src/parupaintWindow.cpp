@@ -581,7 +581,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 
 			if(!OverlayButtonDown) {
 				// Do a local check for boundaries
-				pool->GetCanvas()->AddLayerFrame(ll, ff);
+				pool->GetCanvas()->AddLayerFrame(true, ll, ff);
 
 				auto brush = glass.GetCurrentBrush();
 				brush->SetLayer(pool->GetCanvas()->GetCurrentLayer());

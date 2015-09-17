@@ -2,9 +2,9 @@
 #define PARUPAINTCANVASOBJECT_H
 
 #include "core/parupaintPanvas.h"
-
 #include <QGraphicsObject>
 
+class QTimer;
 
 class ParupaintCanvasObject : public QGraphicsObject, public ParupaintPanvas
 {
@@ -16,6 +16,8 @@ Q_OBJECT
 
 	QPixmap checker;
 	QPixmap cache;
+
+	QTimer * flash_timeout;
 
 	void NewCache();
 
@@ -29,8 +31,8 @@ Q_OBJECT
 	void SetPreview(bool);
 	void TogglePreview();
 
-	void SetLayerFrame(_lint, _fint =0);
-	void AddLayerFrame(int, int);
+	void SetLayerFrame(bool, _lint, _fint =0);
+	void AddLayerFrame(bool, int, int);
 	void FixLayerFrame();
 	_lint GetCurrentLayer();
 	_fint GetCurrentFrame();
