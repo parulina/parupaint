@@ -802,7 +802,7 @@ void ParupaintWindow::Command(QString cmd, QString params)
 			auto list = key_shortcuts->GetKeys();
 			list.sort();
 			QString str = list.join("<br/>");
-			str.append("<br/>List of keys, page up and down to scroll.<br/>Keys ending with ! are global and requires restart.<br/>Usage: /key name=shortcut");
+			str.append("<br/>List of keys, page up and down to scroll.<br/>Dialog hotkeys requires restart.<br/>Usage: /key name=shortcut");
 			return chat->AddMessage(str);
 		}
 		key_shortcuts->AddKey(params);
