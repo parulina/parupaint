@@ -84,7 +84,8 @@ int ParupaintServerInstance::GetNumConnections()
 
 void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id, const QByteArray bytes)
 {
-	QJsonObject obj = QJsonDocument::fromJson(bytes).object();
+	const QJsonObject obj = QJsonDocument::fromJson(bytes).object();
+	QJsonObject obj_copy = obj;
 
 	if(c) {
 		if(id == "connect"){
@@ -193,34 +194,30 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 		} else if(id == "draw"){
 			auto * brush = brushes.value(c);
 			if(brush) {
+				const double 	old_x = brush->GetPosition().x(),
+						old_y = brush->GetPosition().y();
+				double x = old_x, y = old_y;
 
-				QColor color = HexToColor(obj["c"].toString());
-				auto drawing(obj["d"].toBool());
-				auto width(obj["w"].toDouble());
-				auto pressure(obj["p"].toDouble());
+				if(obj["c"].isString())	brush->SetColor(HexToColor(obj["c"].toString()));
+				if(obj["d"].isBool())	brush->SetDrawing(obj["d"].toBool());
+				if(obj["w"].isDouble()) brush->SetWidth(obj["w"].toDouble());
+				if(obj["p"].isDouble()) brush->SetPressure(obj["p"].toDouble());
+				if(obj["t"].isDouble()) brush->SetToolType(obj["t"].toInt());
 
-				auto x(obj["x"].toDouble());
-				auto y(obj["y"].toDouble());
-				auto t(obj["t"].toInt());
+				if(obj["x"].isDouble()) x = obj["x"].toDouble();
+				if(obj["y"].isDouble()) y = obj["y"].toDouble();
 
-				auto old_x = brush->GetPosition().x();
-				auto old_y = brush->GetPosition().y();
-
-				brush->SetColor(color);
-				brush->SetWidth(width);
-				brush->SetPressure(pressure);
-				brush->SetToolType(t);
-				brush->SetDrawing(drawing);
-
-				if(drawing){
+				if(brush->IsDrawing()){
 					ParupaintFrameBrushOps::stroke(canvas, old_x, old_y, x, y, brush);
-					if(t == 1) brush->SetDrawing(false);
+					if(brush->GetToolType() == ParupaintBrushToolTypes::BrushToolFloodFill){
+						brush->SetDrawing(false);
+					}
 				}
 
 				brush->SetPosition(QPointF(x, y));
 
-				obj["id"] = c->id;
-				this->Broadcast(id, obj);
+				obj_copy["id"] = c->id;
+				this->Broadcast(id, obj_copy);
 			}
 		} else if(id == "canvas") {
 			c->send("canvas", this->MarshalCanvas());

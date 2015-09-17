@@ -24,9 +24,11 @@ Q_OBJECT
 	// has to work with int because the server is the only connection
 	QHash<quint32, ParupaintCanvasBrush*> brushes;
 	DrawMode DrawMethod;
+	ParupaintBrush * shadow_brush;
 
 	public:
 	ParupaintClientInstance(ParupaintCanvasPool*, QObject * = nullptr);
+	~ParupaintClientInstance();
 	virtual void send(const QString , const QJsonObject & = QJsonObject());
 	void ReloadImage();
 	void ReloadCanvas();

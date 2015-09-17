@@ -29,12 +29,17 @@ ParupaintClientInstance::ParupaintClientInstance(ParupaintCanvasPool * p, QObjec
 	me = -1;
 	DrawMethod = DRAW_MODE_DIRECT;
 	pool = p;
+	shadow_brush = new ParupaintBrush();
 	connect(this, &ParupaintClient::onMessage, this, &ParupaintClientInstance::Message);
+}
+ParupaintClientInstance::~ParupaintClientInstance()
+{
+	delete shadow_brush;
 }
 
 void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 {
-	QJsonObject object = QJsonDocument::fromJson(bytes).object();
+	const QJsonObject object = QJsonDocument::fromJson(bytes).object();
 
 	if(id == "connect"){
 		
@@ -94,29 +99,26 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 		auto c = object["id"].toInt();
 		auto * brush = brushes.value(c);
 		if(brush) {
+			const double 	old_x = brush->GetPosition().x(),
+			      		old_y = brush->GetPosition().y();
+			double 		x = old_x, y = old_y;
 
-			QColor color = HexToColor(object["c"].toString());
-			auto drawing(object["d"].toBool());
-			auto width(object["w"].toDouble());
-			auto pressure(object["p"].toDouble());
-			auto x(object["x"].toDouble());
-			auto y(object["y"].toDouble());
-			auto t(object["t"].toInt());
+			if(object["c"].isString())	brush->SetColor(HexToColor(object["c"].toString()));
+			if(object["d"].isBool())	brush->SetDrawing(object["d"].toBool(false));
+			if(object["w"].isDouble())	brush->SetWidth(object["w"].toDouble(1));
+			if(object["p"].isDouble())	brush->SetPressure(object["p"].toDouble(0.0));
+			if(object["t"].isDouble())	brush->SetToolType(object["t"].toInt(0));
 
-			brush->SetColor(color);
-			brush->SetWidth(width);
-			brush->SetPressure(pressure);
-			brush->SetToolType(t);
-			brush->SetDrawing(drawing);
-
-			if(drawing){
+			if(object["x"].isDouble())	x = object["x"].toDouble();
+			if(object["y"].isDouble())	y = object["y"].toDouble();
+			if(brush->IsDrawing()){
 				if(DrawMethod == DRAW_MODE_DIRECT){
-					auto 	old_x = brush->GetPosition().x(),
-						old_y = brush->GetPosition().y();
-
-					QRect r = ParupaintFrameBrushOps::stroke(pool->GetCanvas(), old_x, old_y, x, y, brush);
+					QRect r = ParupaintFrameBrushOps::stroke(pool->GetCanvas(), 
+							old_x, old_y, x, y, brush);
 					pool->GetCanvas()->RedrawCache(r);
-					if(t == 1) brush->SetDrawing(false);
+					if(brush->GetToolType() == ParupaintBrushToolTypes::BrushToolFloodFill){
+						brush->SetDrawing(false);
+					}
 
 				} else {
 					if(!brush->GetCurrentStroke()) pool->NewBrushStroke(brush);
@@ -138,7 +140,6 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 					}
 				}
 			}
-
 			brush->SetPosition(QPointF(x, y));
 			pool->TriggerViewUpdate();
 		}
@@ -243,16 +244,27 @@ void ParupaintClientInstance::SendLayerFrame(int layer, int frame, int ll, int f
 void ParupaintClientInstance::SendBrushUpdate(ParupaintBrush * brush)
 {
 	QJsonObject obj;
-	obj["x"] = brush->GetPosition().x();
-	obj["y"] = brush->GetPosition().y();
-	obj["w"] = brush->GetWidth();
-	obj["p"] = brush->GetPressure();
-	obj["c"] = brush->GetColorString();
-	obj["d"] = brush->IsDrawing();
-	if(brush->GetToolType() != ParupaintBrushToolTypes::BrushToolNone){
+	if(brush->GetPosition() != shadow_brush->GetPosition()){
+		obj["x"] = brush->GetPosition().x();
+		obj["y"] = brush->GetPosition().y();
+	}
+	if(brush->GetWidth() != shadow_brush->GetWidth()){
+		obj["w"] = brush->GetWidth();
+	}
+	if(brush->GetPressure() != shadow_brush->GetPressure()){
+		obj["p"] = brush->GetPressure();
+	}
+	if(brush->GetColor() != shadow_brush->GetColor()){
+		obj["c"] = brush->GetColorString();
+	}
+	if(brush->IsDrawing() != shadow_brush->IsDrawing()){
+		obj["d"] = brush->IsDrawing();
+	}
+	if(brush->GetToolType() != shadow_brush->GetToolType()){
 		obj["t"] = brush->GetToolType();
 	}
-	this->send("draw", obj);
+	if(obj.length()) this->send("draw", obj);
+	*shadow_brush = *brush;
 }
 
 
