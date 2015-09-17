@@ -15,7 +15,7 @@
 
 ParupaintColorPicker::ParupaintColorPicker(QWidget * parent) : ParupaintOverlayWidget(parent)
 {
-	this->setFocusPolicy(Qt::NoFocus);
+	this->setFocusPolicy(Qt::ClickFocus);
 	this->setObjectName("ColorPicker");
 
 	// slider styling doesn't work otherwise...
@@ -104,6 +104,11 @@ void ParupaintColorPicker::SetAlp(qreal r)
 
 	this->update();
 	emit ColorChange(preview_color);
+}
+
+void ParupaintColorPicker::keyPressEvent(QKeyEvent*e)
+{
+	e->ignore();
 }
 
 void ParupaintColorPicker::paintEvent(QPaintEvent* event)

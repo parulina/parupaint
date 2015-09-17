@@ -432,9 +432,10 @@ void ParupaintWindow::ShowOverlay(bool permanent)
 
 void ParupaintWindow::HideOverlay()
 {
-	chat->hide();
-	flayer->hide();
-	picker->hide();
+	if(!chat->hasFocus()) chat->hide();
+	if(!flayer->hasFocus()) flayer->hide();
+	if(!picker->hasFocus()) picker->hide();
+
 	UpdateOverlay();
 }
 void ParupaintWindow::UpdateOverlay()
@@ -492,10 +493,6 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			chat->setFocus();
 			chat->show();
 		}
-	}
-	if(!this->hasFocus()) {
-
-		return QMainWindow::keyPressEvent(event);
 	}
 
 	if(!event->isAutoRepeat()){
