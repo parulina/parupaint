@@ -20,8 +20,6 @@ ParupaintConnectionDialog::ParupaintConnectionDialog(QWidget* parent) :
 	line_ip->setPlaceholderText("<host>:<port>");
 	line_ip->setText(cfg.value("net/lasthost").toString());
 
-	auto * button_widget = new QWidget;
-	button_widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	auto * button_layout = new QHBoxLayout;
 	button_layout->setMargin(0);
 
@@ -34,11 +32,11 @@ ParupaintConnectionDialog::ParupaintConnectionDialog(QWidget* parent) :
 
 	button_layout->addWidget(button_connect);
 	button_layout->addWidget(button_disconnect);
-	button_widget->setLayout(button_layout);
 
+	auto * layout = ((QVBoxLayout*) this->layout());
 	this->layout()->addWidget(line_nickname);
 	this->layout()->addWidget(line_ip);
-	this->layout()->addWidget(button_widget);
+	layout->addLayout(button_layout);
 
 	
 	this->setFocusProxy(line_ip);
