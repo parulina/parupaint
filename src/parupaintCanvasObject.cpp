@@ -1,6 +1,7 @@
 
 #include <QPainter>
 #include <QStyleOptionGraphicsItem>
+#include <QDebug>
 
 #include "parupaintCanvasObject.h"
 #include "core/parupaintLayer.h"
@@ -15,7 +16,7 @@ ParupaintCanvasObject::ParupaintCanvasObject() :
 	CurrentLayer(0), CurrentFrame(0), Preview(false),
 	checker(":/resources/checker.png")
 {
-
+	this->setFlag(QGraphicsItem::ItemUsesExtendedStyleOption);
 }
 
 void ParupaintCanvasObject::New(QSize s, _lint l, _fint f)
@@ -88,10 +89,8 @@ void ParupaintCanvasObject::RedrawCache(QRect area)
 
 void ParupaintCanvasObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
-	//QRect exposed = option->exposedRect.adjusted(-1, -1, 1, 1).toAlignedRect();
-	QRect exposed = option->exposedRect.toAlignedRect();
-
-	painter->drawPixmap(exposed, cache);
+	const QRect exposed = option->exposedRect.toAlignedRect();
+	painter->drawPixmap(exposed, cache, exposed);
 }
 
 bool ParupaintCanvasObject::IsPreview() const
