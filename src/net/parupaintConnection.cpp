@@ -8,5 +8,6 @@ qint64 ParupaintConnection::sendBinary(QString i, const QByteArray & m)
 
 qint64 ParupaintConnection::send(QString i, QString m)
 {
-	return socket->write(i + " " + m);
+	if(socket) return socket->write(i + " " + m);
+	return 0;
 }

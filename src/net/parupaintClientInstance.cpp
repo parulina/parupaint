@@ -26,6 +26,7 @@
 
 ParupaintClientInstance::ParupaintClientInstance(ParupaintCanvasPool * p, QObject * parent) : ParupaintClient(parent)
 {
+	playmode = false;
 	me = -1;
 	DrawMethod = DRAW_MODE_DIRECT;
 	pool = p;
@@ -68,7 +69,10 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 			brushes[idd]->SetWidth(w);
 
 			brushes[idd]->ShowName(-1);
-			if(c < 0) me = idd;
+			if(c < 0) {
+				me = idd;
+				this->ReloadCanvas();
+			}
 
 
 			if(c > 0) pool->AddCursor(n, brushes[c]);
@@ -82,6 +86,8 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 		}
 	} else if(id == "draw"){
 		auto c = object["id"].toInt();
+		if(brushes.find(c) == brushes.end()) return;
+
 		auto * brush = brushes.value(c);
 		if(brush) {
 			const double 	old_x = brush->GetPosition().x(),
@@ -128,8 +134,15 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 				}
 			}
 			brush->SetPosition(QPointF(x, y));
+			if(playmode && c == me) {
+				emit PlaymodeUpdate(brush);
+			}
 			pool->TriggerViewUpdate();
 		}
+	} else if (id == "fill") {
+		if(!object["c"].isString()) return;
+		pool->GetCanvas()->Fill(HexToColor(object["c"].toString()));
+
 	} else if (id == "canvas") {
 		auto w = object["width"].toInt();
 		auto h = object["height"].toInt();
@@ -175,7 +188,6 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 		// sends a reload signal
 		this->ReloadImage();
 
-
 	} else if (id == "img") {
 
 		auto l = object["l"].toInt();
@@ -199,6 +211,7 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 		// todo do this after receiving all images only?
 		pool->GetCanvas()->RedrawCache();
 		pool->UpdateView();
+
 	} else if(id == "chat") {
 		auto name = object["name"].toString(),
 		     msg = object["message"].toString();
@@ -218,6 +231,7 @@ void ParupaintClientInstance::ReloadCanvas()
 }
 void ParupaintClientInstance::SendLayerFrame(int layer, int frame, int ll, int ff, bool ext)
 {
+	if(playmode) return;
 	QJsonObject obj;
 	obj["l"] = layer;
 	obj["f"] = frame;
@@ -230,6 +244,7 @@ void ParupaintClientInstance::SendLayerFrame(int layer, int frame, int ll, int f
 
 void ParupaintClientInstance::SendBrushUpdate(ParupaintBrush * brush)
 {
+	if(playmode) return;
 	QJsonObject obj;
 	if(brush->GetPosition() != shadow_brush->GetPosition()){
 		obj["x"] = brush->GetPosition().x();

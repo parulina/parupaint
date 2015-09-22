@@ -2,6 +2,7 @@
 #include <QDebug>
 #include <QPainter>
 #include <QPen>
+#include <QRgb>
 
 #include "parupaintFrame.h"
 #include "parupaintStrokeStep.h"
@@ -66,7 +67,6 @@ void ParupaintFrame::DrawStep(float x, float y, float x2, float y2, float width,
 	pen.setCapStyle(Qt::RoundCap);
 	this->DrawStep(x, y, x2, y2, pen);
 }
-#include <QRgb>
 
 void p_fill(QImage & img, int x, int y, QRgb orig, QRgb to)
 {

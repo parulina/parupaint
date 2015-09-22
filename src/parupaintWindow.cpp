@@ -116,6 +116,11 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(), local_port(1108), old_brush_
 	client = new ParupaintClientInstance(pool, this);
 	connect(client, &ParupaintClientInstance::ChatMessageReceived, this, &ParupaintWindow::ChatMessageReceived);
 	connect(client, &ParupaintClientInstance::OnDisconnect, this, &ParupaintWindow::OnNetworkDisconnect);
+	connect(client, &ParupaintClientInstance::PlaymodeUpdate, [this](ParupaintBrush * brush){
+		auto * current_brush = glass.GetCurrentBrush();
+		*current_brush = *brush;
+		this->view->UpdateCurrentBrush(current_brush);
+	});
 
 	canvas_banner = new ParupaintCanvasBanner(this);
 

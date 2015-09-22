@@ -18,6 +18,7 @@ enum DrawMode {
 class ParupaintClientInstance : public ParupaintClient
 {
 Q_OBJECT
+	bool playmode;
 	int me;
 	QString nickname;
 	ParupaintCanvasPool * pool;
@@ -50,6 +51,7 @@ Q_OBJECT
 	signals:
 	void ChatMessageReceived(QString, QString);
 	void OnDisconnect();
+	void PlaymodeUpdate(ParupaintBrush *);
 };
 
 #endif

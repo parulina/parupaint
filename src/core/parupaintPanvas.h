@@ -33,6 +33,7 @@ class ParupaintPanvas {
 	void New(QSize dim, _lint l = 1, _fint f = 1);
 	void Resize(QSize dim);
 	void Clear();
+	void Fill(QColor);
 
 	void SetLayers(_lint l, _lint = 1);
 	void AddLayers(_lint l, _lint = 1, _fint = 1);

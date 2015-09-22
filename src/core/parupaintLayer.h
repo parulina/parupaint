@@ -4,6 +4,7 @@
 #include "panvasTypedefs.h"
 
 #include <QChar>
+#include <QColor>
 #include <QList>
 class ParupaintFrame;
 class QSize;
@@ -29,6 +30,7 @@ class ParupaintLayer {
 	void New(QSize s);
 	void Resize(QSize s);
 	void Clear();
+	void Fill(QColor);
 
 	void SetFrames(_fint);
 	void AddFrames(_fint, _fint = 1);

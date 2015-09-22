@@ -7,6 +7,10 @@
 #include <QDir>
 #include <QFileInfo>
 
+#include <QTimer>
+#include <QFile>
+#include <QTextStream>
+
 #include "parupaintConnection.h"
 #include "parupaintServerInstance.h"
 #include "../core/parupaintPanvasReader.h"
@@ -14,19 +18,52 @@
 #include "../core/parupaintPanvas.h"
 #include "../core/parupaintLayer.h"
 #include "../core/parupaintFrame.h"
+#include "../core/parupaintRecordManager.h"
 
 #include "../core/parupaintFrameBrushOps.h"
 #include "../core/parupaintBrush.h"
 
 #include "qcompressor.h"
 
+ParupaintServerInstance::~ParupaintServerInstance()
+{
+	QFile log_file(".parupaint.log");
+	if(log_file.open(QFile::WriteOnly)){
+		log_file.resize(0);
+		log_file.close();
+	}
+}
+
 ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent) : ParupaintServer(port, parent)
 {
 	connectid = 1;
 	canvas = new ParupaintPanvas(540, 540, 1);
-	
-	
-	canvas->GetLayer(0)->GetFrame(0)->ClearColor(Qt::white);
+
+
+	QFile log_file(".parupaint.log");
+	if(log_file.open(QFile::ReadOnly)){
+		log_recovery = log_file.readAll();
+		log_file.close();
+	}
+	record_manager = new ParupaintRecordManager(".parupaint.log");
+	record_manager->Resize(540, 540, false);
+	// this adds it to history
+	this->ServerFill("#FFF", false);
+
+	if(!log_recovery.isEmpty()){
+		QTextStream recovery_stream(log_recovery);
+		while(!recovery_stream.atEnd()){
+			const QString line = recovery_stream.readLine();
+			this->RecordLineDecoder(line, true);
+		}
+	}
+	foreach(auto con, brushes.keys()){
+		// TODO idk if i need to delete the keys...
+		record_manager->Leave(con->id);
+		delete brushes[con];
+	}
+	brushes.clear();
+
 	connect(this, &ParupaintServer::onMessage, this, &ParupaintServerInstance::Message);
 }
 
@@ -82,6 +119,282 @@ int ParupaintServerInstance::GetNumConnections()
 	return brushes.size();
 }
 
+
+// recovery - do a fast forward 'merge' of this history with current history,
+// skips broadcasts and forces readd of entries
+void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recovery)
+{
+	if(line.isEmpty()) return;
+	QStringList str = line.split(' ');
+	if(str.length() <= 1) return;
+
+	const QString id = str.takeFirst();
+
+	// these come first as they have no player id attached to them.
+	// return to skip the rest of the func
+	if(id == "resize"){
+		int w = str.takeFirst().toInt();
+		int h = str.takeFirst().toInt();
+		bool r = str.takeFirst().toInt();
+		this->ServerResize(w, h, r, !recovery);
+		return;
+
+	} else if(id == "lfc") {
+		int 	l = str.takeFirst().toInt(),
+			f = str.takeFirst().toInt(),
+			lc = str.takeFirst().toInt(),
+			fc = str.takeFirst().toInt();
+		bool 	e = str.takeFirst().toInt();
+
+		this->ServerLfc(l, f, lc, fc, e, !recovery);
+		return;
+
+	} else if(id == "fill") {
+		this->ServerFill(str.takeFirst(), !recovery);
+		return;
+	}
+
+	bool bt = false;
+	const int b = str.takeFirst().toInt(&bt);
+	if(!bt) return;
+
+
+	// start
+	ParupaintConnection * con = nullptr;
+	foreach(auto k, brushes.keys()){
+		// find connection from id
+		if(k->id == b) {con = k; break;}
+	}
+
+	if(id == "join") {
+		if(!con) {
+			con = new ParupaintConnection(nullptr);
+			con->id = b;
+		}
+		this->ServerJoin(con, str.takeFirst(), !recovery);
+		return;
+	}
+	if(con){
+		if(id == "leave") {
+			this->ServerLeave(con, !recovery);
+
+		// these are written at "draw" usually.
+		} else if(id == "width") {
+			brushes[con]->SetWidth(str.takeFirst().toDouble());
+			if(!recovery){
+				QJsonObject obj;
+				obj["w"] = brushes[con]->GetWidth();
+				this->Broadcast("draw", obj);
+			} else {
+				record_manager->Width(b, brushes[con]->GetWidth());
+			}
+
+		} else if(id == "chat") {
+			// skip out id + b
+			QString msg = line.section(' ', 2);
+			this->ServerChat(con, msg, !recovery);
+
+		} else if(id == "color") {
+			QString col = str.takeFirst();
+			brushes[con]->SetColor(HexToColor(col));
+			if(!recovery){
+				QJsonObject obj;
+				obj["c"] = col;
+				this->Broadcast("draw", obj);
+			} else {
+				record_manager->Color(b, col);
+			}
+
+		} else if(id == "tool") {
+			brushes[con]->SetToolType(str.takeFirst().toInt());
+			if(!recovery){
+				QJsonObject obj;
+				obj["t"] = brushes[con]->GetToolType();
+				this->Broadcast("draw", obj);
+			} else {
+				record_manager->Tool(b, brushes[con]->GetToolType());
+			}
+
+		} else if(id == "lf") {
+			const int 	l = str.takeFirst().toInt(),
+					f = str.takeFirst().toInt();
+			brushes[con]->SetLayer(l);
+			brushes[con]->SetFrame(f);
+			if(!recovery){
+				QJsonObject obj;
+				obj["l"] = l;
+				obj["f"] = f;
+				this->Broadcast("draw", obj);
+			} else {
+				record_manager->Lf(b, l, f);
+			}
+
+		} else if(id == "pos") {
+			const double 	old_x = brushes[con]->GetPosition().x(),
+					old_y = brushes[con]->GetPosition().y();
+
+			const double 	x = str.takeFirst().toDouble(),
+			      		y = str.takeFirst().toDouble(),
+					p = str.takeFirst().toDouble();
+			const bool	d = str.takeFirst().toInt();
+
+			brushes[con]->SetPosition(QPointF(x, y));
+			brushes[con]->SetPressure(p);
+			brushes[con]->SetDrawing(d);
+
+			if(brushes[con]->IsDrawing()){
+				ParupaintFrameBrushOps::stroke(canvas, old_x, old_y, x, y, brushes[con]);
+			}
+
+			if(!recovery){
+				QJsonObject obj;
+				obj["x"] = x;
+				obj["y"] = y;
+				obj["p"] = p;
+				obj["d"] = d;
+				this->Broadcast("draw", obj);
+			} else {
+				record_manager->Pos(b, x, y, p, d);
+			}
+		}
+	}
+}
+
+// Makes someone join the server with a given name.
+// a brush is created.
+void ParupaintServerInstance::ServerJoin(ParupaintConnection * c, QString name, bool propagate)
+{
+	if(!c) return;
+
+	if(!brushes[c]){
+		brushes[c] = new ParupaintBrush();
+	}
+	brushes[c]->SetName(name);
+	record_manager->Join(c->id, name);
+
+	//FIXME fix in parupaint-web so this isn't needed anymore
+	//c->send("join", "{\"name\":\"sqnya\"}");
+
+	//FIXME make the client specifically request this
+	//c->send("canvas", MarshalCanvas());
+
+	if(!propagate) return;
+	foreach(auto c2, brushes.keys()){
+
+		QJsonObject obj_me = this->MarshalConnection(c);
+		if(c2 == c) obj_me["id"] = -(c->id);
+		obj_me["disconnect"] = false;
+
+		// send me to others
+		c2->send("peer", QJsonDocument(obj_me).toJson(QJsonDocument::Compact));
+
+		if(c2 == c) continue;
+
+		// send them to me
+		QJsonObject obj_them = this->MarshalConnection(c2);
+		c->send("peer", QJsonDocument(obj_them).toJson(QJsonDocument::Compact));
+	}
+}
+void ParupaintServerInstance::ServerLeave(ParupaintConnection * c, bool propagate)
+{
+	if(!c) return;
+	if(brushes.find(c) == brushes.end()) return;
+	delete brushes[c];
+	brushes.remove(c);
+
+	record_manager->Leave(c->id);
+
+	if(!propagate) return;
+	QJsonObject obj;
+	obj["disconnect"] = true;
+	obj["id"] = c->id;
+	this->Broadcast("peer", obj);
+}
+void ParupaintServerInstance::ServerChat(ParupaintConnection * c, QString msg, bool propagate)
+{
+	record_manager->Chat(c->id, msg);
+
+	if(!propagate) return;
+
+	auto * brush = brushes.value(c);
+	if(brush) {
+		QJsonObject obj;
+		obj["message"] = msg;
+		obj["name"] = brush->GetName();
+		obj["id"] = c->id;
+		this->Broadcast("chat", obj);
+	}
+}
+void ParupaintServerInstance::ServerLfc(int l, int f, int lc, int fc, bool e, bool propagate)
+{
+	bool changed = false;
+	if(lc != 0){
+		if(lc < 0 && canvas->GetNumLayers() > 1){
+			canvas->RemoveLayers(l, -lc);
+			changed = true;
+		} else if(lc > 0){
+			canvas->AddLayers(l, lc, 1);
+			changed = true;
+		}
+	}
+	if(fc != 0){
+		auto * ff = canvas->GetLayer(l);
+		if(ff) {
+			if(fc < 0 && ff->GetNumFrames() > 1){
+				if(e){
+					ff->RedactFrame(f, -fc);
+				} else {
+					ff->RemoveFrames(f, -fc);
+				}
+				changed = true;
+			} else if(fc > 0){
+				if(e){
+					ff->ExtendFrame(f, fc);
+				} else {
+					ff->AddFrames(f, fc);
+				}
+				changed = true;
+			}
+		}
+	}
+
+	record_manager->Lfc(l, f, lc, fc, e);
+
+	// TODO loop through every brush and reset their pos
+	if(!propagate) return;
+	// TODO and make sure they update their values too
+
+	if((lc != 0 || fc != 0) && changed){
+		this->Broadcast("canvas", MarshalCanvas());
+	}
+
+}
+void ParupaintServerInstance::ServerFill(QString fill, bool propagate)
+{
+	// TODO code for whatever to do with filling here, loop frames bla bla
+	QColor col = HexToColor(fill);
+	canvas->Fill(col);
+	record_manager->Fill(fill);
+
+	if(!propagate) return;
+	QJsonObject obj;
+	obj["c"] = fill;
+	this->Broadcast("fill", obj);
+}
+void ParupaintServerInstance::ServerResize(int w, int h, bool r, bool propagate)
+{
+	if(!r){
+		canvas->Clear();
+		canvas->AddLayers(0, 1, 1);
+	}
+	// because resizing only one frame is the quickest.
+	canvas->Resize(QSize(w, h));
+	record_manager->Resize(w, h, r);
+
+	if(!propagate) return;
+	this->Broadcast("canvas", MarshalCanvas());
+}
+
 void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id, const QByteArray bytes)
 {
 	const QJsonObject obj = QJsonDocument::fromJson(bytes).object();
@@ -89,107 +402,27 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 
 	if(c) {
 		if(id == "connect"){
-		
-		} else if(id == "disconnect") {
-			if(c && c->id){
-				this->BroadcastChat(brushes[c]->GetName() + " left.");
-				delete brushes[c];
-				brushes.remove(c);
-				// remove the brush
-				QJsonObject obj2;
-				obj2["disconnect"] = true;
-				obj2["id"] = c->id;
-				this->Broadcast("peer", QJsonDocument(obj2).toJson(QJsonDocument::Compact));
-			}
 
 		} else if(id == "join"){
+			const QString name = obj["name"].toString("unnamed_mofo");
 			c->id = (connectid++);
-
-			auto name = obj["name"].toString();
-			if(name.isEmpty()) name = "Someone";
-			brushes[c] = new ParupaintBrush();
-			brushes[c]->SetName(name);
-
-			c->send(id, "{\"name\":\"sqnya\"}");
-			c->send("canvas", MarshalCanvas());
-
+			this->ServerJoin(c, name, true);
 			this->BroadcastChat(name + " joined.");
 
-			foreach(auto c2, brushes.keys()){
-
-				QJsonObject obj_me = this->MarshalConnection(c);
-				if(c2 == c) obj_me["id"] = -(c->id);
-				obj_me["disconnect"] = false;
-				
-				// send me to others
-				c2->send("peer", QJsonDocument(obj_me).toJson(QJsonDocument::Compact));
-
-				if(c2 == c) continue;
-
-				// send them to me
-				QJsonObject obj_them = this->MarshalConnection(c2);
-				c->send("peer", QJsonDocument(obj_them).toJson(QJsonDocument::Compact));
-				
-			}
+		} else if(id == "disconnect") {
+			const QString name = this->brushes[c]->GetName();
+			this->ServerLeave(c, true);
+			this->BroadcastChat(name + " left.");
 
 		} else if(id == "lf") {
-
-			int   layer = obj["l"].toInt(),
-			      frame = obj["f"].toInt(),
-			      layer_change = obj["ll"].toInt(),
-			      frame_change = obj["ff"].toInt();
-			bool  extended = obj["ext"].toBool();
-
-			bool changed = false;
-			if(layer_change != 0){
-				if(layer_change < 0 && canvas->GetNumLayers() > 1){
-					canvas->RemoveLayers(layer, -layer_change);
-					changed = true;
-				} else if(layer_change > 0){
-					canvas->AddLayers(layer, layer_change, 1);
-					changed = true;
-				}
-			}
-			if(frame_change != 0){
-				auto * ff = canvas->GetLayer(layer);
-				if(ff) {
-					if(frame_change < 0 && ff->GetNumFrames() > 1){
-						if(extended){
-							ff->RedactFrame(frame, -frame_change);
-						} else {
-							ff->RemoveFrames(frame, -frame_change);
-						}
-						changed = true;
-					} else if(frame_change > 0){
-						if(extended){
-							ff->ExtendFrame(frame, frame_change);
-						} else {
-							ff->AddFrames(frame, frame_change);
-						}
-						changed = true;
-					}
-				}
-			}
-			if((layer_change != 0 || frame_change != 0) && changed){
-				this->Broadcast("canvas", MarshalCanvas());
-			}
-			auto * brush = brushes.value(c);
-			if(brush) {
-				if(layer < 0) layer = int(canvas->GetNumLayers())-1;
-				if(layer >= int(canvas->GetNumLayers())) layer = 0;
-				auto * ll = canvas->GetLayer(layer);
-				if(ll){
-					if(frame < 0) frame = int(ll->GetNumFrames())-1;
-					if(frame >= int(ll->GetNumFrames())) frame = 0;
-				}
-				brush->SetLayer(layer);
-				brush->SetFrame(frame);
-				obj["l"] = layer;
-				obj["f"] = frame;
-				obj["id"] = c->id;
-				this->Broadcast("draw", obj);
-
-			}
+			if(!obj["l"].isDouble()) return;
+			if(!obj["f"].isDouble()) return;
+			//TODO rename to lc/fc?
+			if(!obj["ll"].isDouble()) return;
+			if(!obj["ff"].isDouble()) return;
+			this->ServerLfc(obj["l"].toInt(), obj["f"].toInt(),
+					obj["ll"].toInt(), obj["ff"].toInt(),
+					obj["ext"].toBool(false));
 
 		} else if(id == "draw"){
 			auto * brush = brushes.value(c);
@@ -198,17 +431,45 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 						old_y = brush->GetPosition().y();
 				double x = old_x, y = old_y;
 
-				if(obj["c"].isString())	brush->SetColor(HexToColor(obj["c"].toString()));
-				if(obj["d"].isBool())	brush->SetDrawing(obj["d"].toBool());
-				if(obj["w"].isDouble()) brush->SetWidth(obj["w"].toDouble());
+				// should come before false->true drawing to move brush
+				// to correct pos
+				if(obj["x"].isDouble()) x = obj["x"].toDouble();
+				if(obj["y"].isDouble()) y = obj["y"].toDouble();
+
+				if(obj["c"].isString()) {
+					brush->SetColor(HexToColor(obj["c"].toString()));
+					record_manager->Color(c->id, obj["c"].toString());
+				}
+				if(obj["w"].isDouble()) {
+					brush->SetWidth(obj["w"].toDouble());
+					record_manager->Width(c->id, brush->GetWidth());
+				}
+				if(obj["t"].isDouble()) {
+					brush->SetToolType(obj["t"].toInt());
+					record_manager->Tool(c->id, brush->GetToolType());
+				}
 				if(obj["p"].isDouble()) brush->SetPressure(obj["p"].toDouble());
-				if(obj["t"].isDouble()) brush->SetToolType(obj["t"].toInt());
+				if(obj["d"].isBool())	{
+					const bool drawing = obj["d"].toBool();
+					if(drawing && !brush->IsDrawing()){
+						record_manager->Pos(c->id, x, y, brush->GetPressure(), false);
+						if(brush->GetToolType() == ParupaintBrushToolTypes::BrushToolFloodFill){
+							// ink click
+							record_manager->Pos(c->id, x, y, 1, true);
+						}
+					}
+					brush->SetDrawing(drawing);
+				}
 
 				if(obj["l"].isDouble()) brush->SetLayer(obj["l"].toInt());
 				if(obj["f"].isDouble()) brush->SetFrame(obj["f"].toInt());
+				if(obj["l"].isDouble() || obj["f"].isDouble()) {
+					record_manager->Lf(c->id, brush->GetLayer(), brush->GetFrame());
+				}
 
-				if(obj["x"].isDouble()) x = obj["x"].toDouble();
-				if(obj["y"].isDouble()) y = obj["y"].toDouble();
+				if(obj["x"].isDouble() && obj["y"].isDouble() && brush->IsDrawing()) {
+					record_manager->Pos(c->id, x, y, brush->GetPressure(), true);
+				}
 
 				if(brush->IsDrawing()){
 					ParupaintFrameBrushOps::stroke(canvas, old_x, old_y, x, y, brush);
@@ -224,6 +485,7 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 			}
 		} else if(id == "canvas") {
 			c->send("canvas", this->MarshalCanvas());
+			qDebug("Request canvas");
 
 		} else if (id == "img") {
 
@@ -270,8 +532,8 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 				
 			}
 		} else if(id == "new") {
-			if(obj["width"].isNull()) return;
-			if(obj["height"].isNull()) return;
+			if(!obj["width"].isDouble()) return;
+			if(!obj["height"].isDouble()) return;
 
 			int width = obj["width"].toInt();
 			int height = obj["height"].toInt();
@@ -279,19 +541,11 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 
 			if(width <= 0 || height <= 0) return;
 
-			canvas->Resize(QSize(width, height));
+			this->ServerResize(width, height, resize);
 
-			QString msg;
-			if(!resize){
-				canvas->Clear();
-				canvas->AddLayers(0, 1, 1);
-				msg = QString("New canvas: %1 x %2").arg(width).arg(height);
-			} else {
-				msg = QString("Resize canvas: %1 x %2").arg(width).arg(height);
-			}
-
+			QString msg = QString("canvas: %1 x %2").arg(width).arg(height);
+			msg.prepend(resize ? "Resize " : "New ");
 			this->BroadcastChat(msg);
-			this->Broadcast("canvas", MarshalCanvas());
 
 		} else if(id == "load") {
 
@@ -336,15 +590,10 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 			}
 
 		} else if(id == "chat") {
-			auto msg = obj["message"].toString();
-			if(msg.isEmpty()) msg = obj["msg"].toString();
+			if(!obj["message"].isString()) return;
+			this->ServerChat(c, obj["message"].toString());
 
-			auto * brush = brushes.value(c);
-			if(brush) {
-				obj["name"] = brush->GetName();
-				obj["id"] = c->id;
-				this->Broadcast(id, obj);
-			}
+		} else if(id == "play") {
 		} else {
 			//qDebug() << id << obj;
 		}
@@ -371,7 +620,7 @@ void ParupaintServerInstance::Broadcast(QString id, const QByteArray ba, Parupai
 {
 	foreach(auto i, brushes.keys()){
 		if(i != c){
-			i->send(id, ba);
+			if(i->socket) i->send(id, ba);
 		}
 	}
 }
