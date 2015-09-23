@@ -219,6 +219,12 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 		auto name = object["name"].toString(),
 		     msg = object["message"].toString();
 		emit ChatMessageReceived(name, msg);
+
+	} else if(id == "play") {
+		if(!object["count"].isDouble()) return;
+		int count = object["count"].toInt();
+		playmode = (bool)(count);
+
 	} else {
 		//qDebug() << id << object;
 	}
@@ -311,6 +317,16 @@ void ParupaintClientInstance::NewCanvas(int w, int h, bool resize)
 	obj["height"] = h;
 	obj["resize"] = resize;
 	this->send("new", obj);
+}
+
+void ParupaintClientInstance::PlayRecord(QString filename, bool as_script)
+{
+	if(filename.isEmpty()) return;
+
+	QJsonObject obj;
+	obj["filename"] = filename;
+	obj["as_script"] = as_script;
+	this->send("play", obj);
 }
 
 void ParupaintClientInstance::SetNickname(QString str)

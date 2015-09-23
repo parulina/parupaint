@@ -33,6 +33,7 @@ Q_OBJECT
 	virtual void send(const QString , const QJsonObject & = QJsonObject());
 	void ReloadImage();
 	void ReloadCanvas();
+	void PlayRecord(QString, bool as_script);
 	void SaveCanvas(const QString);
 	void LoadCanvas(const QString);
 	void NewCanvas(int, int, bool=false);

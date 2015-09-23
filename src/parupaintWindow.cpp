@@ -800,6 +800,13 @@ void ParupaintWindow::Command(QString cmd, QString params)
 
 		} else if(cmd == "save"){
 			client->SaveCanvas(params);
+
+		// record commands
+		} else if(cmd == "play") {
+			client->PlayRecord(params, false);
+
+		} else if(cmd == "script") {
+			client->PlayRecord(params, true);
 		}
 	}
 	

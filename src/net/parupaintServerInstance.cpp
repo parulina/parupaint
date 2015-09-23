@@ -19,6 +19,7 @@
 #include "../core/parupaintLayer.h"
 #include "../core/parupaintFrame.h"
 #include "../core/parupaintRecordManager.h"
+#include "../core/parupaintRecordPlayer.h"
 
 #include "../core/parupaintFrameBrushOps.h"
 #include "../core/parupaintBrush.h"
@@ -32,6 +33,9 @@ ParupaintServerInstance::~ParupaintServerInstance()
 		log_file.resize(0);
 		log_file.close();
 	}
+
+	delete record_player;
+	delete record_manager;
 }
 
 ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent) : ParupaintServer(port, parent)
@@ -39,12 +43,12 @@ ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent)
 	connectid = 1;
 	canvas = new ParupaintPanvas(540, 540, 1);
 
-
 	QFile log_file(".parupaint.log");
 	if(log_file.open(QFile::ReadOnly)){
 		log_recovery = log_file.readAll();
 		log_file.close();
 	}
+	record_player = new ParupaintRecordPlayer();
 	record_manager = new ParupaintRecordManager(".parupaint.log");
 	record_manager->Resize(540, 540, false);
 	// this adds it to history
@@ -65,6 +69,8 @@ ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent)
 	brushes.clear();
 
 	connect(this, &ParupaintServer::onMessage, this, &ParupaintServerInstance::Message);
+
+	connect(&record_timer, &QTimer::timeout, this, &ParupaintServerInstance::RecordTimerStep);
 }
 
 ParupaintPanvas * ParupaintServerInstance::GetCanvas()
@@ -126,7 +132,6 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 {
 	if(line.isEmpty()) return;
 	QStringList str = line.split(' ');
-	if(str.length() <= 1) return;
 
 	const QString id = str.takeFirst();
 
@@ -152,6 +157,14 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 	} else if(id == "fill") {
 		this->ServerFill(str.takeFirst(), !recovery);
 		return;
+
+	} else if(id == "keep") {
+		record_player->SetWillRestore(false);
+		return;
+
+	} else if(id == "restore") {
+		record_player->SetWillRestore(true);
+		return;
 	}
 
 	bool bt = false;
@@ -175,14 +188,16 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 		return;
 	}
 	if(con){
+		int ct = str.length();
 		if(id == "leave") {
 			this->ServerLeave(con, !recovery);
 
 		// these are written at "draw" usually.
-		} else if(id == "width") {
+		} else if(id == "width" && ct == 1) {
 			brushes[con]->SetWidth(str.takeFirst().toDouble());
 			if(!recovery){
 				QJsonObject obj;
+				obj["id"] = b;
 				obj["w"] = brushes[con]->GetWidth();
 				this->Broadcast("draw", obj);
 			} else {
@@ -192,36 +207,39 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 		} else if(id == "chat") {
 			// skip out id + b
 			QString msg = line.section(' ', 2);
-			this->ServerChat(con, msg, !recovery);
+			if(!msg.isEmpty()) this->ServerChat(con, msg, !recovery);
 
-		} else if(id == "color") {
+		} else if(id == "color" && ct == 1) {
 			QString col = str.takeFirst();
 			brushes[con]->SetColor(HexToColor(col));
 			if(!recovery){
 				QJsonObject obj;
+				obj["id"] = b;
 				obj["c"] = col;
 				this->Broadcast("draw", obj);
 			} else {
 				record_manager->Color(b, col);
 			}
 
-		} else if(id == "tool") {
+		} else if(id == "tool" && ct == 1) {
 			brushes[con]->SetToolType(str.takeFirst().toInt());
 			if(!recovery){
 				QJsonObject obj;
+				obj["id"] = b;
 				obj["t"] = brushes[con]->GetToolType();
 				this->Broadcast("draw", obj);
 			} else {
 				record_manager->Tool(b, brushes[con]->GetToolType());
 			}
 
-		} else if(id == "lf") {
+		} else if(id == "lf" && ct == 2) {
 			const int 	l = str.takeFirst().toInt(),
 					f = str.takeFirst().toInt();
 			brushes[con]->SetLayer(l);
 			brushes[con]->SetFrame(f);
 			if(!recovery){
 				QJsonObject obj;
+				obj["id"] = b;
 				obj["l"] = l;
 				obj["f"] = f;
 				this->Broadcast("draw", obj);
@@ -229,7 +247,7 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 				record_manager->Lf(b, l, f);
 			}
 
-		} else if(id == "pos") {
+		} else if(id == "pos" && ct == 4) {
 			const double 	old_x = brushes[con]->GetPosition().x(),
 					old_y = brushes[con]->GetPosition().y();
 
@@ -248,6 +266,7 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 
 			if(!recovery){
 				QJsonObject obj;
+				obj["id"] = b;
 				obj["x"] = x;
 				obj["y"] = y;
 				obj["p"] = p;
@@ -275,10 +294,13 @@ void ParupaintServerInstance::ServerJoin(ParupaintConnection * c, QString name, 
 	//FIXME fix in parupaint-web so this isn't needed anymore
 	//c->send("join", "{\"name\":\"sqnya\"}");
 
-	//FIXME make the client specifically request this
-	//c->send("canvas", MarshalCanvas());
-
 	if(!propagate) return;
+	// TODO is there a better way to do this (collect info and send it all?)
+	if(record_timer.isActive()){
+		QJsonObject obj;
+		obj["count"] = record_player->GetTotalLines();
+		c->send("play", QJsonDocument(obj).toJson(QJsonDocument::Compact));
+	}
 	foreach(auto c2, brushes.keys()){
 
 		QJsonObject obj_me = this->MarshalConnection(c);
@@ -594,11 +616,131 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 			this->ServerChat(c, obj["message"].toString());
 
 		} else if(id == "play") {
+			if(!obj["filename"].isString()) return;
+			if(!obj["as_script"].isBool()) return;
+			QString filename = obj["filename"].toString();
+			bool as_script = obj["as_script"].toBool();
+
+			QFile record_file(filename);
+			if(record_file.open(QFile::ReadOnly)){
+				record_player->LoadFromFile(record_file);
+				record_file.close();
+
+				QJsonObject obj;
+				obj["count"] = record_player->GetTotalLines();
+				this->Broadcast("play", obj);
+
+				this->SaveRecordBrushes();
+				if(as_script){
+					QString line;
+
+					while(!record_player->TakeLine(line)){
+						this->RecordLineDecoder(line, false);
+					}
+					// play signal is still required here so that
+					// changes to real brushes stay...
+					if(record_player->WillRestore()) this->RestoreRecordBrushes();
+					record_player->Reset();
+
+					QJsonObject obj;
+					obj["count"] = 0;
+					this->Broadcast("play", obj);
+
+				} else {
+					this->StartRecordTimer();
+				}
+			}
 		} else {
 			//qDebug() << id << obj;
 		}
 	}
 
+}
+void ParupaintServerInstance::StartRecordTimer()
+{
+	record_timer.stop();
+	record_timer.start(2);
+}
+
+void ParupaintServerInstance::SaveRecordBrushes()
+{
+	record_backup.clear();
+	for(auto i = brushes.begin(); i != brushes.end(); ++i){
+		ParupaintConnection * c = i.key();
+		ParupaintBrush * b = i.value();
+
+		record_backup[c] = *b;
+	}
+}
+void ParupaintServerInstance::RestoreRecordBrushes()
+{
+	if(record_backup.isEmpty()) return;
+	qDebug() << "Restoring brushes.";
+	for(auto i = brushes.begin(); i != brushes.end(); ++i){
+		ParupaintConnection * c = i.key();
+		ParupaintBrush * b = i.value();
+
+		// trawl through saved brushes and restore em
+		auto backup_it = record_backup.find(c);
+		if(backup_it != record_backup.end()){
+			*b = backup_it.value();
+			record_backup.erase(backup_it);
+		}
+		QJsonObject obj;
+
+		//     /\
+		//    /  \
+		//   /.--.\
+		//  / '--' \
+		// /________\
+		//
+		obj["w"] = b->GetWidth();
+		obj["t"] = b->GetToolType();
+		obj["c"] = b->GetColorString();
+
+		obj["id"] = c->id;
+		obj["d"] = false;
+		obj["l"] = b->GetLayer();
+		obj["f"] = b->GetFrame();
+		this->Broadcast("draw", obj);
+	}
+	record_backup.clear();
+}
+
+void ParupaintServerInstance::RecordTimerStep()
+{
+	if(record_player->IsSleeping()){
+		record_player->SetSleeping(false);
+		this->StartRecordTimer();
+	}
+	if(record_player->GetTotalLines()){
+		QString line;
+		if(!record_player->TakeLine(line)){
+			if(line.startsWith("sleep") || line.startsWith("interval")){
+				bool k;
+				const double time = line.section(' ', 1, 1).toDouble(&k);
+				if(k){
+					// if it's sleep, reset it the next timer tick
+					if(line.startsWith("sleep")) record_player->SetSleeping(true);
+					record_timer.setInterval(time * 1000);
+				}
+			}
+			this->RecordLineDecoder(line, false);
+		} else {
+			// Reached end
+			qDebug() << "End of play";
+			if(record_player->WillRestore()){
+				this->RestoreRecordBrushes();
+			}
+
+			QJsonObject obj;
+			obj["count"] = 0;
+			this->Broadcast("play", obj);
+
+			record_player->Reset();
+			record_timer.stop();
+		}
+	}
 }
 
 void ParupaintServerInstance::BroadcastChat(QString str)
