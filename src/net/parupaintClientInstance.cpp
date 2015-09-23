@@ -19,6 +19,7 @@
 #include "../core/parupaintBrush.h"
 
 #include "../core/parupaintFrameBrushOps.h"
+#include "../parupaintVersion.h"
 
 #include "qcompressor.h"
 
@@ -46,10 +47,12 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 		
 		QJsonObject obj;
 		obj["name"] = nickname;
+		obj["vers"] = PARUPAINT_VERSION;
 		this->send("join", obj);
 
 	} else if(id == "disconnect"){
 		emit OnDisconnect();
+
 	} else if(id == "join"){
 
 	} else if(id == "peer") { // TODO join this with join pls?
