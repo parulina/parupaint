@@ -47,7 +47,7 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 		
 		QJsonObject obj;
 		obj["name"] = nickname;
-		obj["vers"] = PARUPAINT_VERSION;
+		obj["version"] = PARUPAINT_VERSION;
 		this->send("join", obj);
 
 	} else if(id == "disconnect"){

@@ -430,7 +430,10 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 		if(id == "connect"){
 
 		} else if(id == "join"){
+			QString ver = obj["version"].toString("N/A");
 			const QString name = obj["name"].toString("unnamed_mofo");
+			qDebug() << name << "joined, version" << ver;
+
 			c->id = (connectid++);
 			this->ServerJoin(c, name, true);
 			this->BroadcastChat(name + " joined.");
