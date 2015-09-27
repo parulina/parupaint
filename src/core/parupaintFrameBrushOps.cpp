@@ -18,8 +18,8 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, float ox, float o
 
 	auto width = brush->GetPressureWidth();
 	auto color = brush->GetColor();
-	QRect urect(ox - width, oy - width, ox + width, oy + width);
-	urect |= QRect(nx - width, ny - width, nx + width, ny + width);
+	QRect urect(ox - width, oy - width, width*2, width*2);
+	urect |= QRect(nx - width, ny - width, width*2, width*2);
 
 	switch(brush->GetToolType()){
 		case ParupaintBrushToolTypes::BrushToolFloodFill:
