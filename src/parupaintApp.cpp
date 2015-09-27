@@ -33,6 +33,7 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv), s
 	setApplicationName("parupaint");
 	setApplicationVersion(PARUPAINT_VERSION);
 	setWindowIcon(QIcon(":/resources/parupaint.ico"));
+	this->setApplicationVersion(PARUPAINT_VERSION);
 
 	// Set default username
 	QSettings cfg;
@@ -55,6 +56,7 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv), s
 	parser.addHelpOption();
 	parser.addOption(QCommandLineOption({"c","connect"}, "Connect to a server", "address"));
 	parser.addOption(QCommandLineOption({"p","port"}, "Specify port to run the server", "port"));
+	parser.addVersionOption();
 	parser.process(*this);
 
 	QString server_str = parser.value("connect");
