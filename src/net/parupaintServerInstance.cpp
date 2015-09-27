@@ -131,10 +131,10 @@ int ParupaintServerInstance::GetNumConnections()
 void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recovery)
 {
 	if(line.isEmpty()) return;
-	if(line.trimmed()[0] == '#') return;
+	if(line.trimmed()[0] == ';') return;
 	QString line_temp = line.trimmed();
 
-	if(line_temp.contains('#')) line_temp = line.section('#', 0, 0).trimmed();
+	if(line_temp.contains(';')) line_temp = line.section(';', 0, 0).trimmed();
 	QStringList str = line_temp.split(' ');
 
 	const QString id = str.takeFirst();
