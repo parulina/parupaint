@@ -23,7 +23,7 @@ class ParupaintRecordManager
 	void Width(int, double);
 	void Chat(int, QString);
 
-	void Fill(QString);
+	void Fill(int, int, QString);
 	void Resize(int, int, bool);
 	void Lfc(int, int, int, int, bool);
 	// TODO lf creation

@@ -43,6 +43,13 @@ void ParupaintLayer::Clear()
 	}
 	Frames.clear();
 }
+void ParupaintLayer::Fill(_fint f, QColor col)
+{
+	auto * frame = this->GetFrame(f);
+	if(frame){
+		frame->ClearColor(col);
+	}
+}
 void ParupaintLayer::Fill(QColor col)
 {
 	foreach(auto f, Frames){

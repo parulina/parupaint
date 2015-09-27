@@ -34,15 +34,4 @@ class ParupaintFrame {
 	float GetOpacity() const;
 };
 
-inline QColor HexToColor(const QString & str)
-{
-	const QString ahex = str.right(2);
-	QColor color(str.left(7));
-	if(ahex.length() == 2){
-		color.setAlpha(ahex.toInt(nullptr, 16));
-	}
-	return color;
-}
-
-
 #endif

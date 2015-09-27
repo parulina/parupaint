@@ -31,6 +31,7 @@ class ParupaintLayer {
 	void Resize(QSize s);
 	void Clear();
 	void Fill(QColor);
+	void Fill(_fint f, QColor);
 
 	void SetFrames(_fint);
 	void AddFrames(_fint, _fint = 1);

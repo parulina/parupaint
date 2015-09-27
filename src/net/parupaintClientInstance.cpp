@@ -14,6 +14,7 @@
 #include "../core/parupaintLayer.h"
 #include "../core/parupaintFrame.h"
 #include "../core/parupaintStrokeStep.h"
+#include "../core/parupaintSnippets.h"
 
 #include "../parupaintCanvasBrush.h"
 #include "../core/parupaintBrush.h"
@@ -97,7 +98,7 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 			      		old_y = brush->GetPosition().y();
 			double 		x = old_x, y = old_y;
 
-			if(object["c"].isString())	brush->SetColor(HexToColor(object["c"].toString()));
+			if(object["c"].isString())	brush->SetColor(ParupaintSnippets::toColor(object["c"].toString()));
 			if(object["d"].isBool())	brush->SetDrawing(object["d"].toBool(false));
 			if(object["w"].isDouble())	brush->SetWidth(object["w"].toDouble(1));
 			if(object["p"].isDouble())	brush->SetPressure(object["p"].toDouble(0.0));
@@ -143,8 +144,16 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 			pool->TriggerViewUpdate();
 		}
 	} else if (id == "fill") {
+		if(!object["l"].isDouble()) return;
+		if(!object["f"].isDouble()) return;
 		if(!object["c"].isString()) return;
-		pool->GetCanvas()->Fill(HexToColor(object["c"].toString()));
+		int l = object["l"].toInt(),
+		    f = object["f"].toInt();
+		QColor c = ParupaintSnippets::toColor(object["c"].toString());
+		pool->GetCanvas()->Fill(l, f, c);
+
+		pool->GetCanvas()->RedrawCache();
+		pool->TriggerViewUpdate();
 
 	} else if (id == "canvas") {
 		auto w = object["width"].toInt();
@@ -317,6 +326,15 @@ void ParupaintClientInstance::NewCanvas(int w, int h, bool resize)
 	obj["height"] = h;
 	obj["resize"] = resize;
 	this->send("new", obj);
+}
+
+void ParupaintClientInstance::FillCanvas(int l, int f, QString col)
+{
+	QJsonObject obj;
+	obj["l"] = l;
+	obj["f"] = f;
+	obj["c"] = col;
+	this->send("fill", obj);
 }
 
 void ParupaintClientInstance::PlayRecord(QString filename, bool as_script)

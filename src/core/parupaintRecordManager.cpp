@@ -78,10 +78,10 @@ void ParupaintRecordManager::Chat(int id, QString chat)
 		this->Write({"chat", QString::number(id), chat});
 	}
 }
-void ParupaintRecordManager::Fill(QString col)
+void ParupaintRecordManager::Fill(int l, int f, QString col)
 {
 	if(temp_stream){
-		this->Write({"fill", col});
+		this->Write({"fill", QString::number(l), QString::number(f), col});
 	}
 }
 void ParupaintRecordManager::Resize(int width, int height, bool clear)

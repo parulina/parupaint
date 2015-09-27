@@ -47,7 +47,7 @@ class ParupaintServerInstance : public ParupaintServer
 
 	// special - uses no id
 	void ServerLfc(int, int, int, int, bool, bool=true);
-	void ServerFill(QString, bool=true);
+	void ServerFill(int, int, QString, bool=true);
 	void ServerResize(int, int, bool, bool=true);
 
 	void Broadcast(QString, QJsonObject, ParupaintConnection * = nullptr);

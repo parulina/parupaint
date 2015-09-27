@@ -18,6 +18,7 @@
 #include "../core/parupaintPanvas.h"
 #include "../core/parupaintLayer.h"
 #include "../core/parupaintFrame.h"
+#include "../core/parupaintSnippets.h"
 #include "../core/parupaintRecordManager.h"
 #include "../core/parupaintRecordPlayer.h"
 
@@ -52,7 +53,7 @@ ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent)
 	record_manager = new ParupaintRecordManager(".parupaint.log");
 	record_manager->Resize(540, 540, false);
 	// this adds it to history
-	this->ServerFill("#FFF", false);
+	this->ServerFill(0, 0, "#FFF", false);
 
 	if(!log_recovery.isEmpty()){
 		QTextStream recovery_stream(log_recovery);
@@ -138,17 +139,18 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 	QStringList str = line_temp.split(' ');
 
 	const QString id = str.takeFirst();
+	int ct = str.length();
 
 	// these come first as they have no player id attached to them.
 	// return to skip the rest of the func
-	if(id == "resize"){
+	if(id == "resize" && ct == 3){
 		int w = str.takeFirst().toInt();
 		int h = str.takeFirst().toInt();
 		bool r = str.takeFirst().toInt();
 		this->ServerResize(w, h, r, !recovery);
 		return;
 
-	} else if(id == "lfc") {
+	} else if(id == "lfc" && ct == 5) {
 		int 	l = str.takeFirst().toInt(),
 			f = str.takeFirst().toInt(),
 			lc = str.takeFirst().toInt(),
@@ -158,8 +160,11 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 		this->ServerLfc(l, f, lc, fc, e, !recovery);
 		return;
 
-	} else if(id == "fill") {
-		this->ServerFill(str.takeFirst(), !recovery);
+	} else if(id == "fill" && ct == 3) {
+		int 	l = str.takeFirst().toInt(),
+			f = str.takeFirst().toInt();
+		QString c = str.takeFirst();
+		this->ServerFill(l, f, c, !recovery);
 		return;
 
 	} else if(id == "keep") {
@@ -192,7 +197,6 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 		return;
 	}
 	if(con){
-		int ct = str.length();
 		if(id == "leave") {
 			this->ServerLeave(con, !recovery);
 
@@ -215,7 +219,7 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 
 		} else if(id == "color" && ct == 1) {
 			QString col = str.takeFirst();
-			brushes[con]->SetColor(HexToColor(col));
+			brushes[con]->SetColor(ParupaintSnippets::toColor(col));
 			if(!recovery){
 				QJsonObject obj;
 				obj["id"] = b;
@@ -395,15 +399,16 @@ void ParupaintServerInstance::ServerLfc(int l, int f, int lc, int fc, bool e, bo
 	}
 
 }
-void ParupaintServerInstance::ServerFill(QString fill, bool propagate)
+void ParupaintServerInstance::ServerFill(int l, int f, QString fill, bool propagate)
 {
-	// TODO code for whatever to do with filling here, loop frames bla bla
-	QColor col = HexToColor(fill);
-	canvas->Fill(col);
-	record_manager->Fill(fill);
+	QColor col = ParupaintSnippets::toColor(fill);
+	canvas->Fill(l, f, col);
+	record_manager->Fill(l, f, fill);
 
 	if(!propagate) return;
 	QJsonObject obj;
+	obj["l"] = l;
+	obj["f"] = f;
 	obj["c"] = fill;
 	this->Broadcast("fill", obj);
 }
@@ -453,6 +458,16 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 					obj["ll"].toInt(), obj["ff"].toInt(),
 					obj["ext"].toBool(false));
 
+		} else if(id == "fill"){
+			if(!obj["l"].isDouble()) return;
+			if(!obj["f"].isDouble()) return;
+			if(!obj["c"].isString()) return;
+			int l = obj["l"].toInt(),
+			    f = obj["f"].toInt();
+			QString c = obj["c"].toString();
+
+			this->ServerFill(l, f, c);
+
 		} else if(id == "draw"){
 			auto * brush = brushes.value(c);
 			if(brush) {
@@ -466,7 +481,7 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 				if(obj["y"].isDouble()) y = obj["y"].toDouble();
 
 				if(obj["c"].isString()) {
-					brush->SetColor(HexToColor(obj["c"].toString()));
+					brush->SetColor(ParupaintSnippets::toColor(obj["c"].toString()));
 					record_manager->Color(c->id, obj["c"].toString());
 				}
 				if(obj["w"].isDouble()) {

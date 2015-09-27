@@ -77,6 +77,8 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(), local_port(1108), old_brush_
 		"prev_layer=D",
 		"next_layer=F",
 
+		"clear_canvas=Backspace",
+
 		"play_animation=Shift+G",
 		"reset_view=Ctrl+G",
 		"toggle_preview=G",
@@ -542,6 +544,13 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			canvas_banner->Show(2000, 
 					QString("preview ") + (pool->GetCanvas()->IsPreview() ? "on" : "off"));
 			pool->TriggerViewUpdate();
+
+		} else if(shortcut_name == "clear_canvas"){
+			qDebug() << "Clear canvas";
+			auto * brush = glass.GetCurrentBrush();
+			int l = brush->GetLayer(),
+			    f = brush->GetFrame();
+			client->FillCanvas(l, f, brush->GetColorString());
 
 		} else if(shortcut_name == ""){
 

@@ -52,6 +52,13 @@ void ParupaintPanvas::Resize(QSize dim)
 		l->Resize(dim);
 	}
 }
+void ParupaintPanvas::Fill(_lint l, _fint f, QColor col)
+{
+	auto * layer = this->GetLayer(l);
+	if(layer){
+		layer->Fill(f, col);
+	}
+}
 void ParupaintPanvas::Fill(QColor col)
 {
 	foreach(auto l, Layers){

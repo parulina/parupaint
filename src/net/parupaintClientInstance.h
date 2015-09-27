@@ -36,6 +36,7 @@ Q_OBJECT
 	void PlayRecord(QString, bool as_script);
 	void SaveCanvas(const QString);
 	void LoadCanvas(const QString);
+	void FillCanvas(int, int, QString);
 	void NewCanvas(int, int, bool=false);
 	void LoadCanvasLocal(const QString);
 	void SendLayerFrame(int, int, int=0, int=0, bool=false);
