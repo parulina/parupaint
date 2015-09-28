@@ -41,7 +41,7 @@ void ParupaintBrush::SetName(QString str)
 
 void ParupaintBrush::SetWidth(double w)
 {
-	if(w <= 0) w = 0.1;
+	if(w <= 1) w = 1;
 	else if(w >= 512) w = 512;
 	width = w;
 }
