@@ -68,6 +68,8 @@ ParupaintApp {
 
 #ChatEntry {
 	border:none;
+	font-size:13px;
+	height:14px;
 }
 #ChatEntry:focus {
 	background:rgba(0, 0, 0, 0.8);
@@ -109,12 +111,14 @@ QLabel{
 	color:black;
 	font-size:15px;
 	text-decoration:underline;
+	font-family:"parufont";
 }
 QLineEdit, QComboBox {
 	padding:4px 0;
 	border:1px solid #333;
 	background:black;
 	color:white;
+	font-size:14px;
 }
 
 QPushButton {
@@ -123,6 +127,10 @@ QPushButton {
 	margin:0;
 	color:white;
 	background:#8a2f1d;
+	font-family:"parufont";
+}
+QCheckBox {
+	font-family:"parufont";
 }
 #CanvasPreviewWidget {
 	color:white;

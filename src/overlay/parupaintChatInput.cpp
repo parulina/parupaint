@@ -3,7 +3,7 @@
 
 #include <QKeyEvent>
 
-ParupaintChatInput::ParupaintChatInput(QWidget * parent) : QLineEdit(parent)
+ParupaintChatInput::ParupaintChatInput(QWidget * parent) : ParupaintLineEdit(parent)
 {
 	this->setFocusPolicy(Qt::ClickFocus);
 	this->setObjectName("ChatEntry");

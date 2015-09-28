@@ -1,9 +1,9 @@
 #ifndef PARUPAINTCHATINPUT_H
 #define PARUPAINTCHATINPUT_H
 
-#include <QLineEdit>
+#include "../ParupaintLineEdit.h"
 
-class ParupaintChatInput : public QLineEdit
+class ParupaintChatInput : public ParupaintLineEdit
 {
 Q_OBJECT
 	private:
