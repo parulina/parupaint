@@ -1,10 +1,10 @@
 #include <QSettings>
 #include <QLabel>
-#include <QLineEdit>
 #include <QFileDialog>
 #include <QPushButton>
 #include <QHBoxLayout>
 
+#include "parupaintLineEdit.h"
 #include "parupaintFileDialog.h"
 
 
@@ -14,14 +14,18 @@ ParupaintFileDialog::ParupaintFileDialog(QWidget * parent, QString filename, QSt
 	this->SetSaveName("fileDialog");
 
 	label_invalid = new QLabel("...");
+	label_invalid->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+	label_invalid->setMaximumHeight(20);
 	label_invalid->setObjectName("ErrorLabel");
 	label_invalid->hide();
 
-	line_filename = new QLineEdit;
-	line_filename->setPlaceholderText("filename");
-
+	line_filename = new ParupaintLineEdit(this, "filename");
+	line_filename->setMaximumHeight(25);
+	line_filename->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
 	auto * button_browse = new QPushButton("...");
+	button_browse->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+	button_browse->setMaximumHeight(25);
 	connect(button_browse, &QPushButton::pressed, this, &ParupaintFileDialog::BrowseFiles);
 
 	if(!filename.isEmpty()){
@@ -40,12 +44,14 @@ ParupaintFileDialog::ParupaintFileDialog(QWidget * parent, QString filename, QSt
 	input_layout->addWidget(line_filename);
 	input_layout->addWidget(button_browse);
 
-	auto * layout = ((QVBoxLayout*)this->layout());
-	layout->addLayout(input_layout);
-	layout->addWidget(label_invalid);
-	layout->setAlignment(label_invalid, Qt::AlignBottom);
+	auto * button_layout = new QVBoxLayout;
+	button_layout->setMargin(0);
+	button_layout->addWidget(label_invalid);
+	button_layout->addWidget(button_enter);
 
-	this->layout()->addWidget(button_enter);
+	auto * layout = ((ParupaintDialogLayout*)this->layout());
+	layout->addLayout(input_layout);
+	layout->addLayout(button_layout);
 
 	this->setFocusProxy(line_filename);
 	this->setFocus();

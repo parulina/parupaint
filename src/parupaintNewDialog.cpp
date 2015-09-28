@@ -113,20 +113,22 @@ ParupaintNewDialog::ParupaintNewDialog(QWidget * parent) :
 		});
 
 	auto * flip_button = new QPushButton("flip");
-	flip_button->setToolTip("Flip the values.");
+	flip_button->setToolTip("flip the values.");
 	connect(flip_button, &QPushButton::pressed, [=]{
 		auto hh = height->currentText();
 		height->setEditText(width->currentText());
 		width->setEditText(hh);
 	});
 	auto * cres_button = new QPushButton("take");
-	cres_button->setToolTip("Take the current canvas dimensions.");
+	cres_button->setToolTip("take the current canvas dimensions.");
 	connect(cres_button, &QPushButton::pressed, [this]{
 		if(cwidth && cheight){
 			this->width->setEditText(QString::number(cwidth));
 			this->height->setEditText(QString::number(cheight));
 		}
 	});
+	flip_button->setMaximumHeight(25);
+	cres_button->setMaximumHeight(25);
 	flip_button->setMaximumWidth(40);
 	cres_button->setMaximumWidth(40);
 
@@ -181,7 +183,7 @@ ParupaintNewDialog::ParupaintNewDialog(QWidget * parent) :
 	button_layout->addWidget(reset);
 
 	// vboxlayout is set in ParupaintDialog();
-	auto * main_layout = ((QVBoxLayout*)this->layout());
+	auto * main_layout = ((ParupaintDialogLayout*)this->layout());
 	main_layout->addWidget(preview);
 	main_layout->addLayout(res_layout);
 	main_layout->addLayout(button_layout);

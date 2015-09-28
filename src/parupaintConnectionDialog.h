@@ -3,14 +3,14 @@
 
 #include "parupaintDialog.h"
 
-class QLineEdit;
+class ParupaintLineEdit;
 
 class ParupaintConnectionDialog : public ParupaintDialog
 {
 Q_OBJECT
 	private:
-	QLineEdit * line_nickname;	
-	QLineEdit * line_ip;	
+	ParupaintLineEdit * line_nickname;
+	ParupaintLineEdit * line_ip;
 
 	public:
 	ParupaintConnectionDialog(QWidget * = nullptr);

@@ -1,8 +1,8 @@
 
+#include "parupaintLineEdit.h"
 #include "parupaintConnectionDialog.h"
 #include <QSettings>
 #include <QLabel>
-#include <QLineEdit>
 #include <QPushButton>
 #include <QVBoxLayout>
 
@@ -12,12 +12,10 @@ ParupaintConnectionDialog::ParupaintConnectionDialog(QWidget* parent) :
 	this->setMinimumSize(280, 160);
 	QSettings cfg;
 
-	line_nickname = new QLineEdit();
-	line_nickname->setPlaceholderText("nickname");
+	line_nickname = new ParupaintLineEdit(this, "nickname");
 	line_nickname->setText(cfg.value("painter/username").toString());
 
-	line_ip = new QLineEdit();
-	line_ip->setPlaceholderText("<host>:<port>");
+	line_ip = new ParupaintLineEdit(this, "host:port");
 	line_ip->setText(cfg.value("net/lasthost").toString());
 
 	auto * button_layout = new QHBoxLayout;
@@ -33,9 +31,9 @@ ParupaintConnectionDialog::ParupaintConnectionDialog(QWidget* parent) :
 	button_layout->addWidget(button_connect);
 	button_layout->addWidget(button_disconnect);
 
-	auto * layout = ((QVBoxLayout*) this->layout());
-	this->layout()->addWidget(line_nickname);
-	this->layout()->addWidget(line_ip);
+	auto * layout = ((ParupaintDialogLayout*) this->layout());
+	layout->addWidget(line_nickname);
+	layout->addWidget(line_ip);
 	layout->addLayout(button_layout);
 
 	

@@ -105,26 +105,26 @@ QDialog {
 	color:#000;
 }
 
-QDialog QLabel{
+QLabel{
 	color:black;
 	font-size:15px;
 	text-decoration:underline;
 }
-QDialog QLineEdit, QDialog QComboBox {
+QLineEdit, QComboBox {
 	padding:4px 0;
 	border:1px solid #333;
 	background:black;
 	color:white;
 }
 
-QDialog QPushButton {
+QPushButton {
 	border-radius:0;
 	padding:6px 4px;
+	margin:0;
 	color:white;
 	background:#8a2f1d;
-	font-size:16px;
 }
-QDialog #CanvasPreviewWidget {
+#CanvasPreviewWidget {
 	color:white;
 }
 

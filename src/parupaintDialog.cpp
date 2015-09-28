@@ -22,15 +22,15 @@ ParupaintDialog::ParupaintDialog(QWidget * parent, QString title, QString helpte
 	this->setWindowTitle(title);
 	this->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-	auto * layout = new QVBoxLayout(this);
+	auto * layout = new ParupaintDialogLayout(this);
 	layout->setMargin(8);
+	layout->setSpacing(4);
 	
 	if(!helptext.isEmpty()){
 		auto * label = new QLabel(helptext);
 		label->setWordWrap(true);
-		label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-		layout->addWidget(label);
-		layout->setAlignment(label, Qt::AlignVCenter);
+		label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+		layout->addWidget(label, Qt::AlignVCenter);
 	}
 	
 	this->raise();

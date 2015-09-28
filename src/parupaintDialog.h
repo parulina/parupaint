@@ -2,6 +2,9 @@
 #define PARUPAINTDIALOG_H
 
 #include <QDialog>
+#include <QVBoxLayout>
+
+typedef QVBoxLayout ParupaintDialogLayout;
 
 class ParupaintDialog : public QDialog
 {
