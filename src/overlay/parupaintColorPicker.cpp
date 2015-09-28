@@ -32,17 +32,19 @@ ParupaintColorPicker::ParupaintColorPicker(QWidget * parent) : ParupaintOverlayW
 	ahs_hlayout->setMargin(0);
 
 		alpha_slider = new ParupaintColorBar(COLOR_BAR_TYPE_ALPHA);
-		ahs_hlayout->addWidget(alpha_slider);
-		ahs_hlayout->setAlignment(alpha_slider, Qt::AlignLeft);
+		ahs_hlayout->addWidget(alpha_slider, Qt::AlignLeft);
 		connect(alpha_slider, &ParupaintColorBar::valueChangedF, this, &ParupaintColorPicker::SetAlp);
 
+		ahs_hlayout->addStretch();
+
 		hue_wheel = new ParupaintColorWheel;
-		ahs_hlayout->addWidget(hue_wheel);
+		ahs_hlayout->addWidget(hue_wheel, Qt::AlignCenter);
 		connect(hue_wheel, &ParupaintColorWheel::valueChangedF, this, &ParupaintColorPicker::SetHue);
 
+		ahs_hlayout->addStretch();
+
 		light_slider = new ParupaintColorBar(COLOR_BAR_TYPE_LIGHT);
-		ahs_hlayout->addWidget(light_slider);
-		ahs_hlayout->setAlignment(light_slider, Qt::AlignRight);
+		ahs_hlayout->addWidget(light_slider, Qt::AlignRight);
 		connect(light_slider, &ParupaintColorBar::valueChangedF, this, &ParupaintColorPicker::SetLit);
 
 	main_vlayout->addLayout(ahs_hlayout);

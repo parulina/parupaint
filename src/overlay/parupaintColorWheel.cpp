@@ -15,6 +15,7 @@ ParupaintColorWheel::ParupaintColorWheel(QDial * parent) : QDial(parent), wheel_
 	this->setWrapping(true);
 	this->setNotchesVisible(false);
 	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	this->setMaximumWidth(160);
 	this->setMaximum(360);
 	connect(this, &QDial::valueChanged, [=](int r){
 		emit valueChangedF(qreal(r) / qreal(this->maximum()));
@@ -26,7 +27,7 @@ void ParupaintColorWheel::paintEvent(QPaintEvent * event)
 {
 	// QSS won't do much stuff.
 	
-	const int max_ratio = (this->rect().width() > this->rect().height() ? this->rect().height() : this->rect().width())/2;
+	const qreal max_ratio = (qreal)(this->rect().width() > this->rect().height() ? this->rect().height() : this->rect().width())/2.0;
 	QPoint rp = QPoint(max_ratio - wheel_width/2, max_ratio - wheel_width/2);
 	QRect rr = QRect(this->rect().center() - rp, 
 			this->rect().center() + rp);

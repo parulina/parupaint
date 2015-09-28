@@ -29,8 +29,10 @@ ParupaintColorBar::ParupaintColorBar(ColorBarType type, QWidget * parent) :
 	this->setObjectName("ColorBar");
 	if(type == COLOR_BAR_TYPE_SATUR){
 		this->setOrientation(Qt::Horizontal);
+		this->setMaximumHeight(20);
 	} else {
 		this->setOrientation(Qt::Vertical);
+		this->setMaximumWidth(20);
 	}
 	this->setMaximum(255);
 	this->setFocusPolicy(Qt::NoFocus);
