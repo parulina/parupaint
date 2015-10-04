@@ -5,8 +5,12 @@
 #include <QRegExp>
 #include <QDir>
 #include <QFileInfo>
-#include <QDomDocument>
 #include <QPainter>
+
+#ifdef QT_XML_LIB
+#include <QDomDocument>
+#endif
+
 
 #include <QDebug>
 
@@ -45,10 +49,12 @@ PanvasReaderResult ParupaintPanvasReader::Load(const QString directory, const QS
 
 	auto path = file.filePath();
 	auto suffix = file.suffix();
-	if(suffix == "ora"){
-		return this->LoadOra(path);
-	} else if(suffix == "png"){
+	if(suffix == "png"){
 		return this->LoadPng(path);
+#ifdef QT_XML_LIB
+	} else if(suffix == "ora"){
+		return this->LoadOra(path);
+#endif
 	} else if(suffix == "gz" || suffix == "ppa"){
 		return this->LoadParupaintArchive(path);
 	}
@@ -73,6 +79,7 @@ PanvasReaderResult ParupaintPanvasReader::LoadPng(const QString filename)
 
 PanvasReaderResult ParupaintPanvasReader::LoadOra(const QString filename)
 {
+#ifdef QT_XML_LIB
 	if(!panvas) return PANVAS_READER_RESULT_ERROR;
 
 	KZip zip(filename);
@@ -146,6 +153,7 @@ PanvasReaderResult ParupaintPanvasReader::LoadOra(const QString filename)
 
 
 	}
+#endif
 	return PANVAS_READER_RESULT_OK;
 }
 
