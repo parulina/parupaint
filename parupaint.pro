@@ -46,7 +46,11 @@ SOURCES += 	src/core/*.cpp \
 		src/overlay/*.cpp \
 		src/bundled/karchive/*.cpp \
 		src/bundled/qtwebsocket/*.cpp \
-		src/*.cpp
+		$$files(src/*.cpp)
+
+!server_release {
+	SOURCES -= 	src/main_server.cpp
+}
 
 server_release {
 	HEADERS = src/core/*.h \
@@ -55,10 +59,10 @@ server_release {
 		  src/bundled/qtwebsocket/*.h
 
 	SOURCES = src/core/*.cpp \
-		  $$files(src/net/*.cpp)	\
+		  $$files(src/net/*.cpp) \
 		  src/bundled/karchive/*.cpp \
 		  src/bundled/qtwebsocket/*.cpp \
-		  src/parupaintSingleServer.cpp
+		  src/main_server.cpp
 
 	HEADERS -= src/net/parupaintClient.h src/net/parupaintClientInstance.h
 	SOURCES -= src/net/parupaintClient.cpp src/net/parupaintClientInstance.cpp
