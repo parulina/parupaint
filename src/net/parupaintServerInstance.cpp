@@ -179,6 +179,7 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 	bool bt = false;
 	const int b = str.takeFirst().toInt(&bt);
 	if(!bt) return;
+	ct = str.length();
 
 
 	// start
