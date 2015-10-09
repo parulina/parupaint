@@ -17,6 +17,7 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, float ox, float o
 	if(!frame) return QRect();
 
 	auto width = brush->GetPressureWidth();
+	if(width < 1) width = 1;
 	auto color = brush->GetColor();
 	QRect urect(ox - width, oy - width, width*2, width*2);
 	urect |= QRect(nx - width, ny - width, width*2, width*2);
