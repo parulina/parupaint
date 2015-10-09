@@ -126,6 +126,13 @@ void ParupaintFrame::Fill(int x, int y, QColor color)
 	p_fill(Frame, x, y, Frame.pixel(x, y), color.rgba());
 }
 
+void ParupaintFrame::DrawImage(int x, int y, QImage img)
+{
+	QPainter painter(&Frame);
+	QRect target(x, y, Frame.width(), Frame.height());
+	QRect source(0, 0, Frame.width(), Frame.height());
+	painter.drawImage(target, img, source);
+}
 
 void ParupaintFrame::SetOpacity(float o)
 {

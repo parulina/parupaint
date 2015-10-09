@@ -137,6 +137,18 @@ void ParupaintCanvasView::AddZoom(float z)
 	SetZoom(Zoom + z);
 }
 
+void ParupaintCanvasView::SetPastePreview(QImage & img)
+{
+	paste_pixmap = QPixmap::fromImage(img);
+}
+void ParupaintCanvasView::UnsetPastePreview()
+{
+	paste_pixmap = QPixmap();
+}
+bool ParupaintCanvasView::HasPastePreview()
+{
+	return (!paste_pixmap.isNull());
+}
 
 
 // Events
@@ -370,6 +382,12 @@ void ParupaintCanvasView::drawForeground(QPainter *painter, const QRectF & rect)
 		for(int y = rect.top(); y <= rect.bottom(); ++y){
 			painter->drawLine(rect.left(), y, rect.right()+1, y);
 		}
+	}
+	if(this->HasPastePreview()){
+		QRectF target(CurrentBrush->pos(), paste_pixmap.size());
+		painter->setPen(Qt::white);
+		painter->setOpacity(0.4);
+		painter->drawPixmap(target, paste_pixmap, paste_pixmap.rect());
 	}
 }
 

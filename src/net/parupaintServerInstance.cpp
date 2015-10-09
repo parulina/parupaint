@@ -413,6 +413,32 @@ void ParupaintServerInstance::ServerFill(int l, int f, QString fill, bool propag
 	obj["c"] = fill;
 	this->Broadcast("fill", obj);
 }
+
+void ParupaintServerInstance::ServerPaste(int l, int f, int x, int y, QString base64_img, bool propagate)
+{
+	// paste has to be a base64 thing.
+	QImage img = ParupaintSnippets::toImage(base64_img);
+	if(!img.isNull()){
+		ParupaintLayer * layer = canvas->GetLayer(l);
+		if(layer){
+			ParupaintFrame * frame = layer->GetFrame(f);
+			if(frame){
+				frame->DrawImage(x, y, img);
+			}
+		}
+	}
+	this->record_manager->Paste(l, f, x, y, base64_img);
+
+	if(!propagate) return;
+	QJsonObject obj;
+	obj["layer"] = l;
+	obj["frame"] = f;
+	obj["x"] = x;
+	obj["y"] = y;
+	obj["paste"] = base64_img;
+	this->Broadcast("paste", obj);
+}
+
 void ParupaintServerInstance::ServerResize(int w, int h, bool r, bool propagate)
 {
 	if(!r){
@@ -632,6 +658,17 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 
 					this->Broadcast("canvas", MarshalCanvas());
 				}
+			}
+		} else if(id == "paste"){
+			if(!obj["image"].isString()) return;
+			QString image = obj["image"].toString();
+
+			if(obj["layer"].isDouble() && obj["frame"].isDouble()){
+				int l = obj["layer"].toInt(),
+				    f = obj["frame"].toInt(),
+				    x = obj["x"].toInt(0),
+				    y = obj["y"].toInt(0);
+				this->ServerPaste(l, f, x, y, image);
 			}
 
 		} else if(id == "chat") {

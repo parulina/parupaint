@@ -137,6 +137,28 @@ void ParupaintCanvasObject::SetLayerFrame(bool flash, _lint layer, _fint frame)
 	emit CurrentSignal(int(CurrentLayer), int(CurrentFrame));
 }
 
+void ParupaintCanvasObject::SetCurrentLayerFrameImage(QImage img)
+{
+	ParupaintLayer * layer = this->GetLayer(CurrentLayer);
+	if(layer){
+		ParupaintFrame * frame = layer->GetFrame(CurrentFrame);
+		if(frame){
+			frame->Replace(img);
+		}
+	}
+}
+QImage ParupaintCanvasObject::GetCurrentLayerFrameImage()
+{
+	ParupaintLayer * layer = this->GetLayer(CurrentLayer);
+	if(layer){
+		ParupaintFrame * frame = layer->GetFrame(CurrentFrame);
+		if(frame){
+			return frame->GetImage();
+		}
+	}
+	return QImage();
+}
+
 void ParupaintCanvasObject::FixLayerFrame()
 {
 	this->SetLayerFrame(false, CurrentLayer, CurrentFrame);

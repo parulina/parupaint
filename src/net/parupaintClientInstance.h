@@ -41,6 +41,7 @@ Q_OBJECT
 	void LoadCanvasLocal(const QString);
 	void SendLayerFrame(int, int, int=0, int=0, bool=false);
 	void SendBrushUpdate(ParupaintBrush * brush);
+	void PasteLayerFrameImage(int l, int f, int x, int y, QImage);
 
 	void SetNickname(QString);
 	void SendChat(QString);

@@ -36,6 +36,8 @@ Q_OBJECT
 	float		Zoom;
 	bool		Drawing;
 	bool 		pixelgrid;
+
+	QPixmap		paste_pixmap;
 	// TODO: rename all vars to lowercase_underscore?
 
 	ParupaintCanvasBrush* CurrentBrush;
@@ -71,6 +73,10 @@ Q_OBJECT
 
 	void SetPixelGrid(bool);
 	bool GetPixelGrid() const;
+
+	void SetPastePreview(QImage &img);
+	void UnsetPastePreview();
+	bool HasPastePreview();
 
 	QPointF RealPosition(const QPointF &pos);
 

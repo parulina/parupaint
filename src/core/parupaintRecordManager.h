@@ -22,6 +22,7 @@ class ParupaintRecordManager
 	void Color(int, QString);
 	void Width(int, double);
 	void Chat(int, QString);
+	void Paste(int l, int f, int x, int y, QString base64_img);
 
 	void Fill(int, int, QString);
 	void Resize(int, int, bool);

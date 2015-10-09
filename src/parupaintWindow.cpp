@@ -7,6 +7,8 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QMimeData>
+#include <QApplication>
+#include <QClipboard>
 
 #include "parupaintVersionCheck.h"
 
@@ -77,7 +79,9 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(), local_port(1108), old_brush_
 		"prev_layer=D",
 		"next_layer=F",
 
-		"clear_canvas=Backspace",
+		"clear_canvas=Ctrl+Backspace",
+		"copy=Ctrl+C",
+		"paste=Ctrl+V",
 
 		"play_animation=Shift+G",
 		"reset_view=Ctrl+G",
@@ -503,6 +507,11 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			chat->show();
 		}
 	}
+	if(!event->isAutoRepeat() && event->key() == Qt::Key_Escape){
+		if(view->HasPastePreview()){
+			view->UnsetPastePreview();
+		}
+	}
 
 	if(!event->isAutoRepeat()){
 		// ui stuff
@@ -544,6 +553,41 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			canvas_banner->Show(2000, 
 					QString("preview ") + (pool->GetCanvas()->IsPreview() ? "on" : "off"));
 			pool->TriggerViewUpdate();
+
+		} else if(shortcut_name == "copy"){
+			if(view->hasFocus()){
+				if(view->HasPastePreview()) view->UnsetPastePreview();
+				QImage img = pool->GetCanvas()->GetCurrentLayerFrameImage();
+				QClipboard * clip = QApplication::clipboard();
+				if(clip){
+					clip->setImage(img);
+				}
+			}
+
+		} else if(shortcut_name == "paste"){
+			if(view->hasFocus()){
+				QClipboard * clip = QApplication::clipboard();
+				if(clip){
+					QImage img = clip->image();
+					if(!img.isNull()){
+						if(view->HasPastePreview()){
+							view->UnsetPastePreview();
+							if(client){
+								auto brush = glass.GetCurrentBrush();
+								int 	l = pool->GetCanvas()->GetCurrentLayer(),
+									f = pool->GetCanvas()->GetCurrentFrame();
+								double	x = brush->GetPosition().x(),
+									y = brush->GetPosition().y();
+
+								client->PasteLayerFrameImage(l, f, x, y, img);
+							}
+							// skip view update for now
+						} else {
+							view->SetPastePreview(img);
+						}
+					}
+				}
+			}
 
 		} else if(shortcut_name == "clear_canvas"){
 			qDebug() << "Clear canvas";

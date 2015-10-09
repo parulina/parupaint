@@ -34,6 +34,9 @@ Q_OBJECT
 	void SetLayerFrame(bool, _lint, _fint =0);
 	void AddLayerFrame(bool, int, int);
 	void FixLayerFrame();
+	QImage GetCurrentLayerFrameImage();
+	void SetCurrentLayerFrameImage(QImage);
+
 	_lint GetCurrentLayer();
 	_fint GetCurrentFrame();
 

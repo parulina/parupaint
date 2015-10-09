@@ -78,6 +78,12 @@ void ParupaintRecordManager::Chat(int id, QString chat)
 		this->Write({"chat", QString::number(id), chat});
 	}
 }
+void ParupaintRecordManager::Paste(int l, int f, int x, int y, QString base64_img)
+{
+	if(temp_stream){
+		this->Write({"paste", QString::number(l), QString::number(f), QString::number(x), QString::number(y), base64_img});
+	}
+}
 void ParupaintRecordManager::Fill(int l, int f, QString col)
 {
 	if(temp_stream){

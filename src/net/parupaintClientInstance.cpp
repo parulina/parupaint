@@ -2,6 +2,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QPen> // brush draw
+#include <QBuffer>
 
 // LoadCanvasLocal
 #include <QFile> 
@@ -142,6 +143,26 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 				emit PlaymodeUpdate(brush);
 			}
 			pool->TriggerViewUpdate();
+		}
+	} else if (id == "paste") {
+		if(!object["paste"].isString()) return;
+		QImage image = ParupaintSnippets::toImage(object["paste"].toString());
+		if(image.isNull()) return;
+
+		if(object["layer"].isDouble() && object["frame"].isDouble()){
+			int l = object["layer"].toInt(),
+			    f = object["frame"].toInt(),
+			    x = object["x"].toInt(),
+			    y = object["y"].toInt();
+			ParupaintLayer * layer = pool->GetCanvas()->GetLayer(l);
+			if(layer){
+				ParupaintFrame * frame = layer->GetFrame(f);
+				if(frame){
+					frame->DrawImage(x, y, image);
+					pool->GetCanvas()->RedrawCache();
+					pool->TriggerViewUpdate();
+				}
+			}
 		}
 	} else if (id == "fill") {
 		if(!object["l"].isDouble()) return;
@@ -293,6 +314,25 @@ void ParupaintClientInstance::SendBrushUpdate(ParupaintBrush * brush)
 	*shadow_brush = *brush;
 }
 
+void ParupaintClientInstance::PasteLayerFrameImage(int l, int f, int x, int y, QImage img)
+{
+	QByteArray pngData;
+	QBuffer buf(&pngData);
+	buf.open(QIODevice::WriteOnly);
+	img.save(&buf, "png");
+	buf.close();
+
+	QByteArray compressed;
+	QCompressor::gzipCompress(pngData, compressed);
+
+	QJsonObject obj;
+	obj["layer"] = l;
+	obj["frame"] = f;
+	obj["x"] = x;
+	obj["y"] = y;
+	obj["image"] = "data:image/png;base64," + QString(compressed.toBase64());
+	this->send("paste", obj);
+}
 
 void ParupaintClientInstance::LoadCanvasLocal(const QString filename)
 {
