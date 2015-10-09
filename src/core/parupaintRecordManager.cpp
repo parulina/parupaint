@@ -12,7 +12,7 @@
 
 ParupaintRecordManager::~ParupaintRecordManager()
 {
-	temp_stream->flush();
+	//temp_stream->flush();
 	temp_log.close();
 	delete temp_stream;
 }
