@@ -57,6 +57,7 @@ ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent)
 
 	if(!log_recovery.isEmpty()){
 		QTextStream recovery_stream(log_recovery);
+		// FIXME readLine crashes on windows
 		while(!recovery_stream.atEnd()){
 			const QString line = recovery_stream.readLine();
 			this->RecordLineDecoder(line, true);
@@ -64,7 +65,7 @@ ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent)
 	}
 	foreach(auto con, brushes.keys()){
 		// TODO idk if i need to delete the keys...
-		record_manager->Leave(con->id);
+		record_manager->Leave(con->getId());
 		delete brushes[con];
 	}
 	brushes.clear();
@@ -111,7 +112,7 @@ QString ParupaintServerInstance::MarshalCanvas()
 QJsonObject ParupaintServerInstance::MarshalConnection(ParupaintConnection* connection)
 {
 	QJsonObject obj;
-	obj["id"] = connection->id;
+	obj["id"] = connection->getId();
 
 	obj["name"] = brushes[connection]->GetName();
 	obj["x"] = brushes[connection]->GetPosition().x();
@@ -186,13 +187,13 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 	ParupaintConnection * con = nullptr;
 	foreach(auto k, brushes.keys()){
 		// find connection from id
-		if(k->id == b) {con = k; break;}
+		if(k->getId() == b) {con = k; break;}
 	}
 
 	if(id == "join") {
 		if(!con) {
 			con = new ParupaintConnection(nullptr);
-			con->id = b;
+			con->setId(b);
 		}
 		this->ServerJoin(con, str.takeFirst(), !recovery);
 		return;
@@ -298,7 +299,7 @@ void ParupaintServerInstance::ServerJoin(ParupaintConnection * c, QString name, 
 		brushes[c] = new ParupaintBrush();
 	}
 	brushes[c]->SetName(name);
-	record_manager->Join(c->id, name);
+	record_manager->Join(c->getId(), name);
 
 	//FIXME fix in parupaint-web so this isn't needed anymore
 	//c->send("join", "{\"name\":\"sqnya\"}");
@@ -313,7 +314,7 @@ void ParupaintServerInstance::ServerJoin(ParupaintConnection * c, QString name, 
 	foreach(auto c2, brushes.keys()){
 
 		QJsonObject obj_me = this->MarshalConnection(c);
-		if(c2 == c) obj_me["id"] = -(c->id);
+		if(c2 == c) obj_me["id"] = -(c->getId());
 		obj_me["disconnect"] = false;
 
 		// send me to others
@@ -333,17 +334,17 @@ void ParupaintServerInstance::ServerLeave(ParupaintConnection * c, bool propagat
 	delete brushes[c];
 	brushes.remove(c);
 
-	record_manager->Leave(c->id);
+	record_manager->Leave(c->getId());
 
 	if(!propagate) return;
 	QJsonObject obj;
 	obj["disconnect"] = true;
-	obj["id"] = c->id;
+	obj["id"] = c->getId();
 	this->Broadcast("peer", obj);
 }
 void ParupaintServerInstance::ServerChat(ParupaintConnection * c, QString msg, bool propagate)
 {
-	record_manager->Chat(c->id, msg);
+	record_manager->Chat(c->getId(), msg);
 
 	if(!propagate) return;
 
@@ -352,7 +353,7 @@ void ParupaintServerInstance::ServerChat(ParupaintConnection * c, QString msg, b
 		QJsonObject obj;
 		obj["message"] = msg;
 		obj["name"] = brush->GetName();
-		obj["id"] = c->id;
+		obj["id"] = c->getId();
 		this->Broadcast("chat", obj);
 	}
 }
@@ -466,7 +467,7 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 			const QString name = obj["name"].toString("unnamed_mofo");
 			qDebug() << name << "joined, version" << ver;
 
-			c->id = (connectid++);
+			c->setId(connectid++);
 			this->ServerJoin(c, name, true);
 			this->BroadcastChat(name + " joined.");
 
@@ -509,24 +510,24 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 
 				if(obj["c"].isString()) {
 					brush->SetColor(ParupaintSnippets::toColor(obj["c"].toString()));
-					record_manager->Color(c->id, obj["c"].toString());
+					record_manager->Color(c->getId(), obj["c"].toString());
 				}
 				if(obj["w"].isDouble()) {
 					brush->SetWidth(obj["w"].toDouble());
-					record_manager->Width(c->id, brush->GetWidth());
+					record_manager->Width(c->getId(), brush->GetWidth());
 				}
 				if(obj["t"].isDouble()) {
 					brush->SetToolType(obj["t"].toInt());
-					record_manager->Tool(c->id, brush->GetToolType());
+					record_manager->Tool(c->getId(), brush->GetToolType());
 				}
 				if(obj["p"].isDouble()) brush->SetPressure(obj["p"].toDouble());
 				if(obj["d"].isBool())	{
 					const bool drawing = obj["d"].toBool();
 					if(drawing && !brush->IsDrawing()){
-						record_manager->Pos(c->id, x, y, brush->GetPressure(), false);
+						record_manager->Pos(c->getId(), x, y, brush->GetPressure(), false);
 						if(brush->GetToolType() == ParupaintBrushToolTypes::BrushToolFloodFill){
 							// ink click
-							record_manager->Pos(c->id, x, y, 1, true);
+							record_manager->Pos(c->getId(), x, y, 1, true);
 						}
 					}
 					brush->SetDrawing(drawing);
@@ -535,11 +536,11 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 				if(obj["l"].isDouble()) brush->SetLayer(obj["l"].toInt());
 				if(obj["f"].isDouble()) brush->SetFrame(obj["f"].toInt());
 				if(obj["l"].isDouble() || obj["f"].isDouble()) {
-					record_manager->Lf(c->id, brush->GetLayer(), brush->GetFrame());
+					record_manager->Lf(c->getId(), brush->GetLayer(), brush->GetFrame());
 				}
 
 				if(obj["x"].isDouble() && obj["y"].isDouble() && brush->IsDrawing()) {
-					record_manager->Pos(c->id, x, y, brush->GetPressure(), true);
+					record_manager->Pos(c->getId(), x, y, brush->GetPressure(), true);
 				}
 
 				if(brush->IsDrawing()){
@@ -551,7 +552,7 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 
 				brush->SetPosition(QPointF(x, y));
 
-				obj_copy["id"] = c->id;
+				obj_copy["id"] = c->getId();
 				this->Broadcast(id, obj_copy);
 			}
 		} else if(id == "canvas") {
@@ -758,7 +759,7 @@ void ParupaintServerInstance::RestoreRecordBrushes()
 		obj["t"] = b->GetToolType();
 		obj["c"] = b->GetColorString();
 
-		obj["id"] = c->id;
+		obj["id"] = c->getId();
 		obj["d"] = false;
 		obj["l"] = b->GetLayer();
 		obj["f"] = b->GetFrame();
@@ -822,7 +823,7 @@ void ParupaintServerInstance::Broadcast(QString id, const QByteArray ba, Parupai
 {
 	foreach(auto i, brushes.keys()){
 		if(i != c){
-			if(i->socket) i->send(id, ba);
+			if(i->getSocket()) i->send(id, ba);
 		}
 	}
 }

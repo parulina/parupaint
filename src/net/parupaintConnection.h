@@ -3,14 +3,23 @@
 
 #include "../bundled/qtwebsocket/QWsSocket.h"
 
-struct ParupaintConnection
-{
-	QtWebsocket::QWsSocket * socket;
-	int id;
+typedef int sid;
 
-	ParupaintConnection(QtWebsocket::QWsSocket * s) : socket(s), id(0) {}
-	qint64 send(QString, QString);
-	qint64 sendBinary(QString, const QByteArray&);
+class ParupaintConnection
+{
+	private:
+	QtWebsocket::QWsSocket * socket;
+	sid id;
+
+	public:
+	ParupaintConnection(QtWebsocket::QWsSocket * s);
+	qint64 send(const QString id, const QJsonObject &obj);
+	qint64 send(const QString id, const QString msg);
+
+	void setId(sid);
+	sid getId() const;
+
+	QtWebsocket::QWsSocket * getSocket();
 };
 
 #endif

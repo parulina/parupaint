@@ -51,7 +51,7 @@ void ParupaintServer::textReceived(QString text)
 ParupaintConnection * ParupaintServer::GetConnection(QtWebsocket::QWsSocket* s)
 {
 	for(auto i = connections.begin(); i != connections.end(); ++i){
-		if( (*i)->socket == s ) return (*i);
+		if( (*i)->getSocket() == s ) return (*i);
 	}
 	return nullptr;
 }

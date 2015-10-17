@@ -1,13 +1,31 @@
-
 #include "parupaintConnection.h"
+#include <QJsonDocument>
+#include <QDebug>
 
-qint64 ParupaintConnection::sendBinary(QString i, const QByteArray & m)
+ParupaintConnection::ParupaintConnection(QtWebsocket::QWsSocket * s) : socket(s), id(0)
 {
-	return 0; //socket->sendBinaryMessage(QString(i + " " + m).toUtf8());
 }
 
-qint64 ParupaintConnection::send(QString i, QString m)
+qint64 ParupaintConnection::send(const QString id, const QJsonObject &obj)
 {
-	if(socket) return socket->write(i + " " + m);
-	return 0;
+	return this->send(id, QJsonDocument(obj).toJson(QJsonDocument::Compact));
+}
+
+qint64 ParupaintConnection::send(const QString id, const QString msg)
+{
+	if(!this->socket) return 0;
+	return socket->write(id + " " + msg);
+}
+void ParupaintConnection::setId(sid id)
+{
+	this->id = id;
+}
+sid ParupaintConnection::getId() const
+{
+	return this->id;
+}
+
+QtWebsocket::QWsSocket * ParupaintConnection::getSocket()
+{
+	return this->socket;
 }
