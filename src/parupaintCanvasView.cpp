@@ -230,7 +230,7 @@ void ParupaintCanvasView::OnPenMove(const QPointF &pos, Qt::MouseButtons buttons
 
 
 	OldPosition = pos;
-	viewport()->update();
+	this->viewport()->update();
 }
 
 bool ParupaintCanvasView::OnScroll(const QPointF & pos, Qt::KeyboardModifiers modifiers, float delta_y)

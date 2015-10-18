@@ -21,7 +21,8 @@ Q_OBJECT
 	void Connect(QString, quint16);
 	void Disconnect();
 
-	void send(QString id, QString data = "");
+	qint64 send(const QString id, const QString data);
+	qint64 send(const QString data);
 
 	private slots:
 	void onConnect();

@@ -91,6 +91,7 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 		}
 	} else if(id == "draw"){
 		auto c = object["id"].toInt();
+		if(c == this->me) return;
 		if(brushes.find(c) == brushes.end()) return;
 
 		auto * brush = brushes.value(c);
@@ -142,7 +143,6 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 			if(playmode && c == me) {
 				emit PlaymodeUpdate(brush);
 			}
-			pool->TriggerViewUpdate();
 		}
 	} else if (id == "paste") {
 		if(!object["paste"].isString()) return;

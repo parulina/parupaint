@@ -1,5 +1,6 @@
 #include "parupaintClient.h"
 
+#include <QStringBuilder>
 #include <QDebug>
 
 using namespace QtWebsocket;
@@ -64,10 +65,14 @@ void ParupaintClient::onError(QAbstractSocket::SocketError)
 {
 	emit onMessage("error", socket.errorString().toUtf8());
 }
-void ParupaintClient::send(QString id, QString data)
+qint64 ParupaintClient::send(const QString data)
 {
-	if(socket.state() != QAbstractSocket::ConnectedState) return;
-	socket.write(id + " " + data);
+	if(socket.state() != QAbstractSocket::ConnectedState) return 0;
+	return socket.write(data);
+}
+qint64 ParupaintClient::send(const QString id, const QString data)
+{
+	return this->send(id % " " % data);
 }
 
 void ParupaintClient::onConnect()

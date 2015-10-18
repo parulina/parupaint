@@ -4,6 +4,7 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QSettings>
+#include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
 
@@ -27,9 +28,11 @@
 
 #include "qcompressor.h"
 
+QString log_path = ".";
+
 ParupaintServerInstance::~ParupaintServerInstance()
 {
-	QFile log_file(".parupaint.log");
+	QFile log_file(log_path);
 	if(log_file.open(QFile::WriteOnly)){
 		log_file.resize(0);
 		log_file.close();
@@ -44,20 +47,22 @@ ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent)
 	connectid = 1;
 	canvas = new ParupaintPanvas(540, 540, 1);
 
-	QFile log_file(".parupaint.log");
+	log_path = QDir(QCoreApplication::applicationDirPath()).filePath(".parupaint.log");
+	qDebug() << "Log" << log_path;
+
+	QFile log_file(log_path);
 	if(log_file.open(QFile::ReadOnly)){
 		log_recovery = log_file.readAll();
 		log_file.close();
 	}
 	record_player = new ParupaintRecordPlayer();
-	record_manager = new ParupaintRecordManager(".parupaint.log");
+	record_manager = new ParupaintRecordManager(log_path);
 	record_manager->Resize(540, 540, false);
 	// this adds it to history
 	this->ServerFill(0, 0, "#FFF", false);
 
 	if(!log_recovery.isEmpty()){
 		QTextStream recovery_stream(log_recovery);
-		// FIXME readLine crashes on windows
 		while(!recovery_stream.atEnd()){
 			const QString line = recovery_stream.readLine();
 			this->RecordLineDecoder(line, true);
