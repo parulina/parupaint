@@ -28,15 +28,11 @@
 
 #include "qcompressor.h"
 
-QString log_path = ".";
+QString log_path = "./.parupaint.log";
 
 ParupaintServerInstance::~ParupaintServerInstance()
 {
-	QFile log_file(log_path);
-	if(log_file.open(QFile::WriteOnly)){
-		log_file.resize(0);
-		log_file.close();
-	}
+	QFile::remove(log_path);
 
 	delete record_player;
 	delete record_manager;
