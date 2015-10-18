@@ -1,3 +1,14 @@
+0.85
++ Session log and recovery: a session log is now written while drawing to allow recovery and playback.
++ Run/play scripts: the session logs can also be replayed back for everyone else.
++ Clear canvas: default key is Ctrl+Backspace.
++ Standalone server: A non-gui version of the server is now available. (qmake -config server_release)
+* Performance improvements: faster flood-fill, faster drawing, less redraws
++ Copy and paste frames
+* Mac layout fixes
+* < 1 brushwidth fix
+* User interface improvements
+
 
 0.84
 + Mac build!!
