@@ -1,6 +1,10 @@
 
 #include <QFontMetrics>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QCursor>
 #include <QPainter>
+#include <QTransform>
 #include <QPalette>
 #include <QPen>
 #include <QPropertyAnimation>
@@ -133,21 +137,42 @@ void ParupaintCanvasBrush::ShowName(double time)
 void ParupaintCanvasBrush::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
 	Paint(painter);
-	
+
+	if(this->nameLabelHeight() == 0) return;
+
+	QGraphicsView * view = this->scene()->views().first();
+	if(!view) return;
+
+
 	painter->setRenderHint(QPainter::Antialiasing, false);
 	painter->setCompositionMode(QPainter::CompositionMode_SourceOver);
 	painter->setPen(Qt::white);
 
-	auto tm = painter->fontMetrics();
-	const auto str = this->GetName();
+	const QString str = this->GetName();
+	QSize text_size = painter->fontMetrics().size(Qt::TextSingleLine, str);
+	text_size.setHeight(text_size.height() * this->nameLabelHeight());
+	if(text_size.width() > this->boundingRect().width()){
+		text_size.setWidth(this->boundingRect().width());
+	}
 
-	auto ts = tm.size(Qt::TextSingleLine, str);
-	ts.setHeight(ts.height() * this->nameLabelHeight());
+	const QRect text_rect(QPoint(-text_size.width()/2, 0), text_size);
 
-	if(ts.width() > this->boundingRect().width()) ts.setWidth(this->boundingRect().width());
-	const QRect rrr(QPoint(-ts.width()/2, 0), ts);
+	painter->save();
+	const QTransform & t = painter->transform();
+	const qreal zoom_x = t.m11(), zoom_y = t.m22();
+	painter->setTransform(QTransform(1.2, t.m12(), t.m13(), t.m21(), 1.2, t.m23(), t.m31(), t.m32(), t.m33()));
 
-	painter->fillRect(rrr, QColor::fromHsl(this->GetColor().hslHue(), 127, 75, 230));
-	painter->drawText(rrr, Qt::AlignCenter | Qt::AlignBottom, this->GetName());
+	QPointF posl = this->mapToScene(QPointF(-text_size.width()/2/zoom_x, 0)),
+	        posr = this->mapToScene(QPointF(text_size.width()/2/zoom_x, text_size.height()/zoom_y));
+
+	QRectF rect(posl, posr);
+	QPointF mouse_pos = view->mapToScene(QCursor::pos()) - QPointF(0, 50/zoom_y);
+
+	if(rect.contains(mouse_pos)) painter->setOpacity(0.5);
+
+	painter->fillRect(text_rect, QColor::fromHsl(this->GetColor().hslHue(), 127, 75, 230));
+	painter->drawText(text_rect, Qt::AlignCenter | Qt::AlignBottom, this->GetName());
+
+	painter->restore();
 }
 
