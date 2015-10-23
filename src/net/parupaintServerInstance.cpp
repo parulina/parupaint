@@ -32,10 +32,10 @@ QString log_path = "./.parupaint.log";
 
 ParupaintServerInstance::~ParupaintServerInstance()
 {
-	QFile::remove(log_path);
-
 	delete record_player;
 	delete record_manager;
+
+	QFile::remove(log_path);
 }
 
 ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent) : ParupaintServer(port, parent)
