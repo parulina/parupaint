@@ -71,12 +71,19 @@ void ParupaintCanvasBrush::Paint(QPainter * painter)
 		current_col = this->GetColor().rgba();
 		this->UpdateIcon();
 	}
+
+
+	const QTransform & t = painter->transform();
+	const qreal zoom_x = t.m11(), zoom_y = t.m22();
+	if(zoom_y < 1) painter->setTransform(QTransform(1, t.m12(), t.m13(), t.m21(), 1, t.m23(), t.m31(), t.m32(), t.m33()));
+
 	const auto r_h = icons.height();
 	painter->drawPixmap(
-			QRectF(QPointF(w/2, -w/2 - r_h), QSizeF(r_h, r_h)),
+			QRectF(QPointF(0, - r_h), QSizeF(r_h, r_h)),
 			current_icons,
 			QRectF(QPointF(r_h * this->GetToolType(), 0), QSizeF(r_h, r_h)));
 
+	if(zoom_y < 1) painter->setTransform(QTransform(zoom_x, t.m12(), t.m13(), t.m21(), zoom_y, t.m23(), t.m31(), t.m32(), t.m33()));
 
 	// Draw outline
 	QPen pen(Qt::white);
@@ -166,6 +173,7 @@ void ParupaintCanvasBrush::paint(QPainter* painter, const QStyleOptionGraphicsIt
 	        posr = this->mapToScene(QPointF(text_size.width()/2/zoom_x, text_size.height()/zoom_y));
 
 	QRectF rect(posl, posr);
+	// I don't know why but i need to add 50 pixels for accurate cursor...
 	QPointF mouse_pos = view->mapToScene(QCursor::pos()) - QPointF(0, 50/zoom_y);
 
 	if(rect.contains(mouse_pos)) painter->setOpacity(0.5);
