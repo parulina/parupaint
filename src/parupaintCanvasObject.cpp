@@ -49,6 +49,8 @@ QRectF ParupaintCanvasObject::boundingRect() const
 void ParupaintCanvasObject::NewCache()
 {
 	cache = QPixmap(GetWidth(), GetHeight());
+	fill_preview = QPixmap(GetWidth(), GetHeight());
+	this->ClearFillPreview();
 }
 
 void ParupaintCanvasObject::RedrawCache()
@@ -95,6 +97,19 @@ void ParupaintCanvasObject::RedrawCache(QRect area)
 			}
 		}
 	}
+
+	{
+		painter.drawPixmap(area, fill_preview, area);
+	}
+}
+// i have to correct the img pos myself
+void ParupaintCanvasObject::SetFillPreview(const QImage& img)
+{
+	fill_preview = QPixmap::fromImage(img);
+}
+void ParupaintCanvasObject::ClearFillPreview()
+{
+	fill_preview.fill(Qt::transparent);
 }
 
 void ParupaintCanvasObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)

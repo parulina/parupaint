@@ -15,6 +15,7 @@ Q_OBJECT
 	bool Preview;
 
 	QPixmap checker;
+	QPixmap fill_preview;
 	QPixmap cache;
 
 	QTimer * flash_timeout;
@@ -39,6 +40,9 @@ Q_OBJECT
 
 	_lint GetCurrentLayer();
 	_fint GetCurrentFrame();
+
+	void SetFillPreview(const QImage&);
+	void ClearFillPreview();
 
 	void RedrawCache();
 	void RedrawCache(QRect);

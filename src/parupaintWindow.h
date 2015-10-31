@@ -44,6 +44,8 @@ Q_OBJECT
 	void UpdateOverlay();
 	
 	OverlayStatus	OverlayState;
+
+	QTimer * fillpreview_timer;
 	
 	ParupaintBrushGlass glass;
 

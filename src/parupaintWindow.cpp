@@ -44,7 +44,7 @@
 #include "parupaintSettingsDialog.h"
 
 #include "core/parupaintFrameBrushOps.h"
-
+#include "core/parupaintSnippets.h"
 #include "net/parupaintClientInstance.h"
 
 #include <QDebug>
@@ -90,6 +90,8 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(), local_port(1108), old_brush_
 		"eraser_switch=E",
 		"pick_color=R",
 		"pick_global_color=Shift+R",
+
+		"fill_preview=T",
 
 		"toolswitch_fill=W",
 		"toolswitch_dotpattern=Ctrl+W",
@@ -155,6 +157,13 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(), local_port(1108), old_brush_
 	OverlayButtonTimer->setSingleShot(true);
 	connect(OverlayButtonTimer, &QTimer::timeout, this, &ParupaintWindow::ButtonTimeout);
 
+	fillpreview_timer = new QTimer(this);
+	fillpreview_timer->setSingleShot(true);
+	connect(fillpreview_timer, &QTimer::timeout, [this](){
+		this->pool->GetCanvas()->ClearFillPreview();
+		this->pool->GetCanvas()->RedrawCache();
+		this->pool->UpdateView();
+	});
 
 	/*
 
@@ -596,6 +605,22 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			    f = brush->GetFrame();
 			client->FillCanvas(l, f, brush->GetColorString());
 
+		} else if(shortcut_name == "fill_preview"){
+
+			ParupaintBrush * brush = glass.GetCurrentBrush();
+			QImage fimg = pool->GetCanvas()->GetCurrentLayerFrameImage();
+
+			ParupaintFillHelper help(fimg);
+			help.fill(brush->GetPosition().x(), brush->GetPosition().y(), brush->GetColor().rgba());
+			QImage mask = help.mask();
+
+			this->pool->GetCanvas()->SetFillPreview(mask);
+			this->pool->GetCanvas()->RedrawCache();
+			this->pool->UpdateView();
+
+			if(fillpreview_timer->isActive()) fillpreview_timer->stop();
+			fillpreview_timer->start(500);
+
 		} else if(shortcut_name == ""){
 
 		} else if(shortcut_name.startsWith("toolswitch_")){
@@ -616,6 +641,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 
 			brush->SetToolType(tool);
 			view->UpdateCurrentBrush(brush);
+
 		}
 	}
 	// repeating hotkeys
@@ -862,7 +888,7 @@ void ParupaintWindow::Command(QString cmd, QString params)
 			client->PlayRecord(params, true);
 		}
 	}
-	
+
 	if(cmd == "key"){
 		if(params.isEmpty()){
 			auto list = key_shortcuts->GetKeys();
