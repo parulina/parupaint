@@ -25,8 +25,7 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, float ox, float o
 	switch(brush->GetToolType()){
 		case ParupaintBrushToolTypes::BrushToolFloodFill:
 		{
-			frame->Fill(nx, ny, brush->GetColor());
-			return frame->GetImage().rect();
+			return frame->Fill(nx, ny, brush->GetColor());
 		}
 		case ParupaintBrushToolTypes::BrushToolDotPattern:
 		{

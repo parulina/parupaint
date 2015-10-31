@@ -8,6 +8,8 @@
 #include "parupaintStrokeStep.h"
 #include "parupaintStroke.h"
 
+#include "parupaintSnippets.h"
+
 ParupaintFrame::~ParupaintFrame()
 {
 
@@ -68,62 +70,12 @@ void ParupaintFrame::DrawStep(float x, float y, float x2, float y2, float width,
 	this->DrawStep(x, y, x2, y2, pen);
 }
 
-void p_fill(QImage & img, int x, int y, QRgb orig, QRgb to)
+QRect ParupaintFrame::Fill(int x, int y, QColor color)
 {
-	if(img.format() != QImage::Format_ARGB32) return;
-	if(orig == to) return;
-
-	const QRect r = img.rect();
-	if(!r.contains(x, y)) return;
-
-	QRgb pp = img.pixel(x, y);
-	if(pp != orig) return;
-
-	const int ww = r.size().width();
-	const int hh = r.size().height();
-	QList<QPoint> plist = {QPoint(x, y)};
-	plist.reserve(ww*hh);
-
-	uchar * img_bits = img.bits();
-	uchar * img_data = new uchar[img.byteCount()];
-	memcpy(img_data, img_bits, img.byteCount());
-
-	// A B G R
-	while(!plist.isEmpty()){
-
-		const QPoint p = plist.front();
-		const int ty = p.y();
-		int tx = p.x(), tx2 = tx;
-
-		while(tx > 0){
-			tx--;
-			if(*(QRgb*)(img_data + (4 * (tx + (ty * ww)))) != orig){
-				tx++;
-				break;
-			}
-		}
-		while(tx2 < ww){
-			tx2++;
-			if(tx2 >= ww) break; // .pixel(.width) doesn't work for some reason
-			if(*(QRgb*)(img_data + (4 * (tx2 + (ty * ww)))) != orig){
-				break;
-			}
-		}
-
-		for(int x = tx; x < tx2; x++){
-			*(QRgb*)(img_data + (4 * (x + (ty * ww)))) = to;
-			if(ty > 0 && *(QRgb*)(img_data + (4 * (x + ((ty - 1) * ww)))) == orig) { plist.append(QPoint(x, ty-1)); }
-			if(ty < hh-1 && *(QRgb*)(img_data + (4 * (x + ((ty + 1) * ww)))) == orig) { plist.append(QPoint(x, ty+1)); }
-		}
-		plist.pop_front();
-
-	}
-	img = QImage(img_data, ww, hh, img.format());
-}
-
-void ParupaintFrame::Fill(int x, int y, QColor color)
-{
-	p_fill(Frame, x, y, Frame.pixel(x, y), color.rgba());
+	ParupaintFillHelper help(Frame);
+	QRect rect = help.fill(x, y, color.rgba());
+	Frame = help.image();
+	return rect;
 }
 
 void ParupaintFrame::DrawImage(int x, int y, QImage img)
