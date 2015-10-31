@@ -74,7 +74,7 @@ QRect ParupaintFrame::Fill(int x, int y, QColor color)
 {
 	ParupaintFillHelper help(Frame);
 	QRect rect = help.fill(x, y, color.rgba());
-	Frame = help.image();
+	this->DrawImage(0, 0, help.mask());
 	return rect;
 }
 
