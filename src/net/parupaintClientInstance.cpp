@@ -47,17 +47,16 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 
 	if(id == "connect"){
 		
+		qDebug("Connect success");
 		QJsonObject obj;
 		obj["name"] = nickname;
 		obj["version"] = PARUPAINT_VERSION;
 		this->send("join", obj);
 
 	} else if(id == "disconnect"){
-		emit OnDisconnect();
+		emit OnDisconnect(bytes);
 
-	} else if(id == "join"){
-
-	} else if(id == "peer") { // TODO join this with join pls?
+	} else if(id == "peer") {
 		auto c = object["id"].toInt();
 		auto d = object["disconnect"].toBool();
 

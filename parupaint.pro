@@ -18,7 +18,7 @@ win32 {
 # normal setup
 # for ffmpeg video export, run (qmake -config video_export)
 
-QT += 		widgets network xml
+QT += 		widgets network xml websockets
 RESOURCES +=	*.qrc
 LIBS +=		-lz
 
@@ -38,14 +38,12 @@ HEADERS +=	src/core/*.h \
 		src/net/*.h \
 		src/overlay/*.h \
 		src/bundled/karchive/*.h \
-		src/bundled/qtwebsocket/*.h \
 		src/*.h
 
 SOURCES += 	src/core/*.cpp \
 		src/net/*.cpp \
 		src/overlay/*.cpp \
 		src/bundled/karchive/*.cpp \
-		src/bundled/qtwebsocket/*.cpp \
 		$$files(src/*.cpp)
 
 !server_release {
@@ -56,12 +54,10 @@ server_release {
 	HEADERS = src/core/*.h \
 		  $$files(src/net/*.h) \
 		  src/bundled/karchive/*.h \
-		  src/bundled/qtwebsocket/*.h
 
 	SOURCES = src/core/*.cpp \
 		  $$files(src/net/*.cpp) \
 		  src/bundled/karchive/*.cpp \
-		  src/bundled/qtwebsocket/*.cpp \
 		  src/main_server.cpp
 
 	HEADERS -= src/net/parupaintClient.h src/net/parupaintClientInstance.h

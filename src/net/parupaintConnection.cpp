@@ -2,7 +2,7 @@
 #include <QJsonDocument>
 #include <QDebug>
 
-ParupaintConnection::ParupaintConnection(QtWebsocket::QWsSocket * s) : socket(s), id(0)
+ParupaintConnection::ParupaintConnection(QWebSocket * s) : socket(s), id(0)
 {
 }
 
@@ -14,7 +14,7 @@ qint64 ParupaintConnection::send(const QString id, const QJsonObject &obj)
 qint64 ParupaintConnection::send(const QString id, const QString msg)
 {
 	if(!this->socket) return 0;
-	return socket->write(id + " " + msg);
+	return socket->sendTextMessage(id + " " + msg);
 }
 void ParupaintConnection::setId(sid id)
 {
@@ -25,7 +25,7 @@ sid ParupaintConnection::getId() const
 	return this->id;
 }
 
-QtWebsocket::QWsSocket * ParupaintConnection::getSocket()
+QWebSocket * ParupaintConnection::getSocket()
 {
 	return this->socket;
 }

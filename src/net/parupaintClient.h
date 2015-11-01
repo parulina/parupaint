@@ -1,15 +1,17 @@
 #ifndef PARUPAINTCLIENT_H
 #define PARUPAINTCLIENT_H
 
-#include "../bundled/qtwebsocket/QWsSocket.h"
+#include <QtWebSockets/QtWebSockets>
 #include <QUrl>
 #include <QObject>
+
+typedef QWebSocket ParupaintWebSocket;
 
 class ParupaintClient : public QObject
 {
 Q_OBJECT
 	private:
-	QtWebsocket::QWsSocket socket;
+	ParupaintWebSocket socket;
 	QString host;
 	quint16 port;
 	bool Connected;
@@ -19,7 +21,7 @@ Q_OBJECT
 	ParupaintClient(QObject * = nullptr);
 	void Connect(QString = "localhost");
 	void Connect(QString, quint16);
-	void Disconnect();
+	void Disconnect(QString reason = "");
 
 	qint64 send(const QString id, const QString data);
 	qint64 send(const QString data);

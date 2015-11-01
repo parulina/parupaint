@@ -1,3 +1,4 @@
+#include "parupaintWindow.h"
 
 #include <QKeyEvent>
 #include <QEvent>
@@ -11,8 +12,6 @@
 #include <QClipboard>
 
 #include "parupaintVersionCheck.h"
-
-#include "parupaintWindow.h"
 #include "parupaintKeys.h"
 
 #include <algorithm>
@@ -295,8 +294,9 @@ void ParupaintWindow::ChatMessageReceived(QString name, QString msg)
 }
 
 // on net disconnect
-void ParupaintWindow::OnNetworkDisconnect()
+void ParupaintWindow::OnNetworkDisconnect(QString reason)
 {
+	if(reason == "SwitchHost") return;
 	chat->show();
 	chat->AddMessage("You were disconnected from the server.");
 }

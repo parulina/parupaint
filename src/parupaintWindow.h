@@ -110,7 +110,7 @@ Q_OBJECT
 	void ChatMessage(QString);
 
 	void ChatMessageReceived(QString, QString);
-	void OnNetworkDisconnect();
+	void OnNetworkDisconnect(QString reason = "");
 };
 
 

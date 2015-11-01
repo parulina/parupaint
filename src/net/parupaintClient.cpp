@@ -3,16 +3,13 @@
 #include <QStringBuilder>
 #include <QDebug>
 
-using namespace QtWebsocket;
-
 ParupaintClient::ParupaintClient(QObject * parent) : QObject(parent), Connected(false), SwitchHost(false)
 {
-	socket.setSocketOption(QAbstractSocket::LowDelayOption, 1);
-	connect(&socket, &QWsSocket::connected, this, &ParupaintClient::onConnect);
-	connect(&socket, &QAbstractSocket::disconnected, this, &ParupaintClient::onDisconnect);
-	connect(&socket, SIGNAL(frameReceived(QString)), this, SLOT(textReceived(QString)));
+	connect(&socket, &ParupaintWebSocket::connected, this, &ParupaintClient::onConnect);
+	connect(&socket, &ParupaintWebSocket::disconnected, this, &ParupaintClient::onDisconnect);
+	connect(&socket, &ParupaintWebSocket::textMessageReceived, this, &ParupaintClient::textReceived);
+	connect(&socket, &ParupaintWebSocket::stateChanged, this, &ParupaintClient::onSocketStateChanged);
 	connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
-	connect(&socket, &QAbstractSocket::stateChanged, this, &ParupaintClient::onSocketStateChanged);
 }
 
 void ParupaintClient::Connect(QString u)
@@ -25,6 +22,7 @@ void ParupaintClient::Connect(QString u, quint16 p)
 	if(p == 0) p = u.section(":", 1, 1).toInt();
 	if(p == 0) p = 1108;
 
+	if(u.contains("//")) u = u.section("//", 1);
 	u = u.section(":", 0, 0);
 
 	host = "ws://" + u;
@@ -34,23 +32,19 @@ void ParupaintClient::Connect(QString u, quint16 p)
 
 	if(socket.state() != QAbstractSocket::UnconnectedState){
 		SwitchHost = true;
-		return this->Disconnect();
+		return this->Disconnect("SwitchHost");
 	} else {
-		socket.connectToHost(host, port);
+		QUrl url = QUrl(host);
+		url.setPort(p);
+		socket.open(url);
 	}
 }
 
-void ParupaintClient::Disconnect()
+void ParupaintClient::Disconnect(QString reason)
 {
 	if(socket.state() != QAbstractSocket::UnconnectedState) {
 		if(socket.state() == QAbstractSocket::ConnectedState){
-			// TODO FIXME
-			// Why doesn't disconnectFromHost work to reconnect?
-			// It enters DisconnectedState and it doesn't want to connect again
-			// pretty stupid.
-
-			socket.disconnectFromHost();
-			//socket.abort();
+			socket.close(QWebSocketProtocol::CloseCodeNormal, reason);
 		} else {
 			socket.abort();
 		}
@@ -68,7 +62,7 @@ void ParupaintClient::onError(QAbstractSocket::SocketError)
 qint64 ParupaintClient::send(const QString data)
 {
 	if(socket.state() != QAbstractSocket::ConnectedState) return 0;
-	return socket.write(data);
+	return socket.sendTextMessage(data);
 }
 qint64 ParupaintClient::send(const QString id, const QString data)
 {
@@ -81,11 +75,12 @@ void ParupaintClient::onConnect()
 }
 void ParupaintClient::onDisconnect()
 {
-	emit onMessage("disconnect", "");
+	emit onMessage("disconnect", socket.closeReason().toUtf8());
 
 	if(SwitchHost){
 		SwitchHost = false;
-		socket.connectToHost(host, port);
+		qDebug() << "Disconnected, connecting again to " << host << port;
+		this->Connect(host, port);
 	}
 }
 void ParupaintClient::textReceived(QString text)
