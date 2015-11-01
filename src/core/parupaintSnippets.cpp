@@ -91,8 +91,8 @@ QRect ParupaintFillHelper::fill(int x, int y, const QRgb orig, const QRgb to){
 			}
 		}
 
-		above_pixels[tx - 1] = above_pixels[tx2 + 1] = false;
-		below_pixels[tx - 1] = below_pixels[tx2 + 1] = false;
+		above_pixels[(tx > 0 ? tx - 1 : 0)] = false;
+		below_pixels[(tx > 0 ? tx - 1 : 0)] = false;
 
 		if(tx < filled_rect.left()) filled_rect.setLeft(tx);
 		if(tx2 > filled_rect.right()) filled_rect.setRight(tx2);
