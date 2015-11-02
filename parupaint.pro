@@ -41,9 +41,6 @@ SOURCES += 		$$files(src/core/*.cpp) \
 			$$files(src/bundled/karchive/*.cpp) \
 			$$files(src/*.cpp)
 
-LIBS    += 		-lavutil -lavcodec -lavformat -lswscale
-
-
 !server_release {
  SOURCES -= 	src/main_server.cpp
 }
