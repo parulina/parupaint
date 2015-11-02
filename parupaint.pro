@@ -4,31 +4,25 @@ QMAKE_CXXFLAGS +=	-std=c++11 -Wfatal-errors
 OBJECTS_DIR =		.obj
 MOC_DIR =		.obj/moc
 
-unix {
-	QMAKE_CXXFLAGS += -fdiagnostics-color=auto
-}
-# TODO win32|release?
-win32 {
+# Colored output for unix
+# TODO check if compiler supports this switch
+unix:QMAKE_CXXFLAGS += -fdiagnostics-color=auto
+
+# Win32 + release build
+win32:release {
 	CONFIG -= debug debug_and_release console
 	CONFIG += static windows
 }
 
-
-
-# normal setup
-# for ffmpeg video export, run (qmake -config video_export)
-
-QT += 		widgets network xml websockets
-RESOURCES +=	*.qrc
-LIBS +=		-lz
+# Normal setup
+QT += 			widgets network xml websockets
+RESOURCES +=		*.qrc
+LIBS +=			-lz
 
 # mac plist doesn't update reliably,
 # try clean & rebuild if it doesn't work
 
-win32 {
-	RC_ICONS = 	resources/parupaint.ico
-}
-
+win32:RC_ICONS = 	resources/parupaint.ico
 macx {
 	ICON =	resources/parupaint.icns
 	QMAKE_INFO_PLIST = resources/Info.plist
