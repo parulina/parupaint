@@ -2,6 +2,7 @@
 #include <QDir>
 #include <QPainter>
 #include <QBuffer>
+#include <QLibrary> // ffmpeg export
 
 #include "parupaintPanvasWriter.h"
 
@@ -12,9 +13,7 @@
 #include "../bundled/karchive/KTar"
 #include "../bundled/karchive/KZip"
 
-#ifdef PARUPAINT_VIDEO_EXPORT
-#include "../qtffmpeg/QVideoEncoder.h"
-#endif
+#include "parupaintAVWriter.h"
 
 #include <QDebug>
 
@@ -42,31 +41,86 @@ PanvasWriterResult ParupaintPanvasWriter::Save(const QString directory, const QS
 	auto suffix = file.suffix();
 	if(suffix == "png"){
 		return this->ExportPng(path);
+	//suffix == "apng" && panvas->GetTotalFrames() 
 	} else if(suffix == "zip"){
 		return this->ExportPngZip(path);
 	} else if(suffix == "ppa"){
 		return this->SaveParupaintArchive(path);
-#ifdef PARUPAINT_VIDEO_EXPORT
-	} else if(suffix == "avi"){
-		return this->SaveVideo(path);
-#endif
 	} else if(suffix.isEmpty()){
 		return this->ExportPngSeq(path);
 	} else {
+		return this->ExportAV(path);
 		// ?
 	}
 
 	return PANVAS_WRITER_RESULT_ERROR;
 
 }
-PanvasWriterResult ParupaintPanvasWriter::SaveVideo(const QString filename)
+
+PanvasWriterResult ParupaintPanvasWriter::ExportAV(const QString filename)
 {
 	if(panvas && !filename.isEmpty()){
-#ifdef PARUPAINT_VIDEO_EXPORT
-		auto dim = panvas->GetDimensions();
-		auto gop = 10;
-		auto fps = 12;
+#ifdef PARUPAINTAVWRITER_H
+		QSize dim = panvas->GetDimensions();
+		int fps = 1;
 
+		ParupaintAVWriter writer(filename, dim.width(), dim.height(), fps);
+		if(!writer.hasError()){
+			for(auto f = 0; f < panvas->GetTotalFrames(); f++){
+				QImage img(dim, QImage::Format_ARGB32);
+				for(auto l = 0; l < panvas->GetNumLayers(); l++){
+					auto * layer = panvas->GetLayer(l);
+					if(!layer) continue;
+
+					auto * frame = layer->GetFrame(f);
+					if(!frame) continue;
+
+					const QImage & fimg = frame->GetImage();
+					QPainter paint(&img);
+					paint.drawImage(img.rect(), fimg, fimg.rect());
+				}
+				writer.addFrame(img);
+				qDebug() << "Adding frame" << img;
+			}
+		} else {
+			qDebug() << "Something went wrong!" << writer.errorStr();
+		}
+#endif
+		/*
+		QLibrary avformat("libavformat"), avutil("libavutil");
+		if(avformat.load() && avutil.load()){
+			qDebug() << "ffmpeg loaded";
+			// Set up a few things...
+			typedef AVOutputFormat* (*av_gf)(const char*, const char*, const char*);
+			typedef AVFormatContext* (*av_ac)(void);
+			typedef void (*av_f)(void*);
+
+			av_gf av_guess_format = (av_gf) avformat.resolve("av_guess_format");
+			av_ac av_alloc_context = (av_ac) avformat.resolve("avformat_alloc_context");
+			av_f  av_free = (av_f) avutil.resolve("av_free");
+
+			if(!av_guess_format) return PANVAS_WRITER_RESULT_ERROR;
+			if(!av_alloc_context) return PANVAS_WRITER_RESULT_ERROR;
+
+			qDebug() << "Guessing format...";
+
+			// Get the format from file name, doesn't matter if not retrievable?...
+			AVOutputFormat * format = av_guess_format(nullptr, filename.toStdString().c_str(), nullptr);
+			if(!format) format = av_guess_format("gif", nullptr, nullptr);
+
+			AVFormatContext * format_context = av_alloc_context();
+			if(!format_context) return PANVAS_WRITER_RESULT_ERROR;
+
+			format_context->oformat = format;
+			snprintf(format_context->filename, sizeof(format_context->filename), "%s", filename.toStdString().c_str());
+
+			qDebug() << format << format_context;
+
+			av_free(format_context);
+		}
+		*/
+
+		/*
 		QVideoEncoder encoder;
 		encoder.createFile(filename, dim.width(), dim.height(), 1000000, gop, fps);
 
@@ -86,9 +140,9 @@ PanvasWriterResult ParupaintPanvasWriter::SaveVideo(const QString filename)
 			encoder.encodeImage(img);
 		}
 		encoder.close();
+		*/
 
 		return PANVAS_WRITER_RESULT_OK;
-#endif
 	}
 
 	return PANVAS_WRITER_RESULT_ERROR;
@@ -170,14 +224,6 @@ PanvasWriterResult ParupaintPanvasWriter::ExportPng(const QString path)
 		}
 	}
 	if(!png.save(path)) return PANVAS_WRITER_RESULT_ERROR;
-
-	return PANVAS_WRITER_RESULT_OK;
-}
-
-
-PanvasWriterResult ParupaintPanvasWriter::ExportWebp(const QString path)
-{
-	if(!panvas) return PANVAS_WRITER_RESULT_ERROR;
 
 	return PANVAS_WRITER_RESULT_OK;
 }

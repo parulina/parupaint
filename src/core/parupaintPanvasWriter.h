@@ -1,6 +1,7 @@
 #ifndef PARUPAINTPANVASWRITER_H
 #define PARUPAINTPANVASWRITER_H
 
+#include <QString>
 class ParupaintPanvas;
 
 enum PanvasWriterResult{
@@ -8,15 +9,6 @@ enum PanvasWriterResult{
 	PANVAS_WRITER_RESULT_WRITEERROR,
 	PANVAS_WRITER_RESULT_ERROR
 };
-
-// TODO actually explain to users what save/export means.
-// Save
-//   ORA
-//   PPA (PARUPAINT PROJECT, TAR.GZ renamed)
-// Export
-//   PNG
-//   PNG SEQ
-//   WEBP ANIMATION
 
 class ParupaintPanvasWriter
 {
@@ -30,10 +22,9 @@ class ParupaintPanvasWriter
 
 	PanvasWriterResult SaveOra(const QString);
 	PanvasWriterResult SaveParupaintArchive(const QString);
-	PanvasWriterResult SaveVideo(const QString);
 
+	PanvasWriterResult ExportAV(const QString);
 	PanvasWriterResult ExportPng(const QString);
-	PanvasWriterResult ExportWebp(const QString);
 	PanvasWriterResult ExportPngZip(const QString);
 	PanvasWriterResult ExportPngSeq(const QString);
 	

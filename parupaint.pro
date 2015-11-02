@@ -1,3 +1,4 @@
+# vim: set filetype=make
 # basic
 CONFIG += 		c++11 debug_and_release
 QMAKE_CXXFLAGS +=	-std=c++11 -Wfatal-errors
@@ -24,48 +25,27 @@ LIBS +=			-lz
 
 win32:RC_ICONS = 	resources/parupaint.ico
 macx {
-	ICON =	resources/parupaint.icns
-	QMAKE_INFO_PLIST = resources/Info.plist
+ ICON =			resources/parupaint.icns
+ QMAKE_INFO_PLIST = 	resources/Info.plist
 }
 
-HEADERS +=	src/core/*.h \
-		src/net/*.h \
-		src/overlay/*.h \
-		src/bundled/karchive/*.h \
-		src/*.h
+HEADERS +=		$$files(src/core/*.h) \
+			$$files(src/net/*.h) \
+			$$files(src/overlay/*.h) \
+			$$files(src/bundled/karchive/*.h) \
+			$$files(src/*.h)
 
-SOURCES += 	src/core/*.cpp \
-		src/net/*.cpp \
-		src/overlay/*.cpp \
-		src/bundled/karchive/*.cpp \
-		$$files(src/*.cpp)
+SOURCES += 		$$files(src/core/*.cpp) \
+			$$files(src/net/*.cpp) \
+			$$files(src/overlay/*.cpp) \
+			$$files(src/bundled/karchive/*.cpp) \
+			$$files(src/*.cpp)
+
+LIBS    += 		-lavutil -lavcodec -lavformat -lswscale
+
 
 !server_release {
-	SOURCES -= 	src/main_server.cpp
-}
-
-server_release {
-	HEADERS = src/core/*.h \
-		  $$files(src/net/*.h) \
-		  src/bundled/karchive/*.h \
-
-	SOURCES = src/core/*.cpp \
-		  $$files(src/net/*.cpp) \
-		  src/bundled/karchive/*.cpp \
-		  src/main_server.cpp
-
-	HEADERS -= src/net/parupaintClient.h src/net/parupaintClientInstance.h
-	SOURCES -= src/net/parupaintClient.cpp src/net/parupaintClientInstance.cpp
-
-	QT = 	  network gui
-}
-
-video_export {
-	HEADERS += src/bundled/qtffmpeg/*.h
-	SOURCES += src/bundled/qtffmpeg/*.cpp
-	LIBS    += -lavutil -lavcodec -lavformat -lswscale
-
-	DEFINES += PARUPAINT_VIDEO_EXPORT __STDC_CONSTANT_MACROS
+ SOURCES -= 	src/main_server.cpp
 }
 
 VERSION_MAJOR =	0
