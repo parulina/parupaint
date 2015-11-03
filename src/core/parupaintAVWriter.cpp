@@ -2,6 +2,7 @@
 
 #include <QImage>
 #include <QDebug>
+#include <QSettings>
 
 #include <libavformat/avformat.h>
 #include <libavutil/avutil.h>
@@ -35,13 +36,20 @@ ParupaintAVWriter::~ParupaintAVWriter()
 }
 
 
-ParupaintAVWriter::ParupaintAVWriter(QString filename, int w, int h, int fps) : avformat("libavformat"), avutil("libavutil"), avcodec("libavcodec"), swscale("libswscale"), error(),
+ParupaintAVWriter::ParupaintAVWriter(QString filename, int w, int h, int fps) : error(),
+	avformat("avformat"), avutil("avutil"), avcodec("avcodec"), swscale("swscale"),
 	video_codec(nullptr), codec_context(nullptr), format_context(nullptr), format(nullptr), video_stream(nullptr), frame(nullptr), sws_context(nullptr)
 {
-	if(!avformat.load())	errorCancel("Could not load libavformat.");
-	if(!avutil.load())	errorCancel("Could not load libavutil.");
-	if(!avcodec.load())	errorCancel("Could not load libavcodec.");
-	if(!swscale.load())	errorCancel("Could not load libswscale.");
+	QSettings cfg;
+	if(cfg.contains("library/avformat")) 	avformat.setFileName(cfg.value("library/avformat").toString());
+	if(cfg.contains("library/avutil")) 	avutil.setFileName(cfg.value("library/avutil").toString());
+	if(cfg.contains("library/avcodec")) 	avcodec.setFileName(cfg.value("library/avcodec").toString());
+	if(cfg.contains("library/swscale")) 	swscale.setFileName(cfg.value("library/swscale").toString());
+
+	if(!swscale.load())	errorCancel("Could not load " + swscale.fileName());
+	if(!avcodec.load())	errorCancel("Could not load " + avcodec.fileName());
+	if(!avformat.load())	errorCancel("Could not load " + avformat.fileName());
+	if(!avutil.load())	errorCancel("Could not load " + avutil.fileName());
 
 	ppavfunc(avformat, av_register_all);
 	ppavfunc(avutil, av_log_set_level);
@@ -58,7 +66,7 @@ ParupaintAVWriter::ParupaintAVWriter(QString filename, int w, int h, int fps) : 
 
 	// register and silence it
 	pp_av_register_all();
-	//pp_av_log_set_level(0);
+	pp_av_log_set_level(cfg.value("library/av_loglevel", 0).toInt());
 	error.clear();
 
 	pp_avformat_alloc_output_context2(&format_context, nullptr, nullptr, filename.toStdString().c_str());
@@ -70,8 +78,7 @@ ParupaintAVWriter::ParupaintAVWriter(QString filename, int w, int h, int fps) : 
 	if(format->video_codec == AV_CODEC_ID_NONE) errorCancel("Format is not video.");
 
 	AVPixelFormat pix_fmt = AV_PIX_FMT_NONE;
-	AVCodecID video_id = format->video_codec;
-	video_codec = pp_avcodec_find_encoder(video_id);
+	video_codec = pp_avcodec_find_encoder(format->video_codec);
 	if(!video_codec) errorCancel("Encoder not found.");
 
 	// Iterate over available formats and try to pick a good one
@@ -88,6 +95,7 @@ ParupaintAVWriter::ParupaintAVWriter(QString filename, int w, int h, int fps) : 
 	else if(fmt_list.contains("rgba")) 	   pix_fmt = AV_PIX_FMT_RGBA;
 	else if(fmt_list.contains("yuv420p")) 	   pix_fmt = AV_PIX_FMT_YUV420P;
 	else if(pix_fmt == AV_PIX_FMT_NONE) 	   pix_fmt = (*video_codec->pix_fmts);
+	else 					   pix_fmt = AV_PIX_FMT_RGBA;
 
 	// New stream to write to...
 	if(!(video_stream = pp_avformat_new_stream(format_context, video_codec))) errorCancel("Couldn't create stream.");
@@ -97,7 +105,7 @@ ParupaintAVWriter::ParupaintAVWriter(QString filename, int w, int h, int fps) : 
 
 	codec_context->codec_id = format->video_codec;
 	codec_context->codec_type = AVMEDIA_TYPE_VIDEO;
-	codec_context->bit_rate = 1000000; // TODO variable?
+	codec_context->bit_rate = cfg.value("library/av_bitrate", 100000).toInt();
 
 	codec_context->width = w;
 	codec_context->height = h;
@@ -112,13 +120,6 @@ ParupaintAVWriter::ParupaintAVWriter(QString filename, int w, int h, int fps) : 
 	pp_av_dump_format(format_context, 0, filename.toStdString().c_str(), 1);
 
 	AVDictionary * opts = nullptr;
-
-	/*
-	pp_av_dict_set(&opts, "sws_dither", "none", 0);
-	pp_av_dict_set(&opts, "dither", "none", 0);
-	pp_av_dict_set_int(&opts, "bayer_scale", 0, 0);
-	*/
-
 	if(pp_avcodec_open2(codec_context, video_codec, &opts) < 0) errorCancel("Couldn't open codec.");
 
 	// Init new frame... width/height not set for some reason?

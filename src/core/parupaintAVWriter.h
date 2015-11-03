@@ -14,11 +14,11 @@ struct SwsContext;
 class ParupaintAVWriter
 {
 	private:
+	QString error;
 	QLibrary avformat;
 	QLibrary avutil;
 	QLibrary avcodec;
 	QLibrary swscale;
-	QString error;
 	AVCodec * video_codec;
 	AVCodecContext * codec_context;
 

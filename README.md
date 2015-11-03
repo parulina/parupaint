@@ -48,3 +48,16 @@ It has support for wacom tablets.
 - Press `W` for flood fill tool, `Q` for dot pattern tool, and `Ctrl` + `Q` for opacity drawing tool.
 - Press `E` key or `Right mouse button` to switch between eraser and brush. 
 - Press `Right mouse button` to also switch between eraser and brush.
+
+### Configuration file
+Parupaint uses a configuration file found in the application data folders: `%APPDATA%/paru/parupaint.ini` on windows, `~/.config/paru/parupaint.ini` on linux. You can choose to load ffmpeg libraries through custom paths:
+
+```conf
+[library]
+avformat=/path...
+avutil=/path...
+avcodec=/path...
+swscale=/path...
+av_loglevel=0
+av_bitrate=100000
+```
