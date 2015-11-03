@@ -10,6 +10,7 @@
 #include <libswscale/swscale.h>
 #include <libavutil/imgutils.h>
 #include <libavutil/opt.h>
+#include <libavutil/pixfmt.h>
 
 #define errorCancel(err) { setError(err); return; }
 #define ppavfunc(l, f) auto pp_##f = decltype(&f)( l.resolve(#f)); if(!pp_##f) errorCancel("Function pp_" #f " in " #l " could not be loaded.")
@@ -163,7 +164,7 @@ void ParupaintAVWriter::addFrame(const QImage & img)
 	// FIXME the ffmpeg documentation is very confusing.
 	// I don't know how to disable the dithering. fix it...
 	pp_av_opt_set(sws_context, "sws_dither", "none", 0);
-	sws_context = pp_sws_getCachedContext(sws_context, codec_context->width, codec_context->height, AVPixelFormat(PIX_FMT_BGRA),
+	sws_context = pp_sws_getCachedContext(sws_context, codec_context->width, codec_context->height, AVPixelFormat(AV_PIX_FMT_BGRA),
 							codec_context->width, codec_context->height, AVPixelFormat(codec_context->pix_fmt),
 							SWS_FAST_BILINEAR | SWS_PRINT_INFO, nullptr, nullptr, nullptr);
 	pp_sws_scale(sws_context, srcplanes, srcstride, 0, codec_context->height, frame->data, frame->linesize);
