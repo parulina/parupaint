@@ -264,8 +264,8 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(), local_port(1108), old_brush_
 	
 	// restore window pos
 	QSettings cfg;
-	restoreGeometry(cfg.value("mainWindowGeometry").toByteArray());
-	restoreState(cfg.value("mainWindowState").toByteArray());
+	restoreGeometry(cfg.value("window/maingeometry").toByteArray());
+	restoreState(cfg.value("window/mainstate").toByteArray());
 
 	// ctrl + shift + q = quit
 	new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Q), this, SLOT(close()));
@@ -781,8 +781,8 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 void ParupaintWindow::closeEvent(QCloseEvent *)
 {
 	QSettings cfg;
-	cfg.setValue("mainWindowGeometry", saveGeometry());
-	cfg.setValue("mainWindowState", saveState());
+	cfg.setValue("window/maingeometry", saveGeometry());
+	cfg.setValue("window/mainstate", saveState());
 }
 
 

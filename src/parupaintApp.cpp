@@ -35,6 +35,7 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv), s
 	setWindowIcon(QIcon(":/resources/parupaint.ico"));
 	this->setApplicationVersion(PARUPAINT_VERSION);
 
+	QSettings::setDefaultFormat(QSettings::IniFormat);
 	// Set default username
 	QSettings cfg;
 	cfg.beginGroup("painter");
