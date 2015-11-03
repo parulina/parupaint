@@ -9,13 +9,16 @@ MOC_DIR =		.obj/moc
 # TODO check if compiler supports this switch
 unix:QMAKE_CXXFLAGS += -fdiagnostics-color=auto
 
-# Win32 + release build
-win32:release {
-	CONFIG -= debug debug_and_release console
+# Windows: disable console in Makefile.Release
+win32:CONFIG(release, debug|release) {
 	CONFIG += static windows
+}
+win32:CONFIG(debug, debug|release) {
+	CONFIG += console
 }
 
 # Normal setup
+# TODO optional xml
 QT += 			widgets network xml websockets
 RESOURCES +=		*.qrc
 LIBS +=			-lz

@@ -74,11 +74,6 @@ ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent)
 	connect(this, &ParupaintServer::onMessage, this, &ParupaintServerInstance::Message);
 
 	connect(&record_timer, &QTimer::timeout, this, &ParupaintServerInstance::RecordTimerStep);
-
-	ParupaintPanvasReader reader(canvas);
-	reader.Load(".", "a.ppa");
-	ParupaintPanvasWriter w(canvas);
-	w.ExportAV("aa.gif");
 }
 
 ParupaintPanvas * ParupaintServerInstance::GetCanvas()

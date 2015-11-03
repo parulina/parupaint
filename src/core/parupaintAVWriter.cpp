@@ -3,6 +3,7 @@
 #include <QImage>
 #include <QDebug>
 #include <QSettings>
+#include <QFileInfo>
 
 #include <libavformat/avformat.h>
 #include <libavutil/avutil.h>
@@ -41,6 +42,20 @@ ParupaintAVWriter::ParupaintAVWriter(QString filename, int w, int h, int fps) : 
 	avformat("avformat"), avutil("avutil"), avcodec("avcodec"), swscale("swscale"),
 	video_codec(nullptr), codec_context(nullptr), format_context(nullptr), format(nullptr), video_stream(nullptr), frame(nullptr), sws_context(nullptr)
 {
+#ifdef Q_OS_WIN
+	qDebug() << "Checking windows dlls...";
+	QDir appdir(QCoreApplication::applicationDirPath());
+	appdir.setFilter(QDir::Files | QDir::NoSymLinks);
+	foreach(QFileInfo file, appdir.entryInfoList()){
+		QString filename = file.fileName();
+		qDebug() << filename;
+		if(filename.contains(QRegularExpression("^avcodec.*.dll"))) avcodec.setFileName(filename);
+		if(filename.contains(QRegularExpression("^avutil.*.dll"))) avutil.setFileName(filename);
+		if(filename.contains(QRegularExpression("^avformat.*.dll"))) avformat.setFileName(filename);
+		if(filename.contains(QRegularExpression("^swscale.*.dll"))) swscale.setFileName(filename);
+	}
+#endif
+
 	QSettings cfg;
 	if(cfg.contains("library/avformat")) 	avformat.setFileName(cfg.value("library/avformat").toString());
 	if(cfg.contains("library/avutil")) 	avutil.setFileName(cfg.value("library/avutil").toString());
