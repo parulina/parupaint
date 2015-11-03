@@ -61,3 +61,10 @@ swscale=/path...
 av_loglevel=0
 av_bitrate=100000
 ```
+### Build switches
+By default, parupaint uses a GUI interface with ffmpeg dynamic library support. This requires you to compile with the GUI modules and the ffmpeg headers. To disable either of those, run qmake with any of these -config switches:
+
+```
+noffmpeg - compile without ffmpeg support
+nogui - compile without gui support (standalone server)
+```

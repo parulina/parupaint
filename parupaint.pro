@@ -41,6 +41,14 @@ SOURCES += 		$$files(src/core/*.cpp) \
 			$$files(src/bundled/karchive/*.cpp) \
 			$$files(src/*.cpp)
 
+noffmpeg {
+ message("Compiling without ffmpeg support.")
+ HEADERS -=		src/core/parupaintAVWriter.h
+ SOURCES -=		src/core/parupaintAVWriter.cpp
+ DEFINES +=		PARUPAINT_NOFFMPEG
+ unix:$$system(touch src/core/parupaintPanvasWriter.cpp)
+}
+
 !server_release {
  SOURCES -= 	src/main_server.cpp
 }
