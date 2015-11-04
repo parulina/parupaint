@@ -1,22 +1,39 @@
-## PARUPAINT ALPHA PREVIEW
-This is my painting program. You can paint with others! And there's even a [web client](http://github.com/paruluna/parupaint-web)!
-
-It has support for wacom tablets.
+## PARUPAINT ALPHA
+This is my painting program! Concept in development since 2012 <3
 
 ### FEATURES
-- Multiplayer painting
-- Websocket, allowing web clients
-- Animation
+- Multiplayer painting using websocket, allowing web clients
+- Animation support
 - Key focused navigation
-- Multiple save and export options:
- - Save as OpenRaster (ORA), Parupaint archive (PPA)
- - Export to PNG (PNG), PNG Sequence (ZIP), movie (AVI)
+- Uses own project format, Parupaint archive (PPA), a gzip file retaining animation information
+- Can export to PNG, PNG sequence in gzip file or folder
+	- Support for ffmpeg plugin export (all format/codecs the libraries supports)
+- Can load ORA files
 
+### BUILD & INSTALL
+parupaint is developed on Qt5. A simple `qmake && make release` is enough to build the project, provided you got the dependencies for the default configuration:
+`qt5-base qt5-websockets ffmpeg`
 
-### TODO
-- Undo/redo support in multiplayer
-- Left-handed support (mirror the keys)
-- Proper tutorial
+If you wish to customize the build process, run qmake with any of these -config switches:
+```
+noffmpeg - compile without ffmpeg support (no ffmpeg plugin export)
+nogui - compile without gui support (standalone server)
+noxml - compile without any xml support (no ORA load)
+```
+If you successfully build parupaint, but unable to export despite ffmpeg libraries loading correctly, make sure both the dynamic libraries and parupaint are built with the same version of the ffmpeg headers.
+
+### CONFIG
+Parupaint uses a configuration file found in the application data folders: `%APPDATA%/paru/parupaint.ini` on windows, `~/.config/paru/parupaint.ini` on linux. You can choose to load ffmpeg libraries through custom paths:
+
+```conf
+[library]
+avformat=/path...
+avutil=/path...
+avcodec=/path...
+swscale=/path...
+av_loglevel=0
+av_bitrate=100000
+```
 
 ### KEYS
 
@@ -48,23 +65,3 @@ It has support for wacom tablets.
 - Press `W` for flood fill tool, `Q` for dot pattern tool, and `Ctrl` + `Q` for opacity drawing tool.
 - Press `E` key or `Right mouse button` to switch between eraser and brush. 
 - Press `Right mouse button` to also switch between eraser and brush.
-
-### Configuration file
-Parupaint uses a configuration file found in the application data folders: `%APPDATA%/paru/parupaint.ini` on windows, `~/.config/paru/parupaint.ini` on linux. You can choose to load ffmpeg libraries through custom paths:
-
-```conf
-[library]
-avformat=/path...
-avutil=/path...
-avcodec=/path...
-swscale=/path...
-av_loglevel=0
-av_bitrate=100000
-```
-### Build switches
-By default, parupaint uses a GUI interface with ffmpeg dynamic library support. This requires you to compile with the GUI modules and the ffmpeg headers. To disable either of those, run qmake with any of these -config switches:
-
-```
-noffmpeg - compile without ffmpeg support
-nogui - compile without gui support (standalone server)
-```
