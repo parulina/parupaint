@@ -1,9 +1,10 @@
-# vim: set filetype=make
-# basic
-CONFIG += 		c++11 debug_and_release
-QMAKE_CXXFLAGS +=	-std=c++11 -Wfatal-errors
 OBJECTS_DIR =		.obj
 MOC_DIR =		.obj/moc
+DESTDIR =		bin
+
+CONFIG += 		c++11 debug_and_release
+QMAKE_CXXFLAGS +=	-std=c++11 -Wfatal-errors
+TARGET = 		parupaint
 
 # Colored output for unix
 # TODO check if compiler supports this switch
@@ -18,7 +19,6 @@ win32:CONFIG(debug, debug|release) {
 }
 
 # Normal setup
-# TODO optional xml
 QT += 			widgets network xml websockets
 RESOURCES +=		*.qrc
 LIBS +=			-lz
@@ -43,25 +43,37 @@ SOURCES += 		$$files(src/core/*.cpp) \
 			$$files(src/overlay/*.cpp) \
 			$$files(src/bundled/karchive/*.cpp) \
 			$$files(src/*.cpp)
+SOURCES -=		src/main_server.cpp
 
 INCLUDEPATH +=		src/bundled/ffmpeg
+
+
+
+nogui {
+ !build_pass:message("Compiling without GUI (standalone).")
+ QT -=		widgets
+ HEADERS -=	$$files(src/net/parupaintClient*.h) $$files(src/overlay/*.h)
+ SOURCES -=	$$files(src/net/parupaintClient*.cpp) $$files(src/overlay/*.cpp)
+ HEADERS -= 	$$files(src/*.h)
+ SOURCES -= 	$$files(src/*.cpp)
+
+ SOURCES += 	src/main_server.cpp
+ TARGET = 	parupaint-server
+}
+
+noxml {
+ !build_pass:message("Compiling without ORA support.")
+ QT -= xml
+}
+
 noffmpeg {
- message("Compiling without ffmpeg support.")
+ !build_pass:message("Compiling without ffmpeg support.")
  HEADERS -=		src/core/parupaintAVWriter.h
  SOURCES -=		src/core/parupaintAVWriter.cpp
  DEFINES +=		PARUPAINT_NOFFMPEG
- unix:$$system(touch src/core/parupaintPanvasWriter.cpp)
-}
-
-!server_release {
- SOURCES -= 	src/main_server.cpp
 }
 
 VERSION_MAJOR =	0
 VERSION_MINOR =	8
 VERSION_PATCH =	5
 VERSION = 	$${VERSION_MAJOR}.$${VERSION_MINOR}.$${VERSION_PATCH}
-
-TARGET = 	parupaint
-DESTDIR =	bin
-
