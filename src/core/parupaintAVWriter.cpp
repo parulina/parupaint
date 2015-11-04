@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <QFileInfo>
 
+extern "C" {
 #include <libavformat/avformat.h>
 #include <libavutil/avutil.h>
 #include <libavcodec/avcodec.h>
@@ -12,6 +13,7 @@
 #include <libavutil/imgutils.h>
 #include <libavutil/opt.h>
 #include <libavutil/pixfmt.h>
+}
 
 #define errorCancel(err) { setError(err); return; }
 #define ppavfunc(l, f) auto pp_##f = decltype(&f)( l.resolve(#f)); if(!pp_##f) errorCancel("Function pp_" #f " in " #l " could not be loaded.")

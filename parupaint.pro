@@ -44,6 +44,7 @@ SOURCES += 		$$files(src/core/*.cpp) \
 			$$files(src/bundled/karchive/*.cpp) \
 			$$files(src/*.cpp)
 
+INCLUDEPATH +=		src/bundled/ffmpeg
 noffmpeg {
  message("Compiling without ffmpeg support.")
  HEADERS -=		src/core/parupaintAVWriter.h
