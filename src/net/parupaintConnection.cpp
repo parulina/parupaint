@@ -1,4 +1,5 @@
 #include "parupaintConnection.h"
+#include <QStringBuilder>
 #include <QJsonDocument>
 #include <QDebug>
 
@@ -14,7 +15,7 @@ qint64 ParupaintConnection::send(const QString id, const QJsonObject &obj)
 qint64 ParupaintConnection::send(const QString id, const QString msg)
 {
 	if(!this->socket) return 0;
-	return socket->sendTextMessage(id + " " + msg);
+	return socket->sendTextMessage(id % " " % msg);
 }
 void ParupaintConnection::setId(sid id)
 {
