@@ -15,6 +15,7 @@ class ParupaintRecordPlayer;
 
 class ParupaintServerInstance : public ParupaintServer
 {
+Q_OBJECT
 	QByteArray log_recovery;
 
 	QHash<ParupaintConnection*, ParupaintBrush> record_backup;
@@ -64,6 +65,9 @@ class ParupaintServerInstance : public ParupaintServer
 
 	private slots:
 	void Message(ParupaintConnection *, const QString, const QByteArray);
+
+	signals:
+	void OnMessage(const QString & id, const QJsonObject &obj);
 };
 
 #endif

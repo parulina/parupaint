@@ -459,6 +459,7 @@ void ParupaintServerInstance::Message(ParupaintConnection * c, const QString id,
 {
 	const QJsonObject obj = QJsonDocument::fromJson(bytes).object();
 	QJsonObject obj_copy = obj;
+	emit OnMessage(id, obj);
 
 	if(c) {
 		if(id == "connect"){
