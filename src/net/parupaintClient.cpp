@@ -73,7 +73,7 @@ void ParupaintClient::onConnect()
 }
 void ParupaintClient::onDisconnect()
 {
-	emit onMessage("disconnect");
+	emit onMessage("disconnect", socket.closeReason().toUtf8());
 
 	if(SwitchHost){
 		SwitchHost = false;
@@ -87,4 +87,11 @@ void ParupaintClient::textReceived(QString text)
 	const auto id = text.split(' ')[0];
 	const auto arg = text.mid(id.length()+1);
 	emit onMessage(id, arg.toUtf8());
+}
+
+QUrl ParupaintClient::url()
+{
+	QUrl url(host);
+	url.setPort(port);
+	return url.toString();
 }

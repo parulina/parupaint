@@ -66,6 +66,11 @@ void ParupaintChat::chatOutFocus()
 	this->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 }
 
+void ParupaintChat::ClearMessages()
+{
+	chat->setHtml("");
+}
+
 void ParupaintChat::AddMessage(QString msg, QString name)
 {
 	chat->AddMessage(msg, name);

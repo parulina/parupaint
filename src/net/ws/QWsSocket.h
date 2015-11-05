@@ -67,6 +67,8 @@ public:
 	qint64 sendTextMessage(const QString& string); // write data as text
 	qint64 sendBinaryMessage(const QByteArray & byteArray); // write data as binary
 
+	const QString & closeReason();
+
 public slots:
 	void connectToHost(const QString & hostName, quint16 port = 80, OpenMode mode = ReadWrite);
 	void connectToHost(const QHostAddress & address, quint16 port = 80, OpenMode mode = ReadWrite);
@@ -143,6 +145,8 @@ private:
 	QByteArray accept;
 
 	bool _secured;
+
+	QString _closeReason;
 
 	/*!
 	 * Sends pong response with `applicationData` appended.

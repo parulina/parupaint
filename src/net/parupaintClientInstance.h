@@ -53,6 +53,7 @@ Q_OBJECT
 
 	signals:
 	void ChatMessageReceived(QString, QString);
+	void OnConnect();
 	void OnDisconnect(QString reason = "");
 	void PlaymodeUpdate(ParupaintBrush *);
 };

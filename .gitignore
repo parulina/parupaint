@@ -4,6 +4,7 @@ junk/
 Makefile*
 .*
 qrc_*
+src/bundled/ffmpeg
 
 /*.png
 /*.gif

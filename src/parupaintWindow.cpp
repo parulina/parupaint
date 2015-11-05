@@ -123,6 +123,7 @@ ParupaintWindow::ParupaintWindow() : QMainWindow(), local_port(1108), old_brush_
 	client = new ParupaintClientInstance(pool, this);
 	connect(client, &ParupaintClientInstance::ChatMessageReceived, this, &ParupaintWindow::ChatMessageReceived);
 	connect(client, &ParupaintClientInstance::OnDisconnect, this, &ParupaintWindow::OnNetworkDisconnect);
+	connect(client, &ParupaintClientInstance::OnConnect, this, &ParupaintWindow::OnNetworkConnect);
 	connect(client, &ParupaintClientInstance::PlaymodeUpdate, [this](ParupaintBrush * brush){
 		auto * current_brush = glass.GetCurrentBrush();
 		*current_brush = *brush;
@@ -293,13 +294,19 @@ void ParupaintWindow::ChatMessageReceived(QString name, QString msg)
 	chat->AddMessage(msg, name);
 }
 
-// on net disconnect
+void ParupaintWindow::OnNetworkConnect()
+{
+	QUrl url = client->url();
+	if(url.host() == "localhost") return;
+	chat->AddMessage("You are connected to " + url.host());
+}
 void ParupaintWindow::OnNetworkDisconnect(QString reason)
 {
 	if(reason == "SwitchHost") return;
 	chat->show();
 	chat->AddMessage("You were disconnected from the server.");
 }
+
 
 void ParupaintWindow::ChatMessage(QString str)
 {

@@ -16,6 +16,7 @@ Q_OBJECT
 
 	public:
 	ParupaintChat(QWidget * parent = nullptr);
+	void ClearMessages();
 	void AddMessage(QString, QString = "");
 	void setChatInputPlaceholder(QString);
 

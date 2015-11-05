@@ -46,12 +46,12 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 	const QJsonObject object = QJsonDocument::fromJson(bytes).object();
 
 	if(id == "connect"){
-		
-		qDebug("Connect success");
+
 		QJsonObject obj;
 		obj["name"] = nickname;
 		obj["version"] = PARUPAINT_VERSION;
 		this->send("join", obj);
+		emit OnConnect();
 
 	} else if(id == "disconnect"){
 		emit OnDisconnect(bytes);

@@ -225,15 +225,17 @@ void QWsSocket::abort(QString reason)
 	tcpSocket->abort();
 }
 
+const QString & QWsSocket::closeReason()
+{
+	return _closeReason;
+}
+
 void QWsSocket::close(CloseStatusCode closeStatusCode, QString reason)
 {
-	if (QAbstractSocket::state() == QAbstractSocket::UnconnectedState)
+	if (QAbstractSocket::state() == QAbstractSocket::UnconnectedState) return;
+	if (!closingHandshakeSent)
 	{
-		return;
-	}
-
-	if (! closingHandshakeSent)
-	{
+		_closeReason = reason;
 		switch (_version)
 		{
 			case WS_V0:

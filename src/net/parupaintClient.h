@@ -25,6 +25,8 @@ Q_OBJECT
 	qint64 send(const QString id, const QString data);
 	qint64 send(const QString data);
 
+	QUrl url();
+
 	private slots:
 	void onConnect();
 	void onDisconnect();
