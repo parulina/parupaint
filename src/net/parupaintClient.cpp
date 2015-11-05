@@ -5,10 +5,10 @@
 
 ParupaintClient::ParupaintClient(QObject * parent) : QObject(parent), Connected(false), SwitchHost(false)
 {
-	connect(&socket, &ParupaintWebSocket::connected, this, &ParupaintClient::onConnect);
-	connect(&socket, &ParupaintWebSocket::disconnected, this, &ParupaintClient::onDisconnect);
-	connect(&socket, &ParupaintWebSocket::textMessageReceived, this, &ParupaintClient::textReceived);
-	connect(&socket, &ParupaintWebSocket::stateChanged, this, &ParupaintClient::onSocketStateChanged);
+	connect(&socket, &QWsSocket::connected, this, &ParupaintClient::onConnect);
+	connect(&socket, &QWsSocket::disconnected, this, &ParupaintClient::onDisconnect);
+	connect(&socket, &QWsSocket::textReceived, this, &ParupaintClient::textReceived);
+	connect(&socket, &QWsSocket::stateChanged, this, &ParupaintClient::onSocketStateChanged);
 	connect(&socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
 }
 
@@ -34,9 +34,7 @@ void ParupaintClient::Connect(QString u, quint16 p)
 		SwitchHost = true;
 		return this->Disconnect("SwitchHost");
 	} else {
-		QUrl url = QUrl(host);
-		url.setPort(p);
-		socket.open(url);
+		socket.connectToHost(host, p);
 	}
 }
 
@@ -44,7 +42,7 @@ void ParupaintClient::Disconnect(QString reason)
 {
 	if(socket.state() != QAbstractSocket::UnconnectedState) {
 		if(socket.state() == QAbstractSocket::ConnectedState){
-			socket.close(QWebSocketProtocol::CloseCodeNormal, reason);
+			socket.disconnectFromHost(reason);
 		} else {
 			socket.abort();
 		}
@@ -71,11 +69,11 @@ qint64 ParupaintClient::send(const QString id, const QString data)
 
 void ParupaintClient::onConnect()
 {
-	emit onMessage("connect", "");
+	emit onMessage("connect");
 }
 void ParupaintClient::onDisconnect()
 {
-	emit onMessage("disconnect", socket.closeReason().toUtf8());
+	emit onMessage("disconnect");
 
 	if(SwitchHost){
 		SwitchHost = false;

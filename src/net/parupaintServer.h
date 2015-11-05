@@ -5,22 +5,19 @@
 #include <QObject>
 #include <QAbstractSocket>
 
-// QWebSocket
+// QWsSocket
 class ParupaintConnection;
-class QWebSocketServer;
-class QWebSocket;
-
-typedef QWebSocketServer ParupaintWebSocketServer;
-// this includes websocket
+class QWsServer;
+class QWsSocket;
 
 class ParupaintServer : public QObject
 {
 Q_OBJECT
 	private:
 	QList<ParupaintConnection*> connections;
-	ParupaintWebSocketServer* server;
+	QWsServer* server;
 
-	ParupaintConnection * GetConnection(QWebSocket*);
+	ParupaintConnection * GetConnection(QWsSocket*);
 
 	private slots:
 	void onConnection();

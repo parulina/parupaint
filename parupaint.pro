@@ -19,7 +19,7 @@ win32:CONFIG(debug, debug|release) {
 }
 
 # Normal setup
-QT += 			widgets network xml websockets
+QT += 			widgets network xml
 RESOURCES +=		*.qrc
 LIBS +=			-lz
 
@@ -34,12 +34,14 @@ macx {
 
 HEADERS +=		$$files(src/core/*.h) \
 			$$files(src/net/*.h) \
+			$$files(src/net/ws/*.h) \
 			$$files(src/overlay/*.h) \
 			$$files(src/bundled/karchive/*.h) \
 			$$files(src/*.h)
 
 SOURCES += 		$$files(src/core/*.cpp) \
 			$$files(src/net/*.cpp) \
+			$$files(src/net/ws/*.cpp) \
 			$$files(src/overlay/*.cpp) \
 			$$files(src/bundled/karchive/*.cpp) \
 			$$files(src/*.cpp)

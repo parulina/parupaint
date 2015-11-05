@@ -3,7 +3,7 @@
 #include <QJsonDocument>
 #include <QDebug>
 
-ParupaintConnection::ParupaintConnection(QWebSocket * s) : socket(s), id(0)
+ParupaintConnection::ParupaintConnection(QWsSocket * s) : socket(s), id(0)
 {
 }
 
@@ -26,7 +26,7 @@ sid ParupaintConnection::getId() const
 	return this->id;
 }
 
-QWebSocket * ParupaintConnection::getSocket()
+QWsSocket * ParupaintConnection::getSocket()
 {
 	return this->socket;
 }

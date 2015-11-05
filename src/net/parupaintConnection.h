@@ -1,25 +1,25 @@
 #ifndef PARUPAINTCONNECTION_H
 #define PARUPAINTCONNECTION_H
 
-#include <QtWebSockets/QWebSocket>
+#include "ws/QWsSocket.h"
 
 typedef int sid;
 
 class ParupaintConnection
 {
 	private:
-	QWebSocket * socket;
+	QWsSocket * socket;
 	sid id;
 
 	public:
-	ParupaintConnection(QWebSocket * s);
+	ParupaintConnection(QWsSocket * s);
 	qint64 send(const QString id, const QJsonObject &obj);
 	qint64 send(const QString id, const QString msg);
 
 	void setId(sid);
 	sid getId() const;
 
-	QWebSocket * getSocket();
+	QWsSocket * getSocket();
 };
 
 #endif
