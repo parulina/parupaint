@@ -307,22 +307,6 @@ void ParupaintWindow::OnNetworkDisconnect(QString reason)
 	chat->AddMessage("You were disconnected from the server.");
 }
 
-
-void ParupaintWindow::ChatMessage(QString str)
-{
-	if(str[0] == '/'){
-		QString cmd = str;
-		QString params = "";
-		if(str.indexOf(" ") != -1){
-			cmd = str.section(" ", 0, 0);
-			params = str.section(" ", 1);
-		}
-		cmd = cmd.mid(1);
-		return Command(cmd, params);
-	}
-	client->SendChat(str);
-}
-
 void ParupaintWindow::CursorChange(ParupaintBrush* brush)
 {
 	// when the cursor changes. important to update brushglass
@@ -877,38 +861,6 @@ QString ParupaintWindow::GetSaveDirectory() const
 	return saved.path();
 }
 
-void ParupaintWindow::Command(QString cmd, QString params)
-{
-	qDebug() << cmd << params;
-	if(!params.isEmpty()){
-		if(cmd == "load"){
-			client->LoadCanvas(params);
-
-		} else if(cmd == "save"){
-			client->SaveCanvas(params);
-
-		// record commands
-		} else if(cmd == "play") {
-			client->PlayRecord(params, false);
-
-		} else if(cmd == "script") {
-			client->PlayRecord(params, true);
-		}
-	}
-
-	if(cmd == "key"){
-		if(params.isEmpty()){
-			auto list = key_shortcuts->GetKeys();
-			list.sort();
-			QString str = list.join("<br/>");
-			str.append("<br/>List of keys, page up and down to scroll.<br/>Dialog hotkeys requires restart.<br/>Usage: /key name=shortcut");
-			return chat->AddMessage(str);
-		}
-		key_shortcuts->AddKey(params);
-		key_shortcuts->Save();
-	}
-	chat->AddMessage(">> " + cmd + " " + params);
-}
 
 void ParupaintWindow::SetLocalHostPort(quint16 port)
 {
