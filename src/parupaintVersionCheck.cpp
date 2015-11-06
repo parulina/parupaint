@@ -1,3 +1,5 @@
+#include "parupaintVersionCheck.h"
+#include "parupaintVersion.h"
 
 #include <QtNetwork>
 #include <QJsonDocument>
@@ -5,10 +7,7 @@
 #include <QJsonParseError>
 #include <QDebug>
 
-#include "parupaintVersion.h"
-#include "parupaintVersionCheck.h"
-
-const QString url = "https://api.github.com/repos/paruluna/parupaint/releases/latest";
+const QString url = "https://api.github.com/repos/parulina/parupaint/releases/latest";
 
 ParupaintVersionCheck::ParupaintVersionCheck()
 {
@@ -43,6 +42,6 @@ void ParupaintVersionCheck::completed(QNetworkReply* reply)
 				return;
 			}
 		}
-		emit Response(false, "");
+		emit Response(false);
 	}
 }

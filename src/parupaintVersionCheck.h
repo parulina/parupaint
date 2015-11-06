@@ -14,7 +14,7 @@ Q_OBJECT
 	void completed(QNetworkReply*);
 
 	signals:
-	void Response(bool, QString);
+	void Response(bool, const QString & = "");
 };
 
 #endif

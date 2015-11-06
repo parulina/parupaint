@@ -45,11 +45,11 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 	ptext->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
 	ptext->setHtml(QStringLiteral(
 "<p class=\"about\">"
-	"Welcome to my painting program, parupaint. The program is designed to be quick and light, "
+	"Welcome to my painting program, parupaint. The program is designed to be quick and light,"
 	"while still able to be a nice drawing platform. It is also able to do animations."
 "<br />"
-	"You can read a tutorial for this program on my website: <a href=\"http://sqnya.se#parupaint\">[ sqnya.se ]</a>."
-	"Thank you for downloading this and using my creation!"
+	"You can read a summary of this program on the homepage: <a href=\"http://parupaint.sqnya.se\">[ parupaint.sqnya.se ]</a>."
+	"Thank you for downloading this and using my program!"
 "<br />"
 "<br />"
 	"Please note that this program is alpha and is constantly adding/removing features."
@@ -66,7 +66,7 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 	title->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
 	title->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
-	QLabel * tabtext = new QLabel("hold [tab] for help");
+	QLabel * tabtext = new QLabel("press [F1] for help");
 	tabtext->setMaximumHeight(30);
 	tabtext->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	tabtext->setObjectName("tabhelp");
