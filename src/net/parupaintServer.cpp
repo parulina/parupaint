@@ -4,7 +4,7 @@
 
 #include <QDebug>
 
-ParupaintServer::ParupaintServer(quint16 port, QObject * parent) : QObject(parent)
+ParupaintServer::ParupaintServer(quint16 port, QObject * parent) : QObject(parent), protective(false)
 {
 	qDebug() << "Starting server at" << port;
 	server = new QWsServer(this);
@@ -19,13 +19,35 @@ ParupaintServer::~ParupaintServer()
 	server->close();
 	qDeleteAll(connections.begin(), connections.end());
 }
+void ParupaintServer::setProtective(bool b)
+{
+	protective = b;
+}
+bool ParupaintServer::isProtective()
+{
+	return protective;
+}
 
 void ParupaintServer::onConnection()
 {
-	auto *socket = server->nextPendingConnection();
+	QWsSocket *socket = server->nextPendingConnection();
 
 	connect(socket, &QWsSocket::textReceived, this, &ParupaintServer::textReceived);
 	connect(socket, &QWsSocket::disconnected, this, &ParupaintServer::onDisconnection);
+
+	// If someone from outside joins...
+	if(isProtective() && socket->host() != "localhost"){
+		bool has = false;
+		// Check if the owner is in the server.
+		foreach(ParupaintConnection * con, connections){
+			if(con->getSocket()->host() == "localhost") has = true;
+		}
+		if(!has){
+			socket->abort("Not allowed.");
+			qDebug() << "Do not allow socket";
+			return;
+		}
+	}
 
 	connections << new ParupaintConnection(socket);
 	emit onMessage(connections.first(), "connect");
@@ -35,8 +57,11 @@ void ParupaintServer::onDisconnection()
 {
 	auto *socket = dynamic_cast<QWsSocket* >(sender());
 	if(socket) {
-		emit onMessage(GetConnection(socket), "disconnect");
-		connections.removeOne(GetConnection(socket));
+		ParupaintConnection * con = GetConnection(socket);
+		if(con){
+			emit onMessage(con, "disconnect");
+			connections.removeOne(con);
+		}
 		socket->deleteLater();
 	}
 }

@@ -70,6 +70,7 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv), s
 	main_window = new ParupaintWindow;
 	if(server_str.isEmpty()){
 		server = new ParupaintServerInstance(port_num);
+		server->setProtective(true);
 		main_window->SetLocalHostPort(port_num);
 		main_window->Connect(QString("localhost:%1").arg(port_num));
 	} else {

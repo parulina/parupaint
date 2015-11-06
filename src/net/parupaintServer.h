@@ -16,6 +16,7 @@ Q_OBJECT
 	private:
 	QList<ParupaintConnection*> connections;
 	QWsServer* server;
+	bool protective;
 
 	ParupaintConnection * GetConnection(QWsSocket*);
 
@@ -27,6 +28,9 @@ Q_OBJECT
 	public:
 	ParupaintServer(quint16 port, QObject * = nullptr);
 	~ParupaintServer();
+
+	void setProtective(bool);
+	bool isProtective();
 
 	signals:
 	void onMessage(ParupaintConnection*, QString, const QByteArray = "");
