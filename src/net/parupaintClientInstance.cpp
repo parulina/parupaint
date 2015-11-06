@@ -23,7 +23,7 @@
 #include "../core/parupaintFrameBrushOps.h"
 #include "../parupaintVersion.h"
 
-#include "qcompressor.h"
+#include "../bundled/qcompressor.h"
 
 #include <QDebug>
 
@@ -145,7 +145,7 @@ void ParupaintClientInstance::Message(const QString id, const QByteArray bytes)
 		}
 	} else if (id == "paste") {
 		if(!object["paste"].isString()) return;
-		QImage image = ParupaintSnippets::toImage(object["paste"].toString());
+		QImage image = ParupaintSnippets::Base64GzipToImage(object["paste"].toString());
 		if(image.isNull()) return;
 
 		if(object["layer"].isDouble() && object["frame"].isDouble()){
@@ -315,21 +315,12 @@ void ParupaintClientInstance::SendBrushUpdate(ParupaintBrush * brush)
 
 void ParupaintClientInstance::PasteLayerFrameImage(int l, int f, int x, int y, QImage img)
 {
-	QByteArray pngData;
-	QBuffer buf(&pngData);
-	buf.open(QIODevice::WriteOnly);
-	img.save(&buf, "png");
-	buf.close();
-
-	QByteArray compressed;
-	QCompressor::gzipCompress(pngData, compressed);
-
 	QJsonObject obj;
 	obj["layer"] = l;
 	obj["frame"] = f;
 	obj["x"] = x;
 	obj["y"] = y;
-	obj["image"] = "data:image/png;base64," + QString(compressed.toBase64());
+	obj["image"] = ParupaintSnippets::ImageToBase64Gzip(img);
 	this->send("paste", obj);
 }
 

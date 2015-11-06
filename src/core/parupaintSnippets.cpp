@@ -1,9 +1,10 @@
 
 #include <QRegularExpression>
+#include <QBuffer>
 #include <QDebug>
 
 //TODO move qcompressor to src/ or src/bundled dir?
-#include "../net/qcompressor.h"
+#include "../bundled/qcompressor.h"
 #include "parupaintSnippets.h"
 
 QColor ParupaintSnippets::toColor(const QString & hex)
@@ -18,7 +19,7 @@ QColor ParupaintSnippets::toColor(const QString & hex)
 	}
 	return color;
 }
-QImage ParupaintSnippets::toImage(const QString & base64_image)
+QImage ParupaintSnippets::Base64GzipToImage(const QString & base64_image)
 {
 	QRegularExpression exp("^data:image/(png|jpg|jpeg|bmp);base64,");
 	QRegularExpressionMatch match = exp.match(base64_image);
@@ -32,6 +33,19 @@ QImage ParupaintSnippets::toImage(const QString & base64_image)
 	QImage img;
 	img.loadFromData(uncompressed, mime.toStdString().c_str());
 	return img;
+}
+QString ParupaintSnippets::ImageToBase64Gzip(const QImage & img)
+{
+	QByteArray pngData;
+	QBuffer buf(&pngData);
+	buf.open(QIODevice::WriteOnly);
+	img.save(&buf, "png");
+	buf.close();
+
+	QByteArray compressed;
+	QCompressor::gzipCompress(pngData, compressed);
+
+	return "data:image/png;base64," + QString(compressed.toBase64());
 }
 
 ParupaintFillHelper::~ParupaintFillHelper() {

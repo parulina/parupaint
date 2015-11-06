@@ -36,6 +36,7 @@ HEADERS +=		$$files(src/core/*.h) \
 			$$files(src/net/*.h) \
 			$$files(src/net/ws/*.h) \
 			$$files(src/overlay/*.h) \
+			$$files(src/bundled/*.h) \
 			$$files(src/bundled/karchive/*.h) \
 			$$files(src/*.h)
 
@@ -43,6 +44,7 @@ SOURCES += 		$$files(src/core/*.cpp) \
 			$$files(src/net/*.cpp) \
 			$$files(src/net/ws/*.cpp) \
 			$$files(src/overlay/*.cpp) \
+			$$files(src/bundled/*.cpp) \
 			$$files(src/bundled/karchive/*.cpp) \
 			$$files(src/*.cpp)
 SOURCES -=		src/main_server.cpp

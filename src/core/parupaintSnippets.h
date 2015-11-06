@@ -8,7 +8,8 @@ class ParupaintSnippets
 {
 	public:
 	static QColor toColor(const QString & hex);
-	static QImage toImage(const QString & base64_image);
+	static QImage Base64GzipToImage(const QString & base64_image);
+	static QString ImageToBase64Gzip(const QImage & img);
 };
 
 class ParupaintFillHelper {

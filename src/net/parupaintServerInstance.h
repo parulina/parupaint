@@ -21,26 +21,32 @@ Q_OBJECT
 	QHash<ParupaintConnection*, ParupaintBrush> record_backup;
 	QTimer record_timer;
 
-	ParupaintRecordPlayer * record_player;
-	ParupaintRecordManager * record_manager;
-
 	ParupaintPanvas * canvas;
 	QHash<ParupaintConnection*, ParupaintBrush*> brushes;
 	int connectid;
 
-	// returns true if reached end
-	bool ProcessRecord(QByteArray & ba, int steps);
+	protected:
+	// Record related things (parupaintServerInstance.rec.cpp)
+	ParupaintRecordPlayer * record_player;
+	ParupaintRecordManager * record_manager;
+
+	void StopRecordSystems();
+	void StartRecordSystems();
+
 	void StartRecordTimer();
 	void RecordTimerStep();
-
 	void SaveRecordBrushes();
 	void RestoreRecordBrushes();
+
+	void RecordLineDecoder(const QString & line, bool recovery=false);
+	// play directly to canvas, no updates
+	void PlayRecordLog(const QString & file);
+	// end record related things
 
 	public:
 	~ParupaintServerInstance();
 	ParupaintServerInstance(quint16 , QObject * = nullptr);
 
-	void RecordLineDecoder(const QString & line, bool recovery=false);
 
 	void ServerJoin(ParupaintConnection *, QString, bool=true);
 	void ServerLeave(ParupaintConnection *, bool=true);
@@ -49,6 +55,7 @@ Q_OBJECT
 	// special - uses no id
 	void ServerLfc(int l, int f, int lc, int fc, bool e, bool=true);
 	void ServerFill(int l, int f, QString, bool=true);
+	void ServerPaste(int l, int f, int x, int y, QImage img, bool propagate=true);
 	void ServerPaste(int l, int f, int x, int y, QString base64_img, bool propagate=true);
 	void ServerResize(int, int, bool, bool=true);
 

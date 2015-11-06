@@ -1,6 +1,9 @@
 #ifndef PARUPAINTRECORDPLAYER_H
 #define PARUPAINTRECORDPLAYER_H
 
+#include <QByteArray>
+#include <QFile>
+
 class ParupaintRecordPlayer
 {
 	QByteArray script;
