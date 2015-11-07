@@ -1,7 +1,6 @@
 
 #include <QFontMetrics>
 #include <QGraphicsScene>
-#include <QGraphicsView>
 #include <QCursor>
 #include <QPainter>
 #include <QTransform>
@@ -110,10 +109,12 @@ void ParupaintCanvasBrush::Paint(QPainter * painter)
 
 QRectF ParupaintCanvasBrush::boundingRect() const
 {
-	// have a minimum of 250 workable area (for label etc)
-	const qreal min = 250;
-	float w = this->GetWidth() < min ? min : this->GetWidth();
-	return QRectF(-w/2.0, -w/2.0, w, w);
+	qreal min_w = 100, min_h = 30;
+
+	if(this->GetWidth() > min_h) min_h = this->GetWidth();
+	if(this->GetWidth() > min_w) min_w = this->GetWidth();
+
+	return QRectF(-min_w/2.0, -min_h/2.0, min_w, min_h);
 }
 
 void ParupaintCanvasBrush::setNameLabelHeight(qreal h)
@@ -143,44 +144,37 @@ void ParupaintCanvasBrush::ShowName(double time)
 
 void ParupaintCanvasBrush::paint(QPainter* painter, const QStyleOptionGraphicsItem*, QWidget*)
 {
+	painter->setRenderHint(QPainter::Antialiasing, false);
+
 	Paint(painter);
 
-	if(this->nameLabelHeight() == 0) return;
-
-	QGraphicsView * view = this->scene()->views().first();
-	if(!view) return;
-
-
-	painter->setRenderHint(QPainter::Antialiasing, false);
 	painter->setCompositionMode(QPainter::CompositionMode_SourceOver);
 	painter->setPen(Qt::white);
 
-	const QString str = this->GetName();
-	QSize text_size = painter->fontMetrics().size(Qt::TextSingleLine, str);
-	text_size.setHeight(text_size.height() * this->nameLabelHeight());
-	if(text_size.width() > this->boundingRect().width()){
-		text_size.setWidth(this->boundingRect().width());
-	}
-
-	const QRect text_rect(QPoint(-text_size.width()/2, 0), text_size);
-
-	painter->save();
 	const QTransform & t = painter->transform();
 	const qreal zoom_x = t.m11(), zoom_y = t.m22();
-	painter->setTransform(QTransform(1.2, t.m12(), t.m13(), t.m21(), 1.2, t.m23(), t.m31(), t.m32(), t.m33()));
 
-	QPointF posl = this->mapToScene(QPointF(-text_size.width()/2/zoom_x, 0)),
-	        posr = this->mapToScene(QPointF(text_size.width()/2/zoom_x, text_size.height()/zoom_y));
+	if(this->nameLabelHeight() > 0) {
+		QRectF bound_rect = this->boundingRect();
+		QRectF text_rect(0, 0, 0, 0);
 
-	QRectF rect(posl, posr);
-	// I don't know why but i need to add 50 pixels for accurate cursor...
-	QPointF mouse_pos = view->mapToScene(QCursor::pos()) - QPointF(0, 50/zoom_y);
+		QSize text_size = painter->fontMetrics().size(Qt::TextSingleLine, this->GetName());
+		text_rect.setWidth(text_size.width() > bound_rect.width() ? bound_rect.width() : text_size.width());
+		text_rect.setHeight((bound_rect.height()/2 - 1) * this->nameLabelHeight());
+		text_rect.setRect(-(text_rect.width()/2.0), -(zoom_y < 1 ? (text_rect.height()/2.0) : 0),
+				text_rect.width(), text_rect.height());
 
-	if(rect.contains(mouse_pos)) painter->setOpacity(0.5);
+		if((text_rect.height() / zoom_y) < bound_rect.height()) {
+			painter->save();
 
-	painter->fillRect(text_rect, QColor::fromHsl(this->GetColor().hslHue(), 127, 75, 230));
-	painter->drawText(text_rect, Qt::AlignCenter | Qt::AlignBottom, this->GetName());
+			painter->setTransform(QTransform(1.0, t.m12(), t.m13(), t.m21(), 1.0, t.m23(), t.m31(), t.m32(), t.m33()));
+			if(this->isUnderMouse() && (text_rect.height() / zoom_y > 2)) painter->setOpacity(0.5);
 
-	painter->restore();
+			painter->fillRect(text_rect, QColor::fromHsl(this->GetColor().hslHue(), 127, 75, 230));
+			painter->drawText(text_rect, Qt::AlignCenter | Qt::AlignBottom, this->GetName());
+
+			painter->restore();
+		}
+	}
 }
 

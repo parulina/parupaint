@@ -1,10 +1,9 @@
-
+#include "parupaintCanvasPool.h"
 // Other users as well as the actual canvas.
 //
 
 #include <QPainter>
 
-#include "parupaintCanvasPool.h"
 #include "parupaintCanvasObject.h"
 #include "parupaintCanvasStrokeObject.h"
 #include "parupaintCanvasBrush.h"
