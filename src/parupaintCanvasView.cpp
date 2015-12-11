@@ -209,13 +209,11 @@ void ParupaintCanvasView::OnPenMove(const QPointF &pos, Qt::MouseButtons buttons
 
 		auto zdl = 0.0;
 		if(CanvasState == CANVAS_STATUS_ZOOMING) {
-			if(hd > 0) 	zdl = OriginZoom + (10 * hd);
-			else 		zdl = OriginZoom + ((OriginZoom * 0.9) * hd);
+			zdl = OriginZoom + (10 * hd);
 			SetZoom(zdl);
 
 		} else if (CanvasState == CANVAS_STATUS_BRUSH_ZOOMING) {
-			if(hd > 0)	zdl = OriginZoom + floor(45 * hd);
-			else		zdl = OriginZoom + floor((OriginZoom * 0.9) * hd);
+			zdl = OriginZoom + floor(45 * hd);
 			CurrentBrush->SetWidth(zdl);
 			emit CursorChange(CurrentBrush);
 		}
