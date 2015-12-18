@@ -6,9 +6,18 @@
 #include <QDebug>
 #include <QSettings>
 #include <QTimer>
-#include <cmath> // clang?
+#include <cmath> // clang
+#include <QDate> // new year event
 
 #include "widget/parupaintScrollBar.h"
+
+inline QString ordinalSuffix(int i){
+	int j = (i % 10), k = (i % 100);
+	if(j == 1 && k != 11) return "st";
+	if(j == 2 && k != 12) return "nd";
+	if(j == 3 && k != 13) return "rd";
+	else return "th";
+}
 
 ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(parent),
 	toast_timer(new QTimer(this)),
@@ -37,7 +46,10 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 	connect(vbar, &ParupaintScrollBar::directionMove, this, &ParupaintCanvasView::scrollbarMove);
 	connect(hbar, &ParupaintScrollBar::directionMove, this, &ParupaintCanvasView::scrollbarMove);
 
-	setBackgroundBrush(QColor(200, 200, 200));
+	//setBackgroundBrush(QColor(200, 200, 200));
+	this->setBackgroundBrush(QBrush(Qt::white, Qt::NoBrush));
+
+
 	viewport()->setMouseTracking(true);
 	
 	QSettings cfg;
@@ -48,6 +60,28 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 
 	connect(toast_timer, &QTimer::timeout, this, &ParupaintCanvasView::toastTimeout);
 	this->showToast("");
+
+	QDate date = QDate::currentDate();
+	QRect pattern_size;
+	if((date.month() == 12 && date.dayOfYear() == 364)){
+		pattern_size.setRect(0, 0, 64, 32);
+		this->showToast("♪ HAVE A HAPPY NEW YEAR ♪", 0);
+
+	} else if((date.month() == 11 && date.day() == 5)){
+		pattern_size.setRect(0, 32, 64, 32);
+		int num = (date.year() - 2012);
+		if(num > 0){
+			QString suf = ordinalSuffix(num).toUpper();
+			QString str = QString("~HAPPY %1%2 BIRTHDAY, PARUPAINT!!~").arg(num).arg(suf);
+			this->showToast(str, 0);
+		}
+	}
+
+	if(!pattern_size.isNull()){
+		QImage patterns(":/resources/patterns.png");
+		QBrush brush(patterns.copy(pattern_size));
+		this->setBackgroundBrush(brush);
+	}
 
 	this->setCursor(Qt::BlankCursor);
 	this->setZoom(1.0);
@@ -254,7 +288,7 @@ void ParupaintCanvasView::wheelEvent(QWheelEvent * event)
 
 void ParupaintCanvasView::drawForeground(QPainter * painter, const QRectF & rect)
 {
-	// true = !is preview
+	// TODO move to canvasscene
 	if(this->pixelGrid() && this->zoom() > 8.0 && true){
 
 		// to prevent edge stuff fucking up with brush

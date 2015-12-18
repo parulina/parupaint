@@ -16,12 +16,6 @@
 #include "parupaintVersion.h"
 #include "parupaintVersionCheck.h"
 
-inline void sleep(int ms){
-	QTime endtime = QTime::currentTime().addMSecs(ms);
-	while(QTime::currentTime() < endtime)
-		QApplication::processEvents(QEventLoop::AllEvents, 100);
-}
-
 ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 {
 	setOrganizationName("paru");

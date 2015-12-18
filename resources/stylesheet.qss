@@ -34,10 +34,13 @@ QCheckBox::indicator{
 
 
 /* theme color */
-ParupaintWindow, ParupaintCanvasView,
-ParupaintInfoBar {
+ParupaintWindow, ParupaintInfoBar {
 	color:white;
 	background:#222;
+}
+ParupaintCanvasView {
+	background:rgb(200, 200, 200);
+	color:white;
 }
 QDialog, ParupaintFlayer{
 	background:rgb(200, 180, 128);
