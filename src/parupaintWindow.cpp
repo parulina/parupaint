@@ -288,14 +288,18 @@ inline bool widgetContainsCursor(QWidget * widget)
 
 void ParupaintWindow::hideOverlay()
 {
-	if((overlay_state != overlayHiddenState) &&
-	   (widgetContainsCursor(chat) ||
-	    widgetContainsCursor(picker) ||
-	    widgetContainsCursor(flayer))) {
-		return;
+	if(overlay_state != overlayHiddenState) {
+
+		if(widgetContainsCursor(chat) ||
+		   widgetContainsCursor(picker) ||
+		   widgetContainsCursor(flayer)) {
+			return;
+		}
 	}
 
-	chat->hide();
+
+	if(!chat->hasFocus())
+		chat->hide();
 	picker->hide();
 	flayer->hide();
 
