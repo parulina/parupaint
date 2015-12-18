@@ -556,6 +556,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 					}
 				}
 			}
+			picker->show();
 			brush->setColor(col);
 			scene->updateMainCursor(brush);
 		}
