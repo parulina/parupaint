@@ -7,7 +7,7 @@
 	<key>CFBundleIconFile</key>
 	<string>parupaint.icns</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.85</string>
+	<string>0.89</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleGetInfoString</key>

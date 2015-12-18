@@ -1,18 +1,18 @@
 #ifndef PARUPAINTWINDOW_H
 #define PARUPAINTWINDOW_H
 
-#include "core/parupaintBrushGlass.h"
+#include "parupaintCanvasView.h" // penInfo
 
-#include <QHash>
 #include <QTabletEvent>
 #include <QMainWindow>
+#include <QDir>
 
 class ParupaintCanvasView;
-class ParupaintCanvasPool;
-class ParupaintCanvasBrush;
-class ParupaintCanvasBanner;
+class ParupaintCanvasScene;
 
 class ParupaintClientInstance;
+
+class ParupaintBrushGlass;
 
 class ParupaintChat;
 class ParupaintFlayer;
@@ -22,97 +22,96 @@ class ParupaintKeys;
 
 class QDropEvent;
 
-enum OverlayStatus {
-	OVERLAY_STATUS_HIDDEN,
-	OVERLAY_STATUS_SHOWN_SMALL,
-	OVERLAY_STATUS_SHOWN_NORMAL
+
+enum overlayStates {
+	overlayHiddenState = 0,
+	overlayNormalState,
+	overlayExpandedState
+};
+
+enum canvasStates {
+	noCanvasState = 0,
+	canvasDrawingState,
+	canvasMovingState,
+	canvasBrushZoomingState
 };
 
 
 class ParupaintWindow : public QMainWindow {
 Q_OBJECT
 	private:
-	quint16 local_port;
-	int old_brush_switch;
+	// variables
+	overlayStates	overlay_state;
+	canvasStates 	canvas_state;
 
-	ParupaintKeys *key_shortcuts;
+	bool 		overlay_button;
+	QTimer * 	overlay_timeout;
+	QTimer * 	overlay_button_timeout;
 
-	bool OverlayButtonDown;
-	QTimer * OverlayTimer;
-	QTimer * OverlayButtonTimer;
+	QPointF 	current_pen, origin_pen;
+	qreal 		origin_zoom;
+	QString 	local_server;
 
-	void UpdateOverlay();
-	
-	OverlayStatus	OverlayState;
+	// important stuff
+	ParupaintBrushGlass *	brushes;
+	ParupaintKeys *		key_shortcuts;
 
-	QTimer * fillpreview_timer;
-	
-	ParupaintBrushGlass glass;
+	ParupaintChat *		chat;
+	ParupaintFlayer * 	flayer;
+	ParupaintColorPicker * 	picker;
+	ParupaintInfoBar * 	infobar;
 
-	ParupaintCanvasBanner * canvas_banner;
-	ParupaintChat * chat;
-	ParupaintFlayer * flayer;
-	ParupaintColorPicker * picker;
-	ParupaintInfoBar * infobar;
+	ParupaintCanvasView * 	view;
+	ParupaintCanvasScene * 	scene;
+	ParupaintClientInstance * client;
 
 	void closeEvent(QCloseEvent * event);
-	void mousePressEvent(QMouseEvent *event);
 	void keyPressEvent(QKeyEvent * event);
 	void keyReleaseEvent(QKeyEvent * event);
 	void resizeEvent(QResizeEvent * event);
 	void dropEvent(QDropEvent *ev);
 	void dragEnterEvent(QDragEnterEvent *ev);
-	ParupaintCanvasView * view;
-	ParupaintCanvasPool * pool;
-
-	ParupaintClientInstance * client;
 
 	public:
-	~ParupaintWindow();
-	ParupaintWindow();
-	ParupaintCanvasPool * GetCanvasPool();
+	ParupaintWindow(QWidget * = nullptr);
 
-	void ShowOverlay(bool=true);
-	void HideOverlay();
+	void updateOverlay();
+	void showOverlay(overlayStates state);
+	void hideOverlay();
 
-	void UpdateTitle();
+	// actions
+	void doQuickSave();
+	void doOpen(const QString & file);
+	QString doSaveAs(const QString & file);
+	void doNew(int w, int h, bool resize = false);
+	void doChat(const QString & msg);
+	void doCommand(const QString & cmd, const QString & params);
+	void doUserName(const QString & username);
+	void doConnect(const QString &);
+	void doDisconnect();
 
-	void SetLocalHostPort(quint16);
-	QString GetSaveDirectory() const;
+	void showOpenDialog();
+	void showSaveAsDialog();
+	void showNewDialog();
+	void showConnectDialog();
+	void showSettingsDialog();
 
-	// Dialogs
-	void Connect(QString);
-	void Disconnect();
-	void Open(QString);
-	QString SaveAs(QString);
-	void New(int, int, bool=false);
+	void addChatMessage(const QString & msg, const QString & usr = QString());
+
+	QSize canvasDimensions();
+	QDir saveDir() const;
+	void setLocalServer(const QString &);
+
 
 	private slots:
-	void VersionResponse(bool, QString);
+	void OnPenPress(const penInfo &);
+	void OnPenMove(const penInfo &);
+	void OnPenRelease(const penInfo &);
+	void OnPenPointer(const penInfo &);
+	void OnPenScroll(QWheelEvent *);
 
-	void Command(QString, QString);
-
-	void OverlayTimeout();
-	void ButtonTimeout();
-
-	void ViewUpdate();
-
-	void PenDrawStart(ParupaintBrush*);
-	void PenMove(ParupaintBrush*);
-	void PenDrawStop(ParupaintBrush*);
-	void PenPointerType(QTabletEvent::PointerType old, QTabletEvent::PointerType nuw);
-
-	void CursorChange(ParupaintBrush*);
-	void ColorChange(QColor);
-
-	void SelectFrame(int, int);
-	void ChangedFrame(int, int);
-	void ChatMessage(QString);
-
-	void ChatMessageReceived(QString, QString);
 	void OnNetworkConnect();
 	void OnNetworkDisconnect(QString reason = "");
 };
-
 
 #endif

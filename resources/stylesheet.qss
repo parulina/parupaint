@@ -1,108 +1,4 @@
-
-ParupaintApp {
-	color:black;
-}
-
-#CanvasView {
-	margin-top:30px;
-}
-
-#CanvasBannerText {
-	color:white;
-}
-#CanvasBanner {
-	background:rgba(0, 0, 0, 0.8);
-	border-radius:6px;
-
-}
-
-#InfoBar {
-	background:black;
-}
-
-#InfoBar #title {
-	background:transparent;
-	border:none;
-	border-bottom:1px solid rgb(40, 40, 40);
-}
-
-#InfoBar #tabhelp {
-	padding:0 4px;
-	font-size:13px;
-	background:rgb(30, 30, 30);
-	color:white;
-}
-
-#InfoBar #parupaint-keys
-{
-	background:transparent;
-	color:rgb(190, 190, 190);
-}
-#InfoBar #parupaint-description
-{
-	background:transparent;
-	color:rgb(160, 106, 160);
-}
-
-
-
-#Flayer,
-#ChatEntry{
-	background-color:rgba(0, 0, 0, 0.5);
-	color:white;
-}
-
-#Chat {
-	margin:0;
-	padding:0;
-	color:black;
-	font-family:Monospace;
-}
-
-#ChatContent QScrollBar:vertical {
-	width: 10px;
-}
-#ChatContent QScrollBar::handle {
-	background:#de9a3c;
-}
-
-#ChatEntry {
-	border:none;
-	font-size:13px;
-	height:14px;
-}
-#ChatEntry:focus {
-	background:rgba(0, 0, 0, 0.8);
-}
-
-#FlayerList {
-	background:lightblue;
-}
-
-#FlayerLayer {
-	background:gray;
-}
-
-
-#FlayerFrameExtended {
-	background:rgb(200, 50, 50);
-	border:none;
-	border-left:2px solid black;
-}
-#FlayerFrame {
-	background:white;
-	border:none;
-}
-
-
-#FlayerFrame:checked,
-#FlayerFrameExtended:checked{
-	background:black;
-}
-
-
 QDialog {
-	background:#ed8c6e;
 	border:6px solid #f2ae99;
 	color:#000;
 }
@@ -110,10 +6,10 @@ QDialog {
 QLabel{
 	color:black;
 	font-size:15px;
-	text-decoration:underline;
 	font-family:"parufont";
 }
-QLineEdit, QComboBox {
+QLineEdit,
+QComboBox, QComboBox::drop-down {
 	padding:4px 0;
 	border:1px solid #333;
 	background:black;
@@ -130,51 +26,128 @@ QPushButton {
 	font-family:"parufont";
 }
 QCheckBox {
+	background:transparent;
 	font-family:"parufont";
 }
-#CanvasPreviewWidget {
+QCheckBox::indicator{
+}
+
+
+/* theme color */
+ParupaintWindow, ParupaintCanvasView,
+ParupaintInfoBar {
+	color:white;
+	background:#222;
+}
+QDialog, ParupaintFlayer{
+	background:rgb(200, 180, 128);
+}
+ParupaintScrollBar::handle:hover { background:#de9a3c; }
+QLineEdit, QTextEdit, QLabel {
+	selection-background-color:#de9a3c;
+	selection-color:black;
+}
+
+
+
+ParupaintFlayer,
+ParupaintColorPicker,
+ParupaintChat {
+	border:1px solid rgba(0, 0, 0, 0.4);
+}
+ParupaintFlayer { border-left:none; border-right:none; border-bottom:none; }
+ParupaintChat, ParupaintColorPicker { border-top:none; }
+ParupaintChat { border-right:none; }
+ParupaintColorPicker { border-left:none; }
+
+
+ParupaintInfoBar ParupaintInfoBarText,
+ParupaintInfoBar ParupaintInfoBarKeys,
+ParupaintInfoBar ParupaintInfoBarStatus {
+	background:transparent;
+	border:none;
+}
+
+ParupaintInfoBar ParupaintInfoBarText {
+	color:#B1A087;
+}
+ParupaintInfoBar ParupaintInfoBarKeys {
+	color:#AAA;
+}
+ParupaintInfoBar ParupaintInfoBarStatus {
+}
+
+
+
+ParupaintChat {
+	margin:0;
+	padding:0;
+	color:black;
+	font-family:Monospace;
+}
+
+ParupaintChatInput {
+	background:transparent;
+	color:black;
+
+	border:none;
+	font-size:13px;
+	height:14px;
+}
+ParupaintChatInput:focus {
+	background:black;
 	color:white;
 }
 
-#ErrorLabel {
-	color:red;
+ParupaintCanvasView ParupaintScrollBar::horizontal { height:16px; }
+ParupaintCanvasView ParupaintScrollBar::vertical   { width:16px; }
+ParupaintScrollBar {
+	border: 1px solid #222;
+	background: transparent;
+}
+ParupaintScrollBar::handle {
+	background:#DDD;
 }
 
-
-QScrollBar {
-	border: 2px solid grey;
-	background: #32CC99;
-}
-QScrollBar::handle:hover {
-	background:#de9a3c;
-}
-QScrollBar::handle {
-	background:white;
+ParupaintScrollBar::add-page,
+ParupaintScrollBar::sub-page {
+	background: #111;
 }
 
-/*
-QScrollBar:vertical {
-	width: 5px;
-	margin: 22px 0 22px 0;
-}
-QScrollBar::handle:vertical {
-	background: white;
-}
-*/
-
-QScrollBar::add-page,
-QScrollBar::sub-page {
-	background: black;
-}
-
-QScrollBar::add-line,
-QScrollBar::sub-line {
+ParupaintScrollBar::add-line,
+ParupaintScrollBar::sub-line {
 	background:none;
 }
-QScrollBar::up-arrow, 
-QScrollBar::down-arrow {
+ParupaintScrollBar::up-arrow, 
+ParupaintScrollBar::down-arrow {
 	background:none;
 }
+
+
+ParupaintFlayerLayer #FlayerLayerVisible {
+	background:none;
+	spacing:0;
+	border:none; outline:none;
+}
+ParupaintFlayerLayer #FlayerLayerLabel {
+	color:#533E2C;
+	background:transparent;
+	border:none;
+}
+ParupaintFlayerLayer #FlayerLayerLabel:focus {
+	color:white;
+	background:rgba(0, 0, 0, 0.2);
+}
+ParupaintFlayerFrame {
+	background:#CCC;
+	border:none;
+}
+ParupaintFlayerFrame:checked,
+#FlayerFrameExtended:checked{
+	background:#EEE;
+	border-bottom:2px solid #444;
+}
+
 
 #ColorBar::groove {
 	background:transparent;

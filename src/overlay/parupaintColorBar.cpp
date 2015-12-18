@@ -27,12 +27,14 @@ ParupaintColorBar::ParupaintColorBar(ColorBarType type, QWidget * parent) :
 	QSlider(parent), bartype(type), additional_value(0.0)
 {
 	this->setObjectName("ColorBar");
+
+	int w = 22;
 	if(type == COLOR_BAR_TYPE_SATUR){
 		this->setOrientation(Qt::Horizontal);
-		this->setMaximumHeight(20);
+		this->setFixedHeight(w);
 	} else {
 		this->setOrientation(Qt::Vertical);
-		this->setMaximumWidth(20);
+		this->setFixedWidth(w);
 	}
 	this->setMaximum(255);
 	this->setFocusPolicy(Qt::NoFocus);

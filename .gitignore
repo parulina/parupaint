@@ -3,6 +3,7 @@ bin/
 junk/
 Makefile*
 .*
+*.vim
 qrc_*
 src/bundled/ffmpeg
 

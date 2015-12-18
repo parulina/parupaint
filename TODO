@@ -1,2 +1,6 @@
-List of feature ideas:
-- Use QLibrary to make use of ffmpeg dll, so the program doesn't require recompilation?
+ParupaintCanvasView:	[ CLEAN ] the view of a canvas scene, zoom, tablet input
+ParupaintCanvasScene:	[ CLEAN ] the scene of a canvas, cursors, one canvas object, possible strokes
+
+// todo check if these are working and updating correctly from base
+ParupaintVisualCanvas:	[ CLEAN ] the canvas itself but visual, layer/frame, preview stuff
+ParupaintVisualCursor: 	[ CLEAN ] the cursor, resides in canvas scene, visual of ParupaintBrush

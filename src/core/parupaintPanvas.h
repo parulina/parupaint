@@ -1,58 +1,62 @@
 #ifndef PARUPAINTPANVAS_H
 #define PARUPAINTPANVAS_H
 
+#include "parupaintLayer.h"
 
-#include <QList>
+#include <QImage> // GetImageFrames
 #include <QString>
-#include <QRect>
-#include <QImage>
-
-#include "panvasTypedefs.h"
+#include <QList>
+#include <QObject>
 
 class ParupaintLayer;
+struct ParupaintPanvasInfo {
+	QString 	name;
+	qreal 		framerate;
+	QSize		dimensions;
 
-struct PanvasProjectInformation {
-	QString	Name;
-	float	Framerate;
-	QSize 	Dimensions;
-
-	PanvasProjectInformation();
-
+	ParupaintPanvasInfo();
 };
 
-class ParupaintPanvas {
-	QList<ParupaintLayer*> 		Layers;
-	PanvasProjectInformation 	Info;
+class ParupaintPanvas : public QObject
+{
+Q_OBJECT
+	protected:
+	QList<ParupaintLayer*> 	layers;
+	ParupaintPanvasInfo 	info;
+
+	private slots:
+	void removeLayerObject(QObject*);
+
+	signals:
+	void onCanvasResize(const QSize &);
+	void onCanvasChange();
+	void onCanvasContentChange();
 
 	public:
-	~ParupaintPanvas();
-	ParupaintPanvas();
-	ParupaintPanvas(QSize dim, _lint l = 1, _fint f = 1);
-	ParupaintPanvas(int, int, _lint l = 1, _fint f = 1);
+	ParupaintPanvas(QObject * = nullptr, const QSize & = QSize(), int layers = 0, int frames = 0);
 
-	void New(QSize dim, _lint l = 1, _fint f = 1);
-	void Resize(QSize dim);
-	void Clear();
-	void Fill(_lint l, _fint f, QColor);
-	void Fill(QColor);
+	void resize(const QSize &);
+	void clearCanvas();
+	void newCanvas(int l, int f = 0);
+	void newCanvas(const QList<ParupaintLayer*> &);
 
-	void SetLayers(_lint l, _lint = 1);
-	void AddLayers(_lint l, _lint = 1, _fint = 1);
-	void RemoveLayers(_lint l, _lint = 1);
-	ParupaintLayer * GetLayer(_lint l);
-	
-	_fint GetTotalFrames();
-	_lint GetNumLayers();
+	void insertLayer(ParupaintLayer* l, ParupaintLayer* at);
+	void insertLayer(ParupaintLayer* l, int i = -1);
+	void insertLayer(int i, int f = 0);
+	void removeLayer(ParupaintLayer * l);
+	void removeLayer(int i);
+	int layerIndex(ParupaintLayer*);
+	ParupaintLayer * layerAt(int);
 
-	QList<QImage> GetImageFrames();
+	int totalFrameCount();
+	int layerCount();
+	QList<QImage> mergedImageFrames(bool rendered = false);
 
-	QSize GetDimensions() const;
-	QSize GetSize() const;
-	int GetWidth() const;
-	int GetHeight() const;
-
-
+	void setProjectName(const QString &);
+	void setFrameRate(qreal = 24);
+	const QString & projectName();
+	qreal frameRate();
+	const QSize & dimensions() const;
 };
 
 #endif
-

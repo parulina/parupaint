@@ -1,6 +1,6 @@
+#include "parupaintChat.h"
 
 #include <QKeyEvent>
-#include "parupaintChat.h"
 
 #include "parupaintChatInput.h"
 #include "parupaintChatContent.h"
@@ -9,10 +9,9 @@
 #include <QSizePolicy>
 #include <QDebug>
 
-ParupaintChat::ParupaintChat(QWidget * parent) : ParupaintOverlayWidget(parent)
+ParupaintChat::ParupaintChat(QWidget * parent) : QFrame(parent)
 {
 	this->setFocusPolicy(Qt::ClickFocus);
-	this->setObjectName("Chat");
 	this->resize(400, 200);
 
 	auto * layout = new QVBoxLayout(this);
@@ -39,6 +38,8 @@ ParupaintChat::ParupaintChat(QWidget * parent) : ParupaintOverlayWidget(parent)
 
 			this->clearFocusAndReturn();
 			event->accept();
+		} else {
+			emit this->onActivity();
 		}
 
 	});

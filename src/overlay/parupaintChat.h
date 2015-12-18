@@ -1,12 +1,12 @@
 #ifndef PARUPAINTCHAT_H
 #define PARUPAINTCHAT_H
 
-#include "parupaintOverlayWidget.h"
+#include <QFrame>
 
 class ParupaintChatInput;
 class ParupaintChatContent;
 
-class ParupaintChat : public ParupaintOverlayWidget
+class ParupaintChat : public QFrame
 {
 Q_OBJECT
 	private:
@@ -26,6 +26,7 @@ Q_OBJECT
 	void chatOutFocus();
 
 	signals:
+	void onActivity();
 	void Message(QString);
 };
 

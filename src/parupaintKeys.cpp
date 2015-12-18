@@ -89,6 +89,7 @@ void ParupaintKeys::Load() {
 	QSettings cfg;
 	cfg.beginGroup("keys");
 	foreach(const QString & key, cfg.childKeys()){
+		if(key.startsWith("toolswitch_")) continue;
 		QString val = key + "=" + cfg.value(key).toString();
 		this->AddKey(val);
 	}

@@ -8,59 +8,67 @@
 #include <QtMath>
 #include <QDebug>
 
-QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, float ox, float oy, float nx, float ny, ParupaintBrush * brush)
+QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * brush, const QPointF & pos, const QPointF & old_pos)
 {
-	ParupaintLayer * layer = panvas->GetLayer(brush->GetLayer());
+	return ParupaintFrameBrushOps::stroke(panvas, brush, QLineF(old_pos, pos));
+}
+QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * brush, const QPointF & pos)
+{
+	return ParupaintFrameBrushOps::stroke(panvas, brush, QLineF(pos, pos));
+}
+QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * brush, const QLineF & line)
+{
+	ParupaintLayer * layer = panvas->layerAt(brush->layer());
 	if(!layer) return QRect();
 
-	ParupaintFrame * frame = layer->GetFrame(brush->GetFrame());
+	ParupaintFrame * frame = layer->frameAt(brush->frame());
 	if(!frame) return QRect();
 
-	auto width = brush->GetPressureWidth();
-	if(width < 1) width = 1;
-	auto color = brush->GetColor();
-	QRect urect(ox - width, oy - width, width*2, width*2);
-	urect |= QRect(nx - width, ny - width, width*2, width*2);
+	qreal size = brush->pressureSize();
+	QColor color = brush->color();
 
-	switch(brush->GetToolType()){
-		case ParupaintBrushToolTypes::BrushToolFloodFill:
-		{
-			return frame->Fill(nx, ny, brush->GetColor());
+	QPointF op = line.p1(), np = line.p2();
+	// do not move this block
+	if(size <= 1){
+		size = 1;
+		// pixel brush? pixel position.
+		op = QPointF(qFloor(op.x()), qFloor(op.y()));
+		np = QPointF(qFloor(np.x()), qFloor(np.y()));
+	}
+
+	QRect urect(op.toPoint() + QPoint(-size/2, -size/2), QSize(size, size));
+	urect |= QRect(np.toPoint() + QPoint(-size/2, -size/2), QSize(size, size));
+
+	QPen pen(color);
+	pen.setCapStyle(Qt::RoundCap);
+	pen.setWidthF(size);
+
+	switch(brush->tool()){
+		case ParupaintBrushToolTypes::BrushToolDotShadingPattern: {
+			pen.setBrush(QBrush(color, Qt::Dense5Pattern)); break;
 		}
-		case ParupaintBrushToolTypes::BrushToolDotPattern:
-		{
-			QColor d_col = brush->GetColor();
-			//const float dot_width = 1 + (brush->GetPressure() > 0.75 ? brush->GetPressure() * 2 : 0);
-			const float dot_width = 1;
-
-			for(int x = 0; x < width; x++){
-				for(int y = 0; y < width/2; y++){
-					const double aa = (double(x) / width) * M_PI;
-					const int ax = int(nx) + qRound(cos(aa) * width/2);
-					const int ay = int(ny) + qRound(sin(aa) * y);
-					const int ay2 = int(ny) - qRound(sin(aa) * y);
-					// every nth pixel
-					const int m = 4; // + (brush->GetPressure() > 0.75 ? brush->GetPressure() * 2 : 0);
-
-					if(ax % m == 0){
-						if(ay % m == 0)
-							frame->DrawStep(ax, ay, ax, ay, dot_width, d_col);
-						if(ay2 % m == 0)
-							frame->DrawStep(ax, ay2, ax, ay2, dot_width, d_col);
-					}
-				}
-			}
-			return urect;
+		case ParupaintBrushToolTypes::BrushToolDotHighlightPattern: {
+			pen.setBrush(QBrush(color, Qt::Dense6Pattern)); break;
 		}
-
-		// carries on to default
-		// ternarny check because if alpha is 0 it assumed we're erasing
-		case ParupaintBrushToolTypes::BrushToolOpacityDrawing: color.setAlphaF((brush->GetPressure() <= 0.1 ? 0.1 : brush->GetPressure())*color.alphaF());
-		default:
-		{
-			frame->DrawStep(ox, oy, nx, ny, width, color);
-			return urect;
+		case ParupaintBrushToolTypes::BrushToolCrossPattern: {
+			pen.setBrush(QBrush(color, Qt::DiagCrossPattern)); break;
 		}
 	}
-	return QRect();
+	switch(brush->tool()){
+		case ParupaintBrushToolTypes::BrushToolFloodFill: {
+			urect = frame->drawFill(np, color);
+			break;
+		}
+		// intentional fallthrough
+		case ParupaintBrushToolTypes::BrushToolOpacityDrawing: {
+			double pressure = brush->pressure();
+			if(pressure < 0.01) pressure = 0.01;
+			color.setAlphaF(pressure * color.alphaF());
+			pen.setColor(color);
+		}
+		default: {
+			frame->drawLine(QLineF(op, np), pen);
+		}
+	}
+	return urect.adjusted(-1, -1, 1, 1);
 }

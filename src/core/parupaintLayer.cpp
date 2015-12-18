@@ -1,154 +1,179 @@
+#include "parupaintLayer.h"
 
+#include <QDebug>
 #include <QSize>
 
-#include "parupaintLayer.h"
-#include "parupaintFrame.h"
+#include "parupaintPanvas.h" // parentPanvas
 
-ParupaintLayer::~ParupaintLayer()
+ParupaintLayer::ParupaintLayer(QObject * parent, const QSize & frame_size, int frames) : QObject(parent),
+	layer_visible(true)
 {
-	Clear();
-}
-
-ParupaintLayer::ParupaintLayer()
-{
-	Clear();
-}
-ParupaintLayer::ParupaintLayer(QSize s, _fint n) : ParupaintLayer()
-{
-	New(s);
-	SetFrames(n);
-}
-void ParupaintLayer::New(QSize s)
-{
-	Dimensions = s;	
-}
-
-void ParupaintLayer::Resize(QSize s)
-{
-	foreach(auto f, Frames){
-		f->Resize(s);
+	for(int i = 0; i < frames; i++){
+		this->insertFrame(frame_size, -1);
 	}
 }
 
-void ParupaintLayer::Clear()
+ParupaintPanvas * ParupaintLayer::parentPanvas()
 {
-	// Clear out extended frames first
-	for(auto i = GetNumFrames()-1; i > 0; i--){
-		if(!this->IsFrameReal(i)){
-			Frames.removeAt(i);
-		}
-	}
-	foreach(auto i, Frames){
-		delete i;
-	}
-	Frames.clear();
+	return qobject_cast<ParupaintPanvas*>(this->parent());
 }
-void ParupaintLayer::Fill(_fint f, QColor col)
+
+void ParupaintLayer::removeFrameObject(QObject * object)
 {
-	auto * frame = this->GetFrame(f);
+	ParupaintFrame * frame = qobject_cast<ParupaintFrame*>(object);
 	if(frame){
-		frame->ClearColor(col);
-	}
-}
-void ParupaintLayer::Fill(QColor col)
-{
-	foreach(auto f, Frames){
-		f->ClearColor(col);
+		this->removeFrame(frame);
 	}
 }
 
-
-void ParupaintLayer::SetFrames(_fint f)
+void ParupaintLayer::resize(const QSize & size)
 {
-	auto diff = f - GetNumFrames();
-	while(diff != 0){
+	foreach(auto f, frames){
+		f->resize(size);
+	}
+}
+void ParupaintLayer::insertFrame(const QSize & size, ParupaintFrame* at)
+{
+	this->insertFrame(new ParupaintFrame(size, this), at);
+}
+void ParupaintLayer::insertFrame(const QSize & size, int i)
+{
+	this->insertFrame(new ParupaintFrame(size, this), i);
+}
 
-		if(diff < 0) {
-			if(Frames.isEmpty()) break;
-			Frames.removeLast();
-			diff ++;
-		} else {
-			Frames.append(new ParupaintFrame(Dimensions));
-			diff --;
+void ParupaintLayer::insertFrame(ParupaintFrame* f, ParupaintFrame* at)
+{
+	Q_ASSERT_X(f, "insertFrame(at)", "frame to insert is null");
+	int i = -1;
+	if(at){
+		int ii;
+		if((ii = frames.indexOf(at)) != -1){
+			i = ii;
 		}
 	}
+	this->insertFrame(f, i);
 }
-
-void ParupaintLayer::AddFrames(_fint f, _fint n)
+void ParupaintLayer::insertFrame(ParupaintFrame* f, int i)
 {
-	if(f > GetNumFrames()) f = GetNumFrames(); // or -1?
-	else if(f < 0) f = 0;
+	Q_ASSERT_X(f, "insertFrame(i)", "frame to insert is null");
 
-	while(n > 0){
-		Frames.insert(f, new ParupaintFrame(Dimensions));
-		n--;
+	if(i < 0) i += frames.size();
+	if(frames.isEmpty()) i = 0;
+	if(i >= 0 && (i <= frames.size())){
+		frames.insert(i, f);
+		f->setParent(this);
+		this->connect(f, &QObject::destroyed, this, &ParupaintLayer::removeFrameObject);
+		emit onContentChange();
+	} else {
+		qDebug() << "insertFrame(i)" << i << "is out of range";
 	}
 }
 
-void ParupaintLayer::RemoveFrames(_fint f, _fint n)
+void ParupaintLayer::removeFrame(ParupaintFrame* f)
 {
-	if(Frames.isEmpty()) return;
-
-	if(f > GetNumFrames()) f = GetNumFrames()-1;
-	else if(f < 0) f = 0;
-
-	while(n > 0){
-		if(f > GetNumFrames()) break;
-		delete Frames.at(f);
-		Frames.removeAt(f);
-		n--;
-	}
+	this->removeFrame(this->frameIndex(f));
 }
-void ParupaintLayer::ExtendFrame(_fint f, _fint n)
-{
-	if(Frames.isEmpty()) return;
-	
-	if(f > GetNumFrames()) f = GetNumFrames();
-	else if(f < 0) f = 0;
 
-	Frames.at(f)->SetExtended(true);
-	while(n > 0){
-		Frames.insert(f, Frames.at(f));
-		n--;
-	}
-}
-void ParupaintLayer::RedactFrame(_fint f, _fint n)
+void ParupaintLayer::removeFrame(int i)
 {
-	if(Frames.isEmpty()) return;
-	
-	if(f > GetNumFrames()) f = GetNumFrames()-1;
-	else if(f < 0) f = 0;
-	
-	if(!IsFrameExtended(f)) {
-		return;
-	}
-	
-	while(n > 0){
-		n--;
-		auto nf = f+1;
-		if(nf < GetNumFrames()) {
-			if(Frames.at(f) == Frames.at(nf)){
-				Frames.removeAt(nf);
-				continue;
-			}
+	if(i < 0) i += frames.size();
+	if(frames.isEmpty()) i = 0;
+	if(i >= 0 && (i <= frames.size())){
+		ParupaintFrame * f = frames.takeAt(i);
+		if(!this->isFrameExtended(f)){
+			f->setParent(nullptr);
+			this->disconnect(f, &QObject::destroyed, this, &ParupaintLayer::removeFrameObject);
+			delete f;
 		}
-		break;
-	}
-	if(!IsFrameExtended(f)){
-		Frames.at(f)->SetExtended(false);
+		emit onContentChange();
+	} else {
+		qDebug() << "removeFrame(i)" << i << "is out of range";
 	}
 }
 
-
-ParupaintFrame * ParupaintLayer::GetFrame(_fint f) const
+void ParupaintLayer::extendFrame(ParupaintFrame* f)
 {
-	if(Frames.isEmpty() || f >= Frames.size()) return nullptr;
-	return Frames.at(f);
+	this->extendFrame(this->frameIndex(f));
+}
+void ParupaintLayer::extendFrame(int i)
+{
+	if(i < 0) i += frames.size();
+	if(frames.isEmpty()) i = 0;
+	if(i >= 0 && (i <= frames.size())){
+		ParupaintFrame * frame = this->frameAt(i);
+		frames.insert(i, frame);
+		emit onContentChange();
+	} else {
+		qDebug() << "extendFrame(i)" << i << "is out of range";
+	}
 }
 
-QChar ParupaintLayer::GetFrameChar(_fint f)
+void ParupaintLayer::redactFrame(ParupaintFrame* f)
 {
-	switch(GetFrameExtendedDirection(f)){
+	this->redactFrame(this->frameIndex(f));
+}
+void ParupaintLayer::redactFrame(int i)
+{
+	if(i < 0) i += frames.size();
+	if(frames.isEmpty()) i = 0;
+	if(i >= 0 && (i <= frames.size())){
+		if(!this->isFrameExtended(i)) return;
+
+		ParupaintFrame * frame = this->frameAt(i);
+		switch(this->frameExtendedDirection(frame)){
+			case FRAME_EXTENDED_RIGHT: frames.removeAt(i - 1); break;
+			default: frames.removeAt(i + 1); break;
+		}
+		emit onContentChange();
+	} else {
+		qDebug() << "redactFrame(i)" << i << "is out of range";
+	}
+}
+
+bool ParupaintLayer::isFrameExtended(ParupaintFrame* f)
+{
+	return this->isFrameExtended(this->frameIndex(f));
+}
+bool ParupaintLayer::isFrameExtended(int i)
+{
+	return (this->frameExtendedDirection(i) != FRAME_NOT_EXTENDED);
+}
+
+bool ParupaintLayer::isFrameReal(ParupaintFrame* f)
+{
+	return this->isFrameReal(this->frameIndex(f));
+}
+bool ParupaintLayer::isFrameReal(int i)
+{
+	int direction = this->frameExtendedDirection(i);
+	return (direction == FRAME_NOT_EXTENDED || direction == FRAME_EXTENDED_LEFT);
+}
+
+int ParupaintLayer::frameExtendedDirection(ParupaintFrame* f)
+{
+	return this->frameExtendedDirection(this->frameIndex(f));
+}
+int ParupaintLayer::frameExtendedDirection(int i)
+{
+	int d = 0;
+	if(i >= 0 && i < frames.length()) {
+		if(i > 0 && frames.at(i-1) == frames.at(i)) {
+			d++;
+		}
+		if(i < frameCount()-1 && frames.at(i+1) == frames.at(i)) {
+			d += 2;
+		}
+	}
+	return d;
+}
+
+QChar ParupaintLayer::frameExtendedChar(ParupaintFrame* f)
+{
+	return this->frameExtendedChar(this->frameIndex(f));
+}
+QChar ParupaintLayer::frameExtendedChar(int i)
+{
+	switch(this->frameExtendedDirection(i)){
 		case FRAME_NOT_EXTENDED:
 			return QChar('x');
 		case FRAME_EXTENDED_LEFT:
@@ -162,80 +187,74 @@ QChar ParupaintLayer::GetFrameChar(_fint f)
 	}
 }
 
-QString ParupaintLayer::GetFrameLabel(_fint f)
+QString ParupaintLayer::frameLabel(ParupaintFrame* f)
 {
-	if(IsFrameReal(f)) {
+	return this->frameLabel(this->frameIndex(f));
+}
+QString ParupaintLayer::frameLabel(int i)
+{
+	if(i >= 0 && i < frames.length()) {
 		QString str = "-0";
-		auto d = GetFrameExtendedDirection(f);
-		if(d == 2) {
-			auto end = f;
-			while(GetFrameExtendedDirection(end) 
-				!= FRAME_EXTENDED_RIGHT){
+		if(this->frameExtendedDirection(i) == FRAME_EXTENDED_LEFT){
+			int end = i;
+			// originally != FRAME_EXTENDED_RIGHT
+			while(this->frameExtendedDirection(end) == FRAME_EXTENDED_LEFT){
 				end++;
 			}
-			str = QString("-%2").arg(end-f);
+			str = QString("-%2").arg(end-i);
 		}
-		auto fr = GetFrame(f);
-		auto op = fr->GetOpacity();
-		if(op != 1.0) {
-			str = QString("%1-%2").arg(str).arg(int(op*255));
+		qreal opacity = this->frameAt(i)->opacity();
+		if(opacity != 1.0) {
+			str = QString("%1-%2").arg(str).arg(int(opacity*255));
 		}
 		return str;
 	}
 	return QString("0-0");
 }
 
+int ParupaintLayer::frameIndex(ParupaintFrame* f)
+{
+	Q_ASSERT_X(f, "removeLayer(f)", "layer to remove is null");
 
-
-bool ParupaintLayer::IsFrameExtended(_fint f)
-{
-	return (GetFrameExtendedDirection(f) != FRAME_NOT_EXTENDED);
+	int i = frames.indexOf(f);
+	if(i == -1) qDebug() << "frameIndex" << f << "was not found";
+	return i;
 }
-bool ParupaintLayer::IsFrameReal(_fint f)
+ParupaintFrame * ParupaintLayer::frameAt(int i)
 {
-	auto ed = GetFrameExtendedDirection(f);
-	return (ed == 0 || ed == 2);
-}
-bool ParupaintLayer::IsFrameValid(_fint f)
-{
-	if(Frames.isEmpty()) return false;
-	
-	if(f > GetNumFrames()) return false;
-	if(f < 0) return false;
-	
-	return true;
+	if(frames.isEmpty()) return nullptr;
+	return frames.at(i);
 }
 
-// Best to check the ranges and such before using this.
-FrameExtensionDirection ParupaintLayer::GetFrameExtendedDirection(_fint f)
+void ParupaintLayer::setVisible(bool visible)
 {
-	auto d = 0;
-	if(IsFrameValid(f)) {
-		if(f > 0 && Frames.at(f-1) == Frames.at(f)) {
-			d++;
-		}
-		if(f < GetNumFrames()-1 && Frames.at(f+1) == Frames.at(f)) {
-			d += 2;
-		}
+	layer_visible = visible;
+	emit onVisiblityChange(layer_visible);
+}
+
+bool ParupaintLayer::visible()
+{
+	return layer_visible;
+}
+
+int ParupaintLayer::frameCount()
+{
+	return frames.length();
+}
+int ParupaintLayer::realFrameCount()
+{
+	int count = 0;
+	foreach(auto f, frames){
+		if(this->isFrameReal(f)) count++;
 	}
-	return FrameExtensionDirection(d);
+	return count;
 }
 
-
-_fint ParupaintLayer::GetNumFrames()
+QList<QImage> ParupaintLayer::imageFrames(bool rendered)
 {
-	return Frames.length();
-}
-
-_fint ParupaintLayer::GetNumRealFrames()
-{
-	auto tf = 0;
-	ParupaintFrame * old_frame = nullptr;
-	foreach(auto f, Frames){
-		if(f != old_frame){
-			tf ++;
-			old_frame = f;
-		}
+	QList<QImage> images;
+	foreach(auto f, frames){
+		images.append(rendered ? f->renderedImage() : f->image());
 	}
-	return tf;
+	return images;
 }

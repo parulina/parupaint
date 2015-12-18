@@ -1,6 +1,6 @@
-// (c) paru 2015
-//
+#include "parupaintApp.h"
 
+#include <QDebug>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
 #include <QSettings>
@@ -8,80 +8,35 @@
 #include <QFont>
 #include <QFontDatabase>
 #include <QUrl>
+#include <QTime>
+#include <QInputDialog>
 
-#include "src/net/parupaintServerInstance.h"
-
+#include "net/parupaintServerInstance.h"
 #include "parupaintWindow.h"
-#include "parupaintApp.h"
-
 #include "parupaintVersion.h"
+#include "parupaintVersionCheck.h"
 
-// have a signal that updates the title?
-// have window in this file?
-
-#include <QDebug>
-
-ParupaintApp::~ParupaintApp()
-{
-	if(server) delete server;
+inline void sleep(int ms){
+	QTime endtime = QTime::currentTime().addMSecs(ms);
+	while(QTime::currentTime() < endtime)
+		QApplication::processEvents(QEventLoop::AllEvents, 100);
 }
 
-ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv), server(nullptr)
+ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 {
 	setOrganizationName("paru");
 	setOrganizationDomain("sqnya.se");
 	setApplicationName("parupaint");
 	setApplicationVersion(PARUPAINT_VERSION);
 	setWindowIcon(QIcon(":/resources/parupaint.ico"));
-	this->setApplicationVersion(PARUPAINT_VERSION);
 
 	QSettings::setDefaultFormat(QSettings::IniFormat);
-	// Set default username
-	QSettings cfg;
-	cfg.beginGroup("painter");
-	if(!cfg.contains("username") || 
-		cfg.value("username").toString().isEmpty()) {
-		
-#ifdef Q_OS_WIN
-		QString uname = getenv("USERNAME");
-#else
-		QString uname = getenv("USER");
-#endif
-		cfg.setValue("username", uname);
-	}
-	cfg.endGroup();
-
-	
-	QCommandLineParser parser;
-	parser.setApplicationDescription("Draw with other people and stuff");
-	parser.addHelpOption();
-	parser.addOption(QCommandLineOption({"c","connect"}, "Connect to a server", "address"));
-	parser.addOption(QCommandLineOption({"p","port"}, "Specify port to run the server", "port"));
-	parser.addVersionOption();
-	parser.process(*this);
-
-	QString server_str = parser.value("connect");
-	int port_num = parser.value("port").toInt();
-	if(port_num <= 0){
-		port_num = 1108;
-	}
-
-
-	main_window = new ParupaintWindow;
-	if(server_str.isEmpty()){
-		server = new ParupaintServerInstance(port_num);
-		server->setProtective(true);
-		main_window->SetLocalHostPort(port_num);
-		main_window->Connect(QString("localhost:%1").arg(port_num));
-	} else {
-
-		qDebug() << "Connecting to" << server_str;
-		main_window->Connect(server_str);
-	}
 
 	QFontDatabase db;
 	db.addApplicationFont(":/resources/parufont.ttf");
+
 	this->setFont(QFont("parufont", 12));
+	this->setStyleSheet(":/resources/stylesheet.qss");
 
 
 	QFile file(":resources/stylesheet.qss");
@@ -90,10 +45,58 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv), s
 		this->setStyleSheet(file.readAll());
 		file.close();
 	}
-}
 
-bool ParupaintApp::event(QEvent *event)
-{
-	this->QApplication::event(event);
-	return true;
+	bool first_start(false);
+	QSettings cfg;
+	if(!cfg.contains("client/username") ||
+	    cfg.value("client/username").toString().isEmpty()) {
+#ifdef Q_OS_WIN
+		QString uname = getenv("USERNAME");
+#else
+		QString uname = getenv("USER");
+#endif
+		cfg.setValue("client/username", uname);
+		first_start = true;
+	}
+
+	QCommandLineParser parser;
+	parser.setApplicationDescription("Draw with other people and stuff");
+	parser.addHelpOption();
+	parser.addOption({{"c","connect"}, "Connect to a server", "address"});
+	parser.addOption({{"p","port"}, "Specify port to run the server", "port"});
+	parser.addOption({QString("no-update-check"), "Don't check for updates"});
+	parser.addVersionOption();
+	parser.process(*this);
+
+	QString server_str;
+	int 	server_port(1108);
+	bool	update_check = !parser.isSet("no-update-check");
+
+	if(parser.isSet("connect")) server_str = parser.value("connect");
+	if(parser.isSet("port")) server_port = parser.value("port").toInt();
+
+	// feels wrong creating without a parent...
+	main_window = new ParupaintWindow;
+	main_window->setWindowTitle("parupaint " + QString(PARUPAINT_VERSION));
+
+	if(update_check){
+		ParupaintVersionCheck * version_check = new ParupaintVersionCheck(this);
+		connect(version_check, &ParupaintVersionCheck::updateResponse, [this](const QString & msg, bool update){
+			if(update) main_window->addChatMessage(msg);
+		});
+	}
+
+	if(server_str.isEmpty()){
+		ParupaintServerInstance* server = new ParupaintServerInstance(server_port, this);
+		server->setProtective(true);
+
+		server_str = QString("localhost:%1").arg(server_port);
+		main_window->setLocalServer(server_str);
+	}
+	sleep(1000);
+	main_window->doConnect(server_str);
+
+	if(first_start){
+		main_window->showSettingsDialog();
+	}
 }

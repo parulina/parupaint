@@ -29,6 +29,8 @@ Q_OBJECT
 	ParupaintServer(quint16 port, QObject * = nullptr);
 	~ParupaintServer();
 
+	virtual void message(ParupaintConnection *, const QString &, const QByteArray & = QByteArray()) {};
+
 	void setProtective(bool);
 	bool isProtective();
 

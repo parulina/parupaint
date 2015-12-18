@@ -1,160 +1,123 @@
-
-#include <QPainter>
-#include <QPen>
 #include "parupaintBrush.h"
 
+// brush!
 
-ParupaintBrush::ParupaintBrush()
+#include <QDebug>
+#include <QPainter>
+#include <QPen>
+#include <QtMath>
+
+ParupaintBrush::ParupaintBrush(QObject * parent,
+		qreal size, const QColor color, const QString & name, int tool) :
+	QObject(parent),
+	brush_color(color), brush_name(name), brush_position(0, 0),
+	brush_size(size), brush_pressure(0.0),
+	brush_layer(0), brush_frame(0),
+	brush_drawing(false), brush_tool(tool)
 {
-	SetName("");
-	SetPressure(0.0);
-	SetWidth(1);
-	SetCurrentStroke(nullptr);
-	SetLastStroke(nullptr);
-	SetLayer(0);
-	SetFrame(0);
-	SetDrawing(false);
-	SetToolType(0);
 }
 
-ParupaintBrush::ParupaintBrush(QString name, double w, QColor col, int tool) : ParupaintBrush()
-{
-	SetName(name);
-	SetWidth(w);
-	SetColor(col);
-	SetToolType(tool);
+void ParupaintBrush::setName(const QString & name) {
+	const QString old_name = this->brush_name;
+	this->brush_name = name;
+	if(name != old_name) emit onNameChange(name);
+}
+void ParupaintBrush::setColor(const QColor & color) {
+	const QColor old_color = this->brush_color;
+	this->brush_color = color;
+	if(color != old_color) emit onColorChange(color);
+}
+void ParupaintBrush::setSize(qreal size) {
+	if(size <= 1) size = 1;
+	if(size >= 512) size = 512;
+	this->brush_size = size;
+}
+void ParupaintBrush::setPosition(const QPointF & pos) {
+	const QPointF old_position = this->brush_position;
+	this->brush_position = pos;
+	if(pos != old_position) emit onPositionChange(pos);
+}
+void ParupaintBrush::setX(qreal x){ this->brush_position.setX(x); }
+void ParupaintBrush::setY(qreal y){ this->brush_position.setY(y); }
+
+void ParupaintBrush::setPressure(qreal pressure) {
+	if(pressure < 0) pressure = 0; 
+	if(pressure > 1) pressure = 1;
+	this->brush_pressure = pressure;
+}
+void ParupaintBrush::setLayerFrame(int l, int f) {
+	this->setLayer(l);
+	this->setFrame(f);
+}
+void ParupaintBrush::setLayer(int l) {
+	this->brush_layer = l;
+}
+void ParupaintBrush::setFrame(int f) {
+	this->brush_frame = f;
+}
+void ParupaintBrush::setDrawing(bool drawing) {
+	this->brush_drawing = drawing;
+}
+void ParupaintBrush::setTool(int tool) {
+
+	int old_tool = this->brush_tool;
+	if(tool < ParupaintBrushToolTypes::BrushToolNone)
+		tool = ParupaintBrushToolTypes::BrushToolNone;
+	if(tool >= ParupaintBrushToolTypes::BrushToolMax)
+		tool = ParupaintBrushToolTypes::BrushToolMax;
+
+	this->brush_tool = tool;
+	if(tool != old_tool) emit onToolChange(tool);
 }
 
-QPen ParupaintBrush::ToPen()
+const QString & ParupaintBrush::name() const { return this->brush_name; }
+const QColor & ParupaintBrush::color() const { return this->brush_color; }
+qreal ParupaintBrush::size() const { return this->brush_size; }
+const QPointF & ParupaintBrush::position() const { return this->brush_position; }
+qreal ParupaintBrush::pressure() const { return this->brush_pressure; }
+int ParupaintBrush::layer() const { return this->brush_layer; }
+int ParupaintBrush::frame() const { return this->brush_frame; }
+bool ParupaintBrush::drawing() const { return this->brush_drawing; }
+int ParupaintBrush::tool() const { return this->brush_tool; }
+
+qreal ParupaintBrush::x() { return this->brush_position.x(); }
+qreal ParupaintBrush::y() { return this->brush_position.y(); }
+QRgb ParupaintBrush::rgba() { return this->brush_color.rgba(); }
+QPen ParupaintBrush::pen()
 {
-	QPen pen(GetColor());
-	if(GetPressure() < 0) 	pen.setWidth(GetWidth());
-	else 			pen.setWidth(GetWidth()*GetPressure());
+	QPen pen(this->color());
 	pen.setCapStyle(Qt::RoundCap);
+	pen.setWidthF(this->pressureSize());
 	return pen;
 }
 
-void ParupaintBrush::SetName(QString str)
-{
-	name = str;
+QPoint ParupaintBrush::pixelPosition() {
+	return QPoint(qFloor(brush_position.x()), qFloor(brush_position.y()));
 }
-
-void ParupaintBrush::SetWidth(double w)
-{
-	if(w <= 1) w = 1;
-	else if(w >= 512) w = 512;
-	width = w;
+qreal ParupaintBrush::pressureSize() {
+	return brush_size * brush_pressure;
 }
-void ParupaintBrush::SetPressure(double p)
-{
-	pressure = p;
-}
-
-void ParupaintBrush::SetColor(QColor col)
-{
-	color = col;
-}
-void ParupaintBrush::SetPosition(double x, double y)
-{
-	position = QPointF(x, y);
-}
-void ParupaintBrush::SetPosition(QPointF pos)
-{
-	position = pos;
-}
-
-void ParupaintBrush::SetCurrentStroke(ParupaintStroke * s)
-{
-	CurrentStroke = s;
-}
-void ParupaintBrush::SetLastStroke(ParupaintStroke * s)
-{
-	LastStroke = s;
-}
-
-void ParupaintBrush::SetLayer(_lint l)
-{
-	layer = l;
-}
-void ParupaintBrush::SetFrame(_fint f)
-{
-	frame = f;
-}
-
-void ParupaintBrush::SetDrawing(bool d)
-{
-	drawing = d;
-}
-
-void ParupaintBrush::SetToolType(int t)
-{
-	tooltype=t;
-}
-
-double ParupaintBrush::GetWidth() const
-{
-	return width;
-}
-double ParupaintBrush::GetPressure() const
-{
-	return pressure;
-}
-
-QColor ParupaintBrush::GetColor() const
-{
-	return color;
-}
-
-QString ParupaintBrush::GetColorString() const
-{
+QString ParupaintBrush::colorString() {
 	return ("#"+ 
-		("0" + QString::number(color.red(), 16)).right(2) + 
-		("0" + QString::number(color.green(), 16)).right(2) + 
-		("0" + QString::number(color.blue() , 16)).right(2) +
-		("0" + QString::number(color.alpha(), 16)).right(2)).toUpper();
+		("0" + QString::number(brush_color.red(), 16)).right(2) + 
+		("0" + QString::number(brush_color.green(), 16)).right(2) + 
+		("0" + QString::number(brush_color.blue() , 16)).right(2) +
+		("0" + QString::number(brush_color.alpha(), 16)).right(2)).toUpper();
 }
 
-QString ParupaintBrush::GetName() const
+QRectF ParupaintBrush::localRect()
 {
-	return name;
+	return QRectF(-pressureSize(), -pressureSize(), pressureSize(), pressureSize());
 }
 
-QPointF ParupaintBrush::GetPosition() const
+void ParupaintBrush::copyTo(ParupaintBrush & brush)
 {
-	return position;
+	brush.setName(this->name());
+	brush.setColor(this->color());
+	brush.setPosition(this->position());
+	brush.setSize(this->size());
+	brush.setPressure(this->pressure());
+	brush.setLayerFrame(this->layer(), this->frame());
+	brush.setDrawing(this->drawing());
+	brush.setTool(this->tool());
 }
-
-_lint ParupaintBrush::GetLayer() const 
-{
-	return layer;
-}
-
-_fint ParupaintBrush::GetFrame() const
-{
-	return frame;
-}
-
-bool ParupaintBrush::IsDrawing() const
-{
-	return drawing;
-}
-
-ParupaintStroke * ParupaintBrush::GetCurrentStroke() const
-{
-	return CurrentStroke;
-}
-ParupaintStroke * ParupaintBrush::GetLastStroke() const
-{
-	return LastStroke;
-}
-
-int ParupaintBrush::GetToolType() const
-{
-	return tooltype;
-}
-
-double ParupaintBrush::GetPressureWidth() const
-{
-	return width * pressure;
-}
-

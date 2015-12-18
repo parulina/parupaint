@@ -1,79 +1,70 @@
-
 #include "parupaintFlayerLayer.h"
 #include "parupaintFlayerFrame.h"
 
+#include <QRadioButton>
+#include <QLineEdit>
 #include <QHBoxLayout>
-#include <QStyleOption>
-#include <QPainter>
 
-#include <QDebug>
-
-ParupaintFlayerLayer::ParupaintFlayerLayer(QWidget * parent) : QWidget(parent), Index(0)
+ParupaintFlayerLayer::ParupaintFlayerLayer(QWidget * parent) : QWidget(parent),
+	firstchildren_count(-1)
 {
 	this->setFocusPolicy(Qt::NoFocus);
-	this->setObjectName("FlayerLayer");
-	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-	this->setMinimumHeight(15);
 
-	box = new QHBoxLayout(this);
-	box->setSpacing(1);
-	box->setMargin(0);
-	box->setAlignment(Qt::AlignLeft);
+	QHBoxLayout *layout = new QHBoxLayout;
+	layout->setContentsMargins(0, 0, 0, 0);
+	layout->setSpacing(0);
+	layout->setAlignment(Qt::AlignLeft);
+	this->setLayout(layout);
+
+	layer_visible = new QRadioButton(this);
+	layer_visible->setFocusPolicy(Qt::NoFocus);
+	layer_visible->setObjectName("FlayerLayerVisible");
+	layer_visible->setToolTip("hide/show layer");
+	layer_visible->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
+	layer_visible->setFixedWidth(20);
+
+	layer_name = new QLineEdit(this);
+	layer_name->setFocusPolicy(Qt::ClickFocus);
+	layer_name->setObjectName("FlayerLayerLabel");
+	layer_name->setToolTip("set layer name");
+	layer_name->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
+	layer_name->setFixedWidth(120);
+	layer_name->setText("layer");
+	layer_name->setAlignment(Qt::AlignLeft);
+	layer_name->setMaxLength(10);
+
+	//layer_name->setText(QString(" layer %1 ").arg(l + 1));
+
+	layout->addWidget(layer_visible, 0, Qt::AlignHCenter);
+	layout->addWidget(layer_name);
 }
-
-ParupaintFlayerFrame * ParupaintFlayerLayer::NewFrame()
+void ParupaintFlayerLayer::setLayerVisible(bool visible)
 {
-	return new ParupaintFlayerFrame(this);
+	layer_visible->setChecked(visible);
 }
-
-ParupaintFlayerFrame * ParupaintFlayerLayer::AddFrame(int index) { return AddFrame(index, NewFrame()); }
-ParupaintFlayerFrame * ParupaintFlayerLayer::AddFrame(int index, ParupaintFlayerFrame * frame)
+void ParupaintFlayerLayer::setName(const QString & name)
 {
-	connect(frame, SIGNAL(clicked()), this, SLOT(FrameChange()));
-	Frames.insert(index, frame);
-	box->insertWidget(index, frame);
-	return frame;	
+	layer_name->setText(name);
 }
-
-void ParupaintFlayerLayer::RemoveFrame(int index)
+void ParupaintFlayerLayer::addFrame(ParupaintFlayerFrame * frame)
 {
-	GetFrame(index)->deleteLater();
-	Frames.removeAt(index);
-}
-
-void ParupaintFlayerLayer::MoveFrame(int index, int offset)
-{
-	if(index+offset < 0) 			offset = 0 - index;
-	if(index+offset >= Frames.length()) 	offset = (Frames.length()-1) - index;
-
-	box->removeWidget(GetFrame(index));
-	box->insertWidget(index+offset, GetFrame(index));
-	Frames.move(index, index+offset);
-}
-
-ParupaintFlayerFrame* ParupaintFlayerLayer::GetFrame(int index)
-{
-	if(Frames.isEmpty() || index >= Frames.size()) return nullptr;
-	return Frames.at(index);
-}
-
-void ParupaintFlayerLayer::Clear()
-{
-	foreach(auto *i, Frames){
-		i->deleteLater();
+	QHBoxLayout * layout = qobject_cast<QHBoxLayout*>(this->layout());
+	int stretch = 0;
+	if(firstchildren_count == -1){
+		firstchildren_count = layout->count();
+		stretch = 1;
+	} else {
+		layout->setStretch(firstchildren_count, 0);
 	}
-	Frames.clear();
+	layout->addWidget(frame, stretch);
 }
-void ParupaintFlayerLayer::ClearChecked()
+ParupaintFlayerFrame * ParupaintFlayerLayer::frameAt(int i)
 {
-	foreach(auto *i, Frames){
-		i->setChecked(false);
-	}
+	QHBoxLayout * layout = qobject_cast<QHBoxLayout*>(this->layout());
+	if(firstchildren_count == -1) return nullptr;
+	QLayoutItem * item = layout->itemAt(i + firstchildren_count);
+	if(!item) return nullptr;
+
+	return qobject_cast<ParupaintFlayerFrame*>(item->widget());
 }
-void ParupaintFlayerLayer::FrameChange()
-{
-	ParupaintFlayerFrame* button = static_cast<ParupaintFlayerFrame*>(sender());
-	this->ClearChecked();
-	emit frameCheck(button);
-	button->setChecked(true);
-}
+

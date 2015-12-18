@@ -36,6 +36,8 @@ HEADERS +=		$$files(src/core/*.h) \
 			$$files(src/net/*.h) \
 			$$files(src/net/ws/*.h) \
 			$$files(src/overlay/*.h) \
+			$$files(src/dialog/*.h) \
+			$$files(src/widget/*.h) \
 			$$files(src/bundled/*.h) \
 			$$files(src/bundled/karchive/*.h) \
 			$$files(src/*.h)
@@ -44,10 +46,11 @@ SOURCES += 		$$files(src/core/*.cpp) \
 			$$files(src/net/*.cpp) \
 			$$files(src/net/ws/*.cpp) \
 			$$files(src/overlay/*.cpp) \
+			$$files(src/dialog/*.cpp) \
+			$$files(src/widget/*.cpp) \
 			$$files(src/bundled/*.cpp) \
 			$$files(src/bundled/karchive/*.cpp) \
 			$$files(src/*.cpp)
-SOURCES -=		src/main_server.cpp
 
 INCLUDEPATH +=		src/bundled/ffmpeg
 
@@ -56,13 +59,14 @@ INCLUDEPATH +=		src/bundled/ffmpeg
 nogui {
  !build_pass:message("Compiling without GUI (standalone).")
  QT -=		widgets
- HEADERS -=	$$files(src/net/parupaintClient*.h) $$files(src/overlay/*.h)
- SOURCES -=	$$files(src/net/parupaintClient*.cpp) $$files(src/overlay/*.cpp)
- HEADERS -= 	$$files(src/*.h)
- SOURCES -= 	$$files(src/*.cpp)
+ HEADERS -=	$$files(src/dialog/*.h)   $$files(src/*.h)   $$files(src/net/parupaintClient*.h)   $$files(src/overlay/*.h)
+ SOURCES -=	$$files(src/dialog/*.cpp) $$files(src/*.cpp) $$files(src/net/parupaintClient*.cpp) $$files(src/overlay/*.cpp)
 
- SOURCES += 	src/main_server.cpp
+ SOURCES += 	src/main/server.cpp
  TARGET = 	parupaint-server
+} else {
+ SOURCES += 	src/main/client.cpp
+ TARGET = 	parupaint
 }
 
 noxml {
@@ -79,5 +83,5 @@ noffmpeg {
 
 VERSION_MAJOR =	0
 VERSION_MINOR =	8
-VERSION_PATCH =	5
+VERSION_PATCH =	9
 VERSION = 	$${VERSION_MAJOR}.$${VERSION_MINOR}.$${VERSION_PATCH}

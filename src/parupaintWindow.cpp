@@ -10,37 +10,30 @@
 #include <QMimeData>
 #include <QApplication>
 #include <QClipboard>
+#include <QVBoxLayout>
 
-#include "parupaintVersionCheck.h"
 #include "parupaintKeys.h"
 
 #include <algorithm>
 
-#include "core/parupaintPanvasWriter.h"
+#include "core/parupaintPanvasInputOutput.h"
 
-#include "core/parupaintStrokeStep.h"
 #include "core/parupaintBrush.h"
+#include "core/parupaintBrushGlass.h"
 
 #include "parupaintCanvasView.h"
-#include "parupaintCanvasPool.h"
-#include "parupaintCanvasObject.h"
-#include "parupaintCanvasBrush.h"
-#include "parupaintCanvasBanner.h"
+#include "parupaintCanvasScene.h"
+#include "parupaintVisualCanvas.h"
+#include "parupaintVisualCursor.h"
 
 #include "core/parupaintLayer.h"
 #include "core/parupaintFrame.h"
 
 #include "overlay/parupaintChat.h"
 #include "overlay/parupaintFlayer.h"
-#include "overlay/parupaintFlayerList.h" // for SIGNAL
 #include "overlay/parupaintColorPicker.h"
 #include "overlay/parupaintUserList.h"
 #include "overlay/parupaintInfoBar.h"
-
-#include "parupaintConnectionDialog.h"
-#include "parupaintFileDialog.h"
-#include "parupaintNewDialog.h"
-#include "parupaintSettingsDialog.h"
 
 #include "core/parupaintFrameBrushOps.h"
 #include "core/parupaintSnippets.h"
@@ -48,452 +41,274 @@
 
 #include <QDebug>
 
-#define PARUPAINTKEY_TO_SHORTCUT(key, lambda) connect(new QShortcut(key_shortcuts->GetKeySequence(key), this), &QShortcut::activated, lambda)
+#define PARUPAINTKEY_TO_SHORTCUT(key, w, f) \
+	connect(new QShortcut(key_shortcuts->GetKeySequence(key), this), &QShortcut::activated, w, f)
 
-ParupaintWindow::~ParupaintWindow()
-{
-	delete client;
-}
-
-ParupaintWindow::ParupaintWindow() : QMainWindow(), local_port(1108), old_brush_switch(0),
-	OverlayButtonDown(false), OverlayState(OVERLAY_STATUS_HIDDEN)
+ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
+	overlay_state(overlayHiddenState), overlay_button(false)
 {
 	// default keys
 	key_shortcuts = new ParupaintKeys(QStringList{
 
-		"sticky_overlay=F1",
-		"show_overlay=Tab",
-		"hide_overlay=Shift+Tab",
+		"overlay_showfull=F1",
+		// dunno what to do with this...
+		//"overlay_show=Tab",
+		//"overlay_hide=Shift+Tab",
 
-		"dialog_quicksave=Ctrl+K",
-		"dialog_open=Ctrl+O",
-		"dialog_saveas=Ctrl+L",
-		"dialog_new=Ctrl+N",
+		"action_quicksave=Ctrl+K",
+		"action_open=Ctrl+O",
+		"action_saveas=Ctrl+L",
+		"action_new=Ctrl+N",
+		"action_settings=Ctrl+M",
+		"action_connect=Ctrl+I",
 
-		"dialog_settings=Ctrl+M",
-		"dialog_connect=Ctrl+I",
+		"canvas_fliph=H",
+		"canvas_flipv=Shift+H",
+		"canvas_clear=Ctrl+Backspace",
+		"canvas_reset=Ctrl+G",
+		"canvas_play=Shift+G",
+		"canvas_preview=G",
 
 		"prev_frame=A",
 		"next_frame=S",
 		"prev_layer=D",
 		"next_layer=F",
 
-		"clear_canvas=Ctrl+Backspace",
 		"copy=Ctrl+C",
 		"paste=Ctrl+V",
 
-		"play_animation=Shift+G",
-		"reset_view=Ctrl+G",
-		"toggle_preview=G",
 
-		"eraser_switch=E",
-		"pick_color=R",
-		"pick_global_color=Shift+R",
+		"brush_eraser=E",
+		"brush_fillpreview=T",
 
-		"fill_preview=T",
+		"pick_layer_color=R",
+		"pick_canvas_color=Shift+R",
 
-		"toolswitch_fill=W",
-		"toolswitch_dotpattern=Ctrl+W",
-		"toolswitch_opacity=Shift+W",
+		"tool_fill=Q",
+		"tool_opacity=Shift+Q",
+		"tool_dotpattern=W",
+		"tool_line=Shift+W",
 
 		"reload_canvas=Ctrl+Shift+R",
 		"reload_image=Ctrl+R",
 
-		"chat=Return"
+		"chat=Return",
+		"exit=Ctrl+Shift+Q"
 	});
-	auto * version_check = new ParupaintVersionCheck();
-	connect(version_check, &ParupaintVersionCheck::Response, this, &ParupaintWindow::VersionResponse);
+	// create brushglass
+	brushes = new ParupaintBrushGlass(this);
 
+	// create view and scene
 	view = new ParupaintCanvasView(this);
-	view->SetCurrentBrush(glass.GetCurrentBrush());
-	this->setFocusProxy(view);
-	this->setFocusPolicy(Qt::StrongFocus);
+	view->setScene((scene = new ParupaintCanvasScene(view)));
 
-	connect(view, &ParupaintCanvasView::CursorChange, this, &ParupaintWindow::CursorChange);
-	connect(view, &ParupaintCanvasView::PenMove, this, &ParupaintWindow::PenMove);
-	connect(view, &ParupaintCanvasView::PenDrawStart, this, &ParupaintWindow::PenDrawStart);
-	connect(view, &ParupaintCanvasView::PenDrawStop, this, &ParupaintWindow::PenDrawStop);
-	connect(view, &ParupaintCanvasView::PenPointerType, this, &ParupaintWindow::PenPointerType);
+	// parupaintWindow_pen.cpp
+	connect(view, &ParupaintCanvasView::pointerPress, this, &ParupaintWindow::OnPenPress);
+	connect(view, &ParupaintCanvasView::pointerMove, this, &ParupaintWindow::OnPenMove);
+	connect(view, &ParupaintCanvasView::pointerRelease, this, &ParupaintWindow::OnPenRelease);
+	connect(view, &ParupaintCanvasView::pointerPointer, this, &ParupaintWindow::OnPenPointer);
+	connect(view, &ParupaintCanvasView::pointerScroll, this, &ParupaintWindow::OnPenScroll);
 
-	setCentralWidget(view);
+	// update the overlay items with the viewport change
+	connect(view, &ParupaintCanvasView::viewportChange, this, &ParupaintWindow::updateOverlay, Qt::QueuedConnection);
 
-	pool = new ParupaintCanvasPool(view);
-	view->SetCanvas(pool);
-
-	client = new ParupaintClientInstance(pool, this);
-	connect(client, &ParupaintClientInstance::ChatMessageReceived, this, &ParupaintWindow::ChatMessageReceived);
+	// create the client and connect it
+	client = new ParupaintClientInstance(scene, this);
+	connect(client, &ParupaintClientInstance::ChatMessageReceived, this, &ParupaintWindow::addChatMessage);
 	connect(client, &ParupaintClientInstance::OnDisconnect, this, &ParupaintWindow::OnNetworkDisconnect);
 	connect(client, &ParupaintClientInstance::OnConnect, this, &ParupaintWindow::OnNetworkConnect);
-	connect(client, &ParupaintClientInstance::PlaymodeUpdate, [this](ParupaintBrush * brush){
-		auto * current_brush = glass.GetCurrentBrush();
-		*current_brush = *brush;
-		this->view->UpdateCurrentBrush(current_brush);
-	});
 
-	canvas_banner = new ParupaintCanvasBanner(this);
 
 	chat =	  new ParupaintChat(this);
-	flayer =  new ParupaintFlayer(this);
 	picker =  new ParupaintColorPicker(this);
+	flayer =  new ParupaintFlayer(this);
 	infobar = new ParupaintInfoBar(this);
 
-	chat->setChatInputPlaceholder(QString("press [%1] to chat.").arg(key_shortcuts->GetKeySequence("chat").toString(QKeySequence::NativeText)).toLower());
-	picker->SetColor(glass.GetCurrentBrush()->GetColor());
+	// chatactivity -> chatbubble
+	QString key_str = key_shortcuts->GetKeySequence("chat").toString(QKeySequence::NativeText);
+	chat->setChatInputPlaceholder(QString("press [%1] to chat.").arg(key_str).toLower());
+	connect(chat, &ParupaintChat::onActivity, [this](){
+			this->client->SendChat();
+	});
 	
-	// when canvas is updated, frames/layers are added - do a view update that updates the flayer panel
-	connect(pool, &ParupaintCanvasPool::UpdateCanvas, this, &ParupaintWindow::ViewUpdate);
-
-	connect(pool->GetCanvas(), SIGNAL(CurrentSignal(int, int)), this, SLOT(ChangedFrame(int, int)));
-	connect(flayer->GetList(), SIGNAL(clickFrame(int, int)), this, SLOT(SelectFrame(int, int)));
-	connect(chat, &ParupaintChat::Message, this, &ParupaintWindow::ChatMessage);
-	connect(picker, &ParupaintColorPicker::ColorChange, this, &ParupaintWindow::ColorChange);
-
-
-	OverlayTimer = new QTimer(this);
-	OverlayTimer->setSingleShot(true);
-	connect(OverlayTimer, SIGNAL(timeout()), this, SLOT(OverlayTimeout()));
-
-	OverlayButtonTimer = new QTimer(this);
-	OverlayButtonTimer->setSingleShot(true);
-	connect(OverlayButtonTimer, &QTimer::timeout, this, &ParupaintWindow::ButtonTimeout);
-
-	fillpreview_timer = new QTimer(this);
-	fillpreview_timer->setSingleShot(true);
-	connect(fillpreview_timer, &QTimer::timeout, [this](){
-		this->pool->GetCanvas()->ClearFillPreview();
-		this->pool->GetCanvas()->RedrawCache();
-		this->pool->UpdateView();
+	connect(flayer, &ParupaintFlayer::onHighlightChange, scene->canvas(), &ParupaintVisualCanvas::current_lf_update);
+	connect(flayer, &ParupaintFlayer::onHighlightChange, infobar->status(), &ParupaintInfoBarStatus::setLayerFrame);
+	connect(flayer, &ParupaintFlayer::onHighlightChange, [&](int l, int f){
+		ParupaintBrush * brush = this->brushes->brush();
+		brush->setLayerFrame(l, f);
+		this->client->SendBrushUpdate(brush);
 	});
 
-	/*
+	connect(scene->canvas(), &ParupaintVisualCanvas::onCurrentLayerFrameChange, flayer, &ParupaintFlayer::current_lf_update);
+	connect(scene->canvas(), &ParupaintVisualCanvas::onCurrentLayerFrameChange, infobar->status(), &ParupaintInfoBarStatus::setLayerFrame);
+	connect(scene->canvas(), &ParupaintVisualCanvas::onCurrentLayerFrameChange, [&](int l, int f){
+		ParupaintBrush * brush = this->brushes->brush();
+		brush->setLayerFrame(l, f);
+		this->client->SendBrushUpdate(brush);
+	});
 
-	// undo, redo - wat do?
-	if(seq == BrushKeyUndo){
-		pool->UndoBrushStroke(brush);
-	} else if(seq == BrushKeyRedo) {
-		pool->RedoBrushStroke(brush);
+	// canvas content -> flayer content
+	connect(scene->canvas(), &ParupaintVisualCanvas::onCanvasContentChange, flayer, &ParupaintFlayer::canvas_content_update);
+	connect(scene->canvas(), &ParupaintVisualCanvas::onCanvasResize, infobar->status(), &ParupaintInfoBarStatus::setDimensions);
 
-	*/
+	// chat message -> chat message
+	connect(chat, &ParupaintChat::Message, this, &ParupaintWindow::doChat);
 
-	// PARUPAINTKEY_TO_SHORTCUT is a macro that turns keys from key_shortcuts
-	// to global shortcuts
+	// color picker -> brushglass, visual brush
+	connect(picker, &ParupaintColorPicker::ColorChange, brushes, &ParupaintBrushGlass::color_change);
+	connect(picker, &ParupaintColorPicker::ColorChange, scene->mainCursor(), &ParupaintVisualCursor::setColor);
 
+	// visual brush -> color picker
+	connect(scene->mainCursor(), &ParupaintBrush::onColorChange, picker, &ParupaintColorPicker::color_change);
+
+
+	connect(infobar, &ParupaintInfoBar::onStatusClick, [&](const QUrl & url){
+		const QString str = url.toString();
+		qDebug() << str;
+
+		if(str == "#f1_notice"){
+			this->showOverlay(overlayExpandedState);
+		} else if(str == "#connected"){
+			this->showConnectDialog();
+		} else if(str == "#dimensions"){
+			this->showNewDialog();
+		}
+	});
+
+	// set a nice layout to the window, infobar and view
+	QWidget * central_widget = new QWidget(this);
+		QVBoxLayout * main_layout = new QVBoxLayout;
+			main_layout->addWidget(infobar, 0, Qt::AlignBottom);
+			main_layout->addWidget(view, 1);
+		central_widget->setLayout(main_layout);
+	this->setCentralWidget(central_widget);
+
+
+	// set up some overlay keybinds
+	overlay_timeout = new QTimer(this);
+	overlay_timeout->setSingleShot(true);
+	connect(overlay_timeout, &QTimer::timeout, this, &ParupaintWindow::hideOverlay);
+
+	overlay_button_timeout = new QTimer(this);
+	overlay_button_timeout->setSingleShot(true);
+	connect(overlay_button_timeout, &QTimer::timeout, [&](){
+		this->overlay_button = false;
+	});
+
+	// load keys and connect them
+	// TODO QAction? right now it's using QShortcut
 	key_shortcuts->Load();
-
-	PARUPAINTKEY_TO_SHORTCUT("dialog_quicksave", [=]{
-		QString saved = this->SaveAs(".png");
-		QString filelink = QDir(this->GetSaveDirectory()).filePath(saved);
-		chat->AddMessage("Quicksaved to '<a href=\""+filelink+"\">"+saved+"</a>'.");
-	});
-
-	PARUPAINTKEY_TO_SHORTCUT("dialog_open", [=]{
-		QSettings cfg;
-		auto lastopen = cfg.value("net/lastopen").toString();
-		ParupaintFileDialog * dlg = new ParupaintFileDialog(this, lastopen, "open...");
-		dlg->show();
-		dlg->activateWindow();
-
-		connect(dlg, &ParupaintFileDialog::EnterSignal, [=](QString str){
-			this->Open(str);
-			delete dlg;
-		});
-	});
-	PARUPAINTKEY_TO_SHORTCUT("dialog_saveas", [=]{
-		QSettings cfg;
-		ParupaintFileDialog * dlg = new ParupaintFileDialog(this, ".png", "save as...");
-		dlg->show();
-		dlg->activateWindow();
-		connect(dlg, &ParupaintFileDialog::EnterSignal, [=](QString str){
-			QString saved = this->SaveAs(str);
-			QString filelink = QDir(this->GetSaveDirectory()).filePath(saved);
-			chat->AddMessage("Saved as '<a href=\"file:///"+filelink+"\">"+saved+"</a>'.");
-			delete dlg;
-		});
-	});
-
-	PARUPAINTKEY_TO_SHORTCUT("dialog_new", [=]{
-		auto * dialog = new ParupaintNewDialog(this);
-
-		dialog->setOriginalDimensions(pool->GetCanvas()->GetWidth(), pool->GetCanvas()->GetHeight());
-		dialog->show();
-		dialog->activateWindow();
-
-		connect(dialog, &ParupaintNewDialog::NewSignal, [=](int w, int h, bool resize){
-			this->New(w, h, resize);
-			delete dialog;
-			//TODO remove the delete keyword, connect signal directly to this->new?
-		});
-	});
-
-	PARUPAINTKEY_TO_SHORTCUT("dialog_settings", [=]{
-		auto * dialog = new ParupaintSettingsDialog(this);
-		connect(dialog, &ParupaintSettingsDialog::pixelgridChanged, [=](bool b){
-			view->SetPixelGrid(b);
-		});
-		dialog->show();
-		dialog->activateWindow();
-	});
-
-	PARUPAINTKEY_TO_SHORTCUT("dialog_connect", [=]{
-		ParupaintConnectionDialog * dlg = new ParupaintConnectionDialog(this);
-		dlg->show();
-		dlg->activateWindow();
-
-		connect(dlg, &ParupaintConnectionDialog::ConnectSignal, [=](QString addr){
-			// i think i should use QDialog->done(); internally instead of deleting it...
-			this->Connect(addr);
-			delete dlg;
-		});
-		connect(dlg, &ParupaintConnectionDialog::DisconnectSignal, [=]{
-			this->Disconnect();
-			delete dlg;
-		});
-	});
-
+	PARUPAINTKEY_TO_SHORTCUT("action_quicksave", 	this, &ParupaintWindow::doQuickSave);
+	PARUPAINTKEY_TO_SHORTCUT("action_open", 	this, &ParupaintWindow::showOpenDialog);
+	PARUPAINTKEY_TO_SHORTCUT("action_saveas", 	this, &ParupaintWindow::showSaveAsDialog);
+	PARUPAINTKEY_TO_SHORTCUT("action_new", 		this, &ParupaintWindow::showNewDialog);
+	PARUPAINTKEY_TO_SHORTCUT("action_settings", 	this, &ParupaintWindow::showSettingsDialog);
+	PARUPAINTKEY_TO_SHORTCUT("action_connect", 	this, &ParupaintWindow::showConnectDialog);
+	new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Q), this, SLOT(close()));
 	key_shortcuts->Save();
+
+
+	// update the keylist
 	QStringList keylist_html;
 	foreach(QString s,key_shortcuts->GetKeys()){
 		s.replace("=", ": ").replace("_", " ");
 		keylist_html << s;
 	}
 	std::sort(keylist_html.begin(), keylist_html.end());
-	infobar->SetKeyList(keylist_html);
+	infobar->setKeyList(keylist_html);
 
-	this->setAcceptDrops(true);
-
-	UpdateTitle();
-	
 	// restore window pos
 	QSettings cfg;
-	restoreGeometry(cfg.value("window/maingeometry").toByteArray());
-	restoreState(cfg.value("window/mainstate").toByteArray());
+	if(cfg.value("window/restore", true).toBool()){
+		this->restoreGeometry(cfg.value("window/maingeometry").toByteArray());
+		this->restoreState(cfg.value("window/mainstate").toByteArray());
+	}
 
-	// ctrl + shift + q = quit
-	new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Q), this, SLOT(close()));
 
-	show();
-}
+	// accept drops...
+	this->setMinimumSize(QSize(700, 700));
+	this->setAcceptDrops(true);
 
-void ParupaintWindow::VersionResponse(bool update, QString body)
-{
-	qDebug() << (update ? "New update." : "No new update.");
+	// do an update of the initial brush
+	scene->updateMainCursor(brushes->brush());
 
-	if(update) chat->AddMessage(body);
-}
+	this->setFocusProxy(view);
+	this->setFocusPolicy(Qt::StrongFocus);
 
-void ParupaintWindow::ColorChange(QColor col)
-{
-	auto * brush = glass.GetCurrentBrush();
-	brush->SetColor(col); // Save it
-	view->UpdateCurrentBrush(brush); // show it
-}
-
-void ParupaintWindow::ChatMessageReceived(QString name, QString msg)
-{
-	chat->show();
-	chat->AddMessage(msg, name);
+	// make sure the overlay controls are able to be above this
+	this->centralWidget()->lower();
+	this->show();
 }
 
 void ParupaintWindow::OnNetworkConnect()
 {
 	QUrl url = client->url();
+	infobar->status()->setConnectedTo(url.host());
+
 	if(url.host() == "localhost") return;
 	chat->AddMessage("You are connected to " + url.host());
 }
 void ParupaintWindow::OnNetworkDisconnect(QString reason)
 {
-	if(reason == "SwitchHost") return;
 	chat->show();
 	chat->AddMessage("You were disconnected from the server.");
+	infobar->status()->setConnectedTo("");
 }
 
-void ParupaintWindow::CursorChange(ParupaintBrush* brush)
+
+void ParupaintWindow::showOverlay(overlayStates state)
 {
-	// when the cursor changes. important to update brushglass
-	*glass.GetCurrentBrush() = *brush;
-}
+	overlay_state = state;
 
-ParupaintCanvasPool * ParupaintWindow::GetCanvasPool()
-{
-	return pool;
-}
-
-void ParupaintWindow::PenDrawStart(ParupaintBrush* brush){
-
-	client->SendBrushUpdate(brush);
-	if(brush->GetToolType() == ParupaintBrushToolTypes::BrushToolFloodFill){
-		//special
-
-		auto x = brush->GetPosition().x(), y = brush->GetPosition().y();
-		QRect r = ParupaintFrameBrushOps::stroke(pool->GetCanvas(), x, y, x, y, brush);
-		pool->GetCanvas()->RedrawCache(r);
-
-		glass.GetCurrentBrush()->SetDrawing(false);
-		view->UpdateCurrentBrush(glass.GetCurrentBrush());
-		return;
+	overlay_timeout->stop();
+	if(overlay_state == overlayNormalState) {
+		QSettings cfg;
+		overlay_timeout->start(cfg.value("client/tabtimeout", 1400).toInt());
 	}
-	if(client->GetDrawMode() != DRAW_MODE_DIRECT){
-		pool->NewBrushStroke(brush);
-	}
-}
 
-void ParupaintWindow::PenMove(ParupaintBrush* brush){
-	auto * cbrush = glass.GetCurrentBrush();
-
-	if(brush->GetToolType() == ParupaintBrushToolTypes::BrushToolFloodFill && brush->IsDrawing()) {
-		// just for safety
-		brush->SetDrawing(false);
-	}
-	if(brush->IsDrawing() && client->GetDrawMode() == DRAW_MODE_DIRECT){
-		auto 	old_x = cbrush->GetPosition().x(),
-			old_y = cbrush->GetPosition().y(),
-			x = brush->GetPosition().x(),
-			y = brush->GetPosition().y();
-
-		QRect r = ParupaintFrameBrushOps::stroke(pool->GetCanvas(), old_x, old_y, x, y, brush);
-		pool->GetCanvas()->RedrawCache(r);
-
-	}
-	cbrush->SetPosition(brush->GetPosition());
-	client->SendBrushUpdate(brush);
-
-	// only normal brush for strokes plz
-	if(brush->GetToolType() != ParupaintBrushToolTypes::BrushToolNone) return;
-	if(client->GetDrawMode() != DRAW_MODE_DIRECT){
-		auto *stroke = brush->GetCurrentStroke();
-		if(stroke != nullptr){
-			stroke->AddStroke(new ParupaintStrokeStep(*brush));
-		}
-	}
-}
-
-void ParupaintWindow::PenDrawStop(ParupaintBrush* brush){
-
-	if(brush->GetToolType() == ParupaintBrushToolTypes::BrushToolFloodFill) return;
-
-	client->SendBrushUpdate(brush);
-	if(client->GetDrawMode() != DRAW_MODE_DIRECT){
-		pool->EndBrushStroke(brush);
-		pool->ClearBrushStrokes(brush);
-	}
-}
-void ParupaintWindow::PenPointerType(QTabletEvent::PointerType, QTabletEvent::PointerType nuw)
-{
-	if(nuw == QTabletEvent::Eraser) {
-		glass.SetBrush(1);
-		view->SetCurrentBrush(glass.GetCurrentBrush());
-		picker->SetColor(glass.GetCurrentBrush()->GetColor());
-
-	} else if(nuw == QTabletEvent::Pen) {
-		glass.SetBrush(0);
-		view->SetCurrentBrush(glass.GetCurrentBrush());
-		picker->SetColor(glass.GetCurrentBrush()->GetColor());
-	}
-}
-
-
-void ParupaintWindow::ViewUpdate()
-{
-	flayer->UpdateFromCanvas(pool->GetCanvas());
-	infobar->SetCurrentDimensions(pool->GetCanvas()->GetWidth(), pool->GetCanvas()->GetHeight());
-}
-
-void ParupaintWindow::ChangedFrame(int l, int f)
-{
-	auto brush = glass.GetCurrentBrush();
-	brush->SetLayer(l);
-	brush->SetFrame(f);
-	view->UpdateCurrentBrush(brush);
-	flayer->SetMarkedLayerFrame(l, f);
-	infobar->SetCurrentLayerFrame(l+1, f+1);
-}
-
-void ParupaintWindow::SelectFrame(int l, int f)
-{
-	auto brush = glass.GetCurrentBrush();
-	brush->SetLayer(l);
-	brush->SetFrame(f);
-	view->UpdateCurrentBrush(brush);
-	client->SendBrushUpdate(brush);
-}
-
-void ParupaintWindow::OverlayTimeout()
-{
-	OverlayState = OVERLAY_STATUS_HIDDEN;
-	HideOverlay();
-}
-
-void ParupaintWindow::ButtonTimeout()
-{
-	OverlayButtonDown = false;
-}
-
-
-void ParupaintWindow::ShowOverlay(bool permanent)
-{
-	if(!permanent) {
-		OverlayTimer->start(1400);
-	} else {
-		OverlayTimer->stop();
-	}
 	chat->show();
 	flayer->show();
 	picker->show();
 
-	UpdateOverlay();
+	this->updateOverlay();
 }
 
-void ParupaintWindow::HideOverlay()
+void ParupaintWindow::hideOverlay()
 {
-	if(!chat->hasFocus()) chat->hide();
-	if(!flayer->hasFocus()) flayer->hide();
-	if(!picker->hasFocus()) picker->hide();
-
-	UpdateOverlay();
-}
-void ParupaintWindow::UpdateOverlay()
-{
-	canvas_banner->move(this->width()/2 - canvas_banner->width()/2, 0);
-
-	auto visible = OverlayState == OVERLAY_STATUS_SHOWN_NORMAL ? infobar->height() : 30;
-	infobar->move(0, visible - infobar->height());
-	infobar->resize(this->width(), infobar->height());
-
-	auto spad = 15; // scroll padding
-	auto w1 = this->width() - chat->width() - spad;
-	chat->move(w1, visible);
-	picker->move(0, visible);
-
-	auto h2 = this->height() - flayer->height();
-	flayer->move(0, h2);
-	flayer->resize(this->width(), flayer->height());
-}
-
-void ParupaintWindow::mousePressEvent(QMouseEvent * event)
-{
-	if(this->hasFocus()){
-		if(event->buttons() == Qt::RightButton) {
-			auto * brush = glass.GetCurrentBrush();
-			pool->EndBrushStroke(brush);
-
-			glass.ToggleBrush(old_brush_switch, 1);
-			view->SetCurrentBrush(glass.GetCurrentBrush());
-			picker->SetColor(glass.GetCurrentBrush()->GetColor());
-
-			old_brush_switch = 0;
-			event->accept();
-		}
+	if(chat->geometry().contains(QCursor::pos()) ||
+	   picker->geometry().contains(QCursor::pos()) ||
+	   flayer->geometry().contains(QCursor::pos())) {
+		return;
 	}
-	return QMainWindow::mousePressEvent(event);
+
+	chat->hide();
+	picker->hide();
+	flayer->hide();
+
+	overlay_state = overlayHiddenState;
+	this->updateOverlay();
+}
+void ParupaintWindow::updateOverlay()
+{
+	infobar->setFixedHeight(overlay_state == overlayExpandedState ? 180 : 30);
+	const QRect inner_size = QRect(view->pos(), view->viewport()->size()).adjusted(1, 1, 1, 1);
+
+	picker->move(inner_size.topLeft());
+	chat->move(inner_size.topRight() - QPoint(chat->width(), 0));
+	flayer->setGeometry(inner_size.adjusted(0, (inner_size.height() - flayer->height()), 0, 0));
 }
 
 void ParupaintWindow::keyReleaseEvent(QKeyEvent * event)
 {
-	if((event->key() == Qt::Key_Tab || event->key() == Qt::Key_Backtab) && !event->isAutoRepeat()){
-		OverlayButtonTimer->start(100);
-		return;
+	if(event->key() == Qt::Key_Space){
+		origin_pen = current_pen; // fix that weird rant-bug
+		canvas_state = noCanvasState;
 	}
+	if((event->key() == Qt::Key_Tab || event->key() == Qt::Key_Backtab) && !event->isAutoRepeat()){
 
+		overlay_button_timeout->start(100);
+		event->accept();
+	}
 	return QMainWindow::keyReleaseEvent(event);
 }
 
@@ -507,132 +322,159 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			chat->show();
 		}
 	}
+	// Escape to cancel
 	if(!event->isAutoRepeat() && event->key() == Qt::Key_Escape){
-		if(view->HasPastePreview()){
-			view->UnsetPastePreview();
+
+		ParupaintBrush * brush = brushes->brush();
+		if(scene->canvas()->hasPastePreview()){
+			scene->canvas()->setPastePreview();
+		} else if(brush){
+			if(brush->tool() != ParupaintBrushToolTypes::BrushToolNone){
+
+				brush->setTool(ParupaintBrushToolTypes::BrushToolNone);
+				scene->updateMainCursor(brush);
+				client->SendBrushUpdate(brush);
+			}
+		}
+	}
+	if(event->key() == Qt::Key_Space){
+		if(canvas_state == noCanvasState){
+			if(event->modifiers() & Qt::ShiftModifier){
+				canvas_state = canvasBrushZoomingState;
+			} else {
+				canvas_state = canvasMovingState;
+			}
+			origin_pen = current_pen;
+			origin_zoom = view->zoom();
+			return;
 		}
 	}
 
 	if(!event->isAutoRepeat()){
 		// ui stuff
-		if(shortcut_name == "sticky_overlay"){
-			OverlayState = OVERLAY_STATUS_SHOWN_NORMAL;
-			ShowOverlay(true);
-			//
+		if(shortcut_name.startsWith("overlay_")){
+			if(shortcut_name.endsWith("showfull")){
+				this->showOverlay(overlayExpandedState);
+			}
 		// canvas stuff
-		} else if(shortcut_name == "eraser_switch") {
-			auto brush = glass.GetCurrentBrush();
-
-			// safety
-			pool->EndBrushStroke(brush);
-
-			glass.ToggleBrush(old_brush_switch, 1);
-			view->SetCurrentBrush(glass.GetCurrentBrush());
-			picker->SetColor(glass.GetCurrentBrush()->GetColor());
-
-			old_brush_switch = 0;
-
 		} else if(shortcut_name == "reload_canvas"){
-			canvas_banner->Show(2000, "reloaded canvas");
+			view->showToast("reloaded canvas", 2000);
 			client->ReloadCanvas();
 
 		} else if(shortcut_name == "reload_image"){
-			canvas_banner->Show(2000, "reloaded image");
+			view->showToast("reloaded image", 2000);
 			client->ReloadImage();
-
-		} else if(shortcut_name == "play_animation"){
-			// TODO
-			pool->TriggerViewUpdate();
-
-		} else if(shortcut_name == "reset_view"){
-			view->SetZoom(1.0);
-			pool->TriggerViewUpdate();
-
-		} else if(shortcut_name == "toggle_preview"){
-			pool->GetCanvas()->TogglePreview();
-			canvas_banner->Show(2000, 
-					QString("preview ") + (pool->GetCanvas()->IsPreview() ? "on" : "off"));
-			pool->TriggerViewUpdate();
 
 		} else if(shortcut_name == "copy"){
 			if(view->hasFocus()){
-				if(view->HasPastePreview()) view->UnsetPastePreview();
-				QImage img = pool->GetCanvas()->GetCurrentLayerFrameImage();
+				if(scene->canvas()->hasPastePreview())
+					scene->canvas()->setPastePreview();
+				QImage img = scene->canvas()->currentCanvasFrame()->image();
 				QClipboard * clip = QApplication::clipboard();
 				if(clip){
 					clip->setImage(img);
 				}
 			}
-
 		} else if(shortcut_name == "paste"){
 			if(view->hasFocus()){
 				QClipboard * clip = QApplication::clipboard();
 				if(clip){
 					QImage img = clip->image();
 					if(!img.isNull()){
-						if(view->HasPastePreview()){
-							view->UnsetPastePreview();
-							if(client){
-								auto brush = glass.GetCurrentBrush();
-								int 	l = pool->GetCanvas()->GetCurrentLayer(),
-									f = pool->GetCanvas()->GetCurrentFrame();
-								double	x = brush->GetPosition().x(),
-									y = brush->GetPosition().y();
+						QPointF p = brushes->brush()->position();
 
-								client->PasteLayerFrameImage(l, f, x, y, img);
+						if(scene->canvas()->hasPastePreview()){
+							scene->canvas()->setPastePreview();
+							if(client){
+								int 	l = scene->canvas()->currentLayer(),
+									f = scene->canvas()->currentFrame();
+
+								client->PasteLayerFrameImage(l, f, p.x(), p.y(), img);
 							}
 							// skip view update for now
 						} else {
-							view->SetPastePreview(img);
+							scene->canvas()->setPastePreview(img, p);
 						}
 					}
 				}
 			}
 
-		} else if(shortcut_name == "clear_canvas"){
-			qDebug() << "Clear canvas";
-			auto * brush = glass.GetCurrentBrush();
-			int l = brush->GetLayer(),
-			    f = brush->GetFrame();
-			client->FillCanvas(l, f, brush->GetColorString());
+		} else if(shortcut_name.startsWith("canvas_")){
+			qDebug() << "canvas key";
 
-		} else if(shortcut_name == "fill_preview"){
+			if(shortcut_name.endsWith("fliph")) {
+				view->flipView(true, false);
 
-			ParupaintBrush * brush = glass.GetCurrentBrush();
-			QImage fimg = pool->GetCanvas()->GetCurrentLayerFrameImage();
+			} else if(shortcut_name.endsWith("flipv")) {
+				view->flipView(false, true);
 
-			ParupaintFillHelper help(fimg);
-			help.fill(brush->GetPosition().x(), brush->GetPosition().y(), brush->GetColor().rgba());
-			QImage mask = help.mask();
+			} else if(shortcut_name.endsWith("clear")){
+				ParupaintBrush * brush = brushes->brush();
+				client->FillCanvas(brush->layer(), brush->frame(), brush->colorString());
 
-			this->pool->GetCanvas()->SetFillPreview(mask);
-			this->pool->GetCanvas()->RedrawCache();
-			this->pool->UpdateView();
+			} else if(shortcut_name.endsWith("reset")){
+				if(view->zoom() != 1.0){
+					view->setZoom(1.0);
+					view->showToast("100 %");
+				} else {
+					view->resetFlip();
+				}
+			} else if(shortcut_name.endsWith("play")){
+				view->showToast("can't play animations yet - sorry!", 1000);
 
-			if(fillpreview_timer->isActive()) fillpreview_timer->stop();
-			fillpreview_timer->start(500);
+			} else if(shortcut_name.endsWith("preview")){
+				scene->canvas()->setPreview(!scene->canvas()->isPreview());
+				QString str = QString("preview %1").arg(scene->canvas()->isPreview() ? "on" : "off");
+				view->showToast(str, 2000);
+			}
 
-		} else if(shortcut_name == ""){
+		} else if(shortcut_name.startsWith("brush_")){
+			if(shortcut_name.endsWith("eraser")){
+				brushes->toggleBrush(1);
+				scene->updateMainCursor(brushes->brush());
 
-		} else if(shortcut_name.startsWith("toolswitch_")){
+			} else if(shortcut_name.endsWith("fillpreview")){
+				ParupaintBrush * brush = brushes->brush();
+				QImage fimg = scene->canvas()->currentCanvasFrame()->image();
 
-			int tool = 0;
-			if(shortcut_name.endsWith("fill"))
-				tool = ParupaintBrushToolTypes::BrushToolFloodFill;
+				ParupaintFillHelper help(fimg);
+				help.fill(brush->x(), brush->y(), brush->rgba());
+				QImage mask = help.mask();
 
-			if(shortcut_name.endsWith("dotpattern"))
-				tool = ParupaintBrushToolTypes::BrushToolDotPattern;
+				this->scene->canvas()->setFillPreview(mask);
+			}
+		} else if(shortcut_name.startsWith("tool_")){
 
-			if(shortcut_name.endsWith("opacity"))
-				tool = ParupaintBrushToolTypes::BrushToolOpacityDrawing;
+			ParupaintBrush * brush = brushes->brush();
+			int tool = ParupaintBrushToolTypes::BrushToolNone;
 
-			auto * brush = glass.GetCurrentBrush();
-			if(brush->GetToolType() != ParupaintBrushToolTypes::BrushToolNone)
-				tool = ParupaintBrushToolTypes::BrushToolNone;
+			if(shortcut_name.endsWith("fill")) {
+				if(brush->tool() == ParupaintBrushToolTypes::BrushToolNone)
+					tool = ParupaintBrushToolTypes::BrushToolFloodFill;
+			}
+			if(shortcut_name.endsWith("dotpattern")){
+				switch(brush->tool()){
 
-			brush->SetToolType(tool);
-			view->UpdateCurrentBrush(brush);
-
+					case ParupaintBrushToolTypes::BrushToolNone:
+						tool = ParupaintBrushToolTypes::BrushToolDotShadingPattern; break;
+					case ParupaintBrushToolTypes::BrushToolDotShadingPattern:
+						tool = ParupaintBrushToolTypes::BrushToolDotHighlightPattern; break;
+					case ParupaintBrushToolTypes::BrushToolDotHighlightPattern:
+						tool = ParupaintBrushToolTypes::BrushToolCrossPattern; break;
+					case ParupaintBrushToolTypes::BrushToolCrossPattern:
+						tool = ParupaintBrushToolTypes::BrushToolDotShadingPattern; break;
+				}
+			}
+			if(shortcut_name.endsWith("line")){
+				if(brush->tool() == ParupaintBrushToolTypes::BrushToolNone)
+					tool = ParupaintBrushToolTypes::BrushToolLine;
+			}
+			if(shortcut_name.endsWith("opacity")){
+				if(brush->tool() == ParupaintBrushToolTypes::BrushToolNone)
+					tool = ParupaintBrushToolTypes::BrushToolOpacityDrawing;
+			}
+			brush->setTool(tool);
+			scene->updateMainCursor(brush);
 		}
 	}
 	// repeating hotkeys
@@ -654,17 +496,19 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 				ll--;
 			}
 
-			if(!OverlayButtonDown) {
+			if(!overlay_button) {
 				// Do a local check for boundaries
-				pool->GetCanvas()->AddLayerFrame(true, ll, ff);
+				scene->canvas()->addCurrentLayerFrame(ll, ff);
 
-				auto brush = glass.GetCurrentBrush();
-				brush->SetLayer(pool->GetCanvas()->GetCurrentLayer());
-				brush->SetFrame(pool->GetCanvas()->GetCurrentFrame());
+				ParupaintBrush * brush = brushes->brush();
+				brush->setLayerFrame(
+					scene->canvas()->currentLayer(),
+					scene->canvas()->currentFrame());
 				client->SendBrushUpdate(brush);
+
 			} else {
-				auto current_layer = pool->GetCanvas()->GetCurrentLayer(),
-				     current_frame = pool->GetCanvas()->GetCurrentFrame();
+				auto current_layer = scene->canvas()->currentLayer(),
+				     current_frame = scene->canvas()->currentFrame();
 
 				auto shift = (event->modifiers() & Qt::ShiftModifier),
 				     control = (event->modifiers() & Qt::ControlModifier);
@@ -678,34 +522,33 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 				client->SendLayerFrame(current_layer, current_frame, ll, ff, control);
 			}
 		}
-		else if(shortcut_name == "pick_color" || shortcut_name == "pick_global_color"){
-			bool global = (shortcut_name == "pick_global_color");
+		else if(shortcut_name == "pick_layer_color" || shortcut_name == "pick_canvas_color"){
+			bool global = (shortcut_name == "pick_canvas_color");
 			QColor col(255,255,255,0);
 
-			auto * brush = glass.GetCurrentBrush();
-			const auto pos = brush->GetPosition();
-			const auto rect = pool->GetCanvas()->boundingRect();
+			ParupaintBrush * brush = brushes->brush();
+			const QPoint pos = brush->pixelPosition();
+			const QRectF rect = scene->canvas()->boundingRect().toRect();
 
 			if(rect.contains(pos)){
 				if(global){
-					const auto & img = pool->GetCanvas()->GetCache().toImage();
+					const QImage & img = scene->canvas()->canvasCache().toImage();
 					col = img.pixel(pos.x(), pos.y());
 				} else {
-					auto * layer = pool->GetCanvas()->GetLayer(brush->GetLayer());
+					ParupaintLayer * layer = scene->canvas()->layerAt(brush->layer());
 					if(layer){
-						auto * frame = layer->GetFrame(brush->GetFrame());
+						ParupaintFrame * frame = layer->frameAt(brush->frame());
 						if(frame){
-							const auto & img = frame->GetImage();
+							const QImage & img = frame->image();
 							col = img.pixel(pos.x(), pos.y());
 						}
 					}
 				}
 			}
-
-			brush->SetColor(col);
-			view->UpdateCurrentBrush(brush);
-			picker->SetColor(col);
+			brush->setColor(col);
+			scene->updateMainCursor(brush);
 		}
+
 	}
 
 	if(!event->isAutoRepeat() && event->key() >= Qt::Key_0 && event->key() <= Qt::Key_9) {
@@ -719,51 +562,32 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 		}
 		tool += 2;
 
-		if(glass.GetCurrentBrushNum() != tool){
-			if(glass.GetCurrentBrushNum() <= 1){
-				old_brush_switch = glass.GetCurrentBrushNum();
-			} else {
-				// set it to previous, so that it switch to tool
-				glass.SetBrush(old_brush_switch);
-			}
-
+		ParupaintBrush * brush = brushes->toggleBrush(tool);
+		if(brush){
+			scene->updateMainCursor(brush);
+			view->showToast(brush->name(), 600);
 		}
-
-		glass.ToggleBrush(old_brush_switch, tool);
-		view->SetCurrentBrush(glass.GetCurrentBrush());
-		picker->SetColor(glass.GetCurrentBrush()->GetColor());
-		//TODO notify user of custom brush switch...
 	}
-	if(event->key() == Qt::Key_Backtab && !event->isAutoRepeat() && !OverlayButtonDown) {
-		OverlayState = OVERLAY_STATUS_HIDDEN;
-		HideOverlay();
-
-	} else if(OverlayButtonDown){
-		OverlayButtonTimer->stop();
+	if(event->key() == Qt::Key_Backtab && !event->isAutoRepeat()){
+		// if(overlay_button) ->stop
+		if(overlay_button)   overlay_button_timeout->stop();
+		if(!overlay_button)  this->hideOverlay();
 	}
 	if(event->key() == Qt::Key_Tab){
-		OverlayButtonTimer->stop();
+		overlay_button_timeout->stop();
+		overlay_button = true;
 		
-		if(OverlayState == OVERLAY_STATUS_HIDDEN) {
-			OverlayState = OVERLAY_STATUS_SHOWN_SMALL;
-			ShowOverlay(false);
+		if(overlay_state == overlayHiddenState)
+			this->showOverlay(overlayNormalState);
+		else if(overlay_state == overlayNormalState)
+			this->showOverlay(overlayExpandedState);
 
-		} else if(OverlayState != OVERLAY_STATUS_SHOWN_NORMAL) {
-			OverlayState = OVERLAY_STATUS_SHOWN_NORMAL;
-			ShowOverlay(true);
-
-		}
-		OverlayButtonDown = true;
 		return;
 	}
 	if(event->key() == Qt::Key_Space && !event->isAutoRepeat()){
-		if(OverlayButtonDown){
-			auto brush = glass.GetCurrentBrush();
-			if(event->modifiers() & Qt::ControlModifier){
-				pool->ClearBrushStrokes(brush);
-			} else {
-				pool->SquashBrushStrokes(brush);
-			}
+		if(overlay_button){
+			// this used to be clearing strokes
+			// i don't know what to do with this combo now...
 		}
 	}
 	return QMainWindow::keyPressEvent(event);
@@ -772,14 +596,16 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 void ParupaintWindow::closeEvent(QCloseEvent *)
 {
 	QSettings cfg;
-	cfg.setValue("window/maingeometry", saveGeometry());
-	cfg.setValue("window/mainstate", saveState());
+	if(cfg.value("window/restore", true).toBool()){
+		cfg.setValue("window/maingeometry", saveGeometry());
+		cfg.setValue("window/mainstate", saveState());
+	}
 }
 
 
 void ParupaintWindow::resizeEvent(QResizeEvent* event)
 {
-	UpdateOverlay();
+	this->updateOverlay();
 	QMainWindow::resizeEvent(event);
 }
 
@@ -801,68 +627,180 @@ void ParupaintWindow::dragEnterEvent(QDragEnterEvent *ev)
 	ev->accept();
 }
 
-void ParupaintWindow::UpdateTitle()
+void ParupaintWindow::doConnect(const QString & url)
 {
-	setWindowTitle(QString("parupaint"));
-}
+	if(url.isEmpty()) return;
 
-void ParupaintWindow::New(int w, int h, bool resize)
-{
-	qDebug() << "New canvas" << w << h;
-	client->NewCanvas(w, h, resize);
-}
-
-void ParupaintWindow::Connect(QString url)
-{
 	QSettings cfg;
-	client->SetNickname(cfg.value("painter/username").toString());
+	client->SetNickname(cfg.value("client/username").toString());
 
 	client->Connect(url);
 }
 
-void ParupaintWindow::Disconnect()
+void ParupaintWindow::doDisconnect()
 {
-	client->Connect("localhost", local_port);
+	client->Connect(local_server);
 }
 
-void ParupaintWindow::Open(QString filename)
+void ParupaintWindow::doQuickSave()
 {
-	qDebug() << "Open" << filename;
+	QString filepath = this->saveDir().path() + "/.png";
+	qDebug() << "doQuickSave" << filepath;
 
-	QSettings cfg;
-	cfg.setValue("net/lastopen", filename);
-
-	client->LoadCanvasLocal(filename);
+	QFileInfo fi(this->doSaveAs(filepath));
+	this->addChatMessage("Quicksaved to '<a href=\""+fi.absoluteFilePath()+"\">"+fi.fileName()+"</a>'.");
 }
-QString ParupaintWindow::SaveAs(QString filename)
-{
-	// TODO handle overwrite here
 
-	if(filename.isEmpty()) filename = ".png";
-	if(filename.section(".", 0, 0).isEmpty()) {
-		QDateTime time = QDateTime::currentDateTime();
-		filename = "drawing_at_"+ time.toString("yyyy-MM-dd_HH.mm.ss") + filename;
+void ParupaintWindow::doOpen(const QString & file)
+{
+	if(file.isEmpty()) return;
+
+	client->LoadCanvasLocal(file);
+}
+QString ParupaintWindow::doSaveAs(const QString & file)
+{
+	QString err, filename(file.isEmpty() ? (this->saveDir().path() + "/.png") : file);
+	bool ret;
+	if(!(ret = ParupaintPanvasInputOutput::savePanvas(scene->canvas(), filename, err))){
+		this->addChatMessage(err);
 	}
-
-	qDebug() << "Saving canvas as" << filename;
-
-	ParupaintPanvasWriter write(pool->GetCanvas());
-	write.Save(this->GetSaveDirectory(), filename);
 
 	return filename;
 }
+void ParupaintWindow::doNew(int w, int h, bool resize)
+{
+	client->NewCanvas(w, h, resize);
+}
 
-QString ParupaintWindow::GetSaveDirectory() const
+void ParupaintWindow::doChat(const QString & msg)
+{
+	if(msg.startsWith('/')){
+		QString cmd = msg;
+		QString params = "";
+		if(msg.indexOf(" ") != -1){
+			cmd = msg.section(" ", 0, 0);
+			params = msg.section(" ", 1);
+		}
+		cmd = cmd.mid(1);
+		return this->doCommand(cmd, params);
+	}
+	client->SendChat(msg);
+}
+void ParupaintWindow::doCommand(const QString & cmd, const QString & params)
+{
+	this->addChatMessage(cmd + " " + params);
+	if(!params.isEmpty()){
+		if(cmd == "load"){
+			client->LoadCanvas(params);
+
+		} else if(cmd == "save"){
+			client->SaveCanvas(params);
+
+		// record commands
+		} else if(cmd == "play") {
+			client->PlayRecord(params, false);
+
+		} else if(cmd == "script") {
+			client->PlayRecord(params, true);
+		}
+	}
+	if(cmd == "key"){
+		if(params.isEmpty()){
+			QStringList list = key_shortcuts->GetKeys();
+			list.sort();
+			list += "<br/>Usage: /key name=shortcut";
+			list += "Set keys. Dialog hotkeys requires restart.";
+
+			return chat->AddMessage(list.join("<br/>"));
+		}
+		key_shortcuts->AddKey(params);
+		key_shortcuts->Save();
+	}
+	else if(cmd == "load"){
+		if(params.isEmpty()) return chat->AddMessage("Usage: /load file<br/>Load a file on the server.");
+		client->LoadCanvas(params);
+	}
+	else if(cmd == "save"){
+		if(params.isEmpty()) return chat->AddMessage("Usage: /save file<br/>Saves to a file on the server.");
+		client->SaveCanvas(params);
+	}
+	else if(cmd == "play"){
+		if(params.isEmpty()) return chat->AddMessage("Usage: /play file<br/>Plays a record on the server.");
+		client->PlayRecord(params, false);
+	}
+	else if(cmd == "script"){
+		if(params.isEmpty()) return chat->AddMessage("Usage: /script file<br/>Plays a script (might be laggy!).");
+		client->PlayRecord(params, true);
+	}
+	else if(cmd == "connect"){
+		if(params.isEmpty()) return chat->AddMessage("Usage: /connect hostname [port]<br/>Reconnect to a different server.");
+
+		// FIXME use default port
+		QString host = params.section(" ", 0, 0);
+		int port = 0;
+		if(params.contains(' ')) port = params.section(" ", 1).toInt();
+
+		this->doConnect(host + (port > 0 ? QString(" %1").arg(port) : ""));
+	}
+	else if(cmd == "disconnect"){
+		this->doDisconnect();
+		if(params.isEmpty()){
+			this->doConnect("localhost");
+		}
+	}
+	else if(cmd == "name"){
+		if(params.isEmpty()) return chat->AddMessage("Usage: /name name <br/>Set your nickname.");
+		if(params.length() > 24) return;
+		this->doUserName(params);
+	}
+	else if(cmd == "clear"){
+		chat->ClearMessages();
+	}
+	else if(cmd == "help"){
+		QStringList list = {
+			"Server commands: /load /save /play /script",
+			"Client commands: /connect /disconnect /name /clear"
+		};
+		return chat->AddMessage(list.join("<br/>"));
+	}
+}
+
+void ParupaintWindow::doUserName(const QString & username)
+{
+	client->SetNickname(username);
+}
+
+// General funcs
+void ParupaintWindow::addChatMessage(const QString & msg, const QString & usr)
+{
+	chat->show();
+	chat->AddMessage(msg, usr);
+}
+
+QSize ParupaintWindow::canvasDimensions()
+{
+	return scene->canvas()->dimensions();
+}
+
+QDir ParupaintWindow::saveDir() const
 {
 	QSettings cfg;
-	QDir saved = cfg.value("client/directory").toString();
-	if(!saved.exists()) saved = QDir::current();
 
-	return saved.path();
+	QString default_path = (QDir::homePath() + "/parupaint/");
+#ifdef Q_OS_WIN
+		default_path = ".";
+#endif
+	QFileInfo saved = cfg.value("client/directory", default_path).toString();
+	saved.setFile("");
+
+	QDir dir = saved.dir();
+	if(!dir.exists()) dir.mkpath(dir.path());
+	qDebug() << "Save dir:" << dir.path();
+	return dir;
 }
 
 
-void ParupaintWindow::SetLocalHostPort(quint16 port)
+void ParupaintWindow::setLocalServer(const QString & server)
 {
-	local_port = port;
+	this->local_server = server;
 }

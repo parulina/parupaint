@@ -4,142 +4,149 @@
 #include <QHBoxLayout>
 #include <QTextBrowser>
 #include <QLabel>
-#include <QFile>
+#include <QFile> // stylesheet
 #include <QDebug>
 
-#include "../parupaintVersion.h"
+#include "../widget/parupaintScrollBar.h"
 
+QString stylesheet = "";
+
+ParupaintInfoBarText::ParupaintInfoBarText(QWidget * parent) : QTextBrowser(parent)
+{
+	this->setAutoFillBackground(false);
+	this->document()->setDocumentMargin(2);
+	this->document()->setDefaultStyleSheet(stylesheet);
+	this->setFocusPolicy(Qt::ClickFocus);
+	this->setOpenLinks(true);
+	this->setOpenExternalLinks(true);
+	this->setTextInteractionFlags(Qt::LinksAccessibleByMouse | Qt::TextSelectableByMouse);
+	this->setVerticalScrollBar(new ParupaintScrollBar(Qt::Vertical, this));
+	this->setHorizontalScrollBar(new ParupaintScrollBar(Qt::Horizontal, this));
+	this->setHtml(QStringLiteral(
+	 "<p class=\"about\">"
+		 "<a href=\"http://parupaint.sqnya.se\">official homepage</a>&nbsp;&nbsp;&nbsp;<a href=\"http://github.com/parulina/parupaint\">github</a><br/>"
+		 "Welcome to my painting program, parupaint. The program is designed to be quick and light, while still being a nice drawing application.<br/>"
+		 "You can read a summary of what this program does on the homepage. Thank you for downloading and using this!<br/>"
+		 "<span class=\"alpha-notice\">Please note that this program is currently in alpha and is constantly adding/removing features.</span>"
+	 "</p>"
+	));
+}
+QSize ParupaintInfoBarText::minimumSizeHint() const
+{
+	return QSize(300, 0);
+}
+
+ParupaintInfoBarKeys::ParupaintInfoBarKeys(QWidget * parent) : QLabel(parent)
+{
+	this->setStyleSheet(stylesheet);
+	this->setFocusPolicy(Qt::ClickFocus);
+	this->setWordWrap(false);
+	this->setTextFormat(Qt::RichText);
+	this->setTextInteractionFlags(Qt::TextSelectableByMouse);
+}
+QSize ParupaintInfoBarKeys::minimumSizeHint() const
+{
+	return QSize(600, 0);
+}
+
+ParupaintInfoBarStatus::ParupaintInfoBarStatus(QWidget * parent) : QTextBrowser(parent)
+{
+	this->setAutoFillBackground(false);
+	this->document()->setDocumentMargin(10);
+	this->document()->setDefaultStyleSheet(stylesheet);
+	this->setFixedHeight(30);
+	this->setOpenLinks(false);
+	this->setContentsMargins(0, 0, 0, 0);
+
+	this->setFocusPolicy(Qt::ClickFocus); // NoFocus
+	this->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+	this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+}
+void ParupaintInfoBarStatus::updateTitle()
+{
+	this->setHtml(QString(
+		"<p class=\"titletext\">"
+			"<a href=\"#f1_notice\">(help: F1)</a>  "
+			"connected to: <a href=\"#connected\">" + connected_to + "</a>  "
+			"<a href=\"#dimensions\">&lt;" + dimensions + "&gt;</a>  "
+			"<span href=\"#layerframe\">{" + layerframe + "}</span>"
+		"</p>"
+	));
+}
+void ParupaintInfoBarStatus::setConnectedTo(const QString & con)
+{
+	connected_to = con;
+	this->updateTitle();
+}
+void ParupaintInfoBarStatus::setDimensions(const QSize & size)
+{
+	dimensions = QString("%1 x %2").arg(QString::number(size.width()), QString::number(size.height()));
+	this->updateTitle();
+}
+void ParupaintInfoBarStatus::setLayerFrame(int layer, int frame)
+{
+	layerframe = QString("%1 : %2").arg(QString::number(layer + 1), QString::number(frame + 1));
+	this->updateTitle();
+}
+
+// InfoBar
 ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 {
 	this->setFocusPolicy(Qt::NoFocus);
-	this->setObjectName("InfoBar");
-	this->setFixedHeight(180);
-	this->show();
+
+	QFile file(":/resources/chat.css");
+	file.open(QFile::ReadOnly);
+	stylesheet = file.readAll();
 
 	QVBoxLayout * box = new QVBoxLayout;
 	box->setMargin(0);
 	box->setSpacing(0);
+	box->setContentsMargins(0, 0, 0, 0);
 	box->setAlignment(Qt::AlignBottom);
 
+		QHBoxLayout * top = new QHBoxLayout;
+		top->setMargin(0);
+		top->setSpacing(0);
+		top->setContentsMargins(0, 0, 0, 0);
 
-	QFile file(":resources/chat.css");
-	file.open(QFile::ReadOnly);
-	QString stylesheet(file.readAll());
-
-
-	key_list = new QLabel(this);
-	key_list->setObjectName("parupaint-keys");
-	key_list->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
-	key_list->setStyleSheet(stylesheet);
-	key_list->setWordWrap(false);
-	key_list->setTextFormat(Qt::RichText);
-	key_list->setTextInteractionFlags(Qt::TextSelectableByMouse);
-
-	QTextBrowser * ptext = new QTextBrowser;
-	ptext->setObjectName("parupaint-description");
-	ptext->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-	ptext->setOpenLinks(true);
-	ptext->setOpenExternalLinks(true);
-	ptext->document()->setDefaultStyleSheet(stylesheet);
-	ptext->setFocusPolicy(Qt::ClickFocus);
-	ptext->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
-	ptext->setHtml(QStringLiteral(
-"<p class=\"about\">"
-	"Welcome to my painting program, parupaint. The program is designed to be quick and light,"
-	"while still able to be a nice drawing platform. It is also able to do animations."
-"<br />"
-	"You can read a summary of this program on the homepage: <a href=\"http://parupaint.sqnya.se\">[ parupaint.sqnya.se ]</a>."
-	"Thank you for downloading this and using my program!"
-"<br />"
-"<br />"
-	"Please note that this program is alpha and is constantly adding/removing features."
-"</p>"
-	));
-
-	title = new QTextBrowser;
-	title->setObjectName("title");
-	title->setMaximumHeight(30);
-	title->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-	title->document()->setDefaultStyleSheet(stylesheet);
-	title->setOpenLinks(false);
-	title->setFocusPolicy(Qt::ClickFocus);
-	title->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
-	title->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
-	QLabel * tabtext = new QLabel("press [F1] for help");
-	tabtext->setMaximumHeight(30);
-	tabtext->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-	tabtext->setObjectName("tabhelp");
-	tabtext->setFocusPolicy(Qt::NoFocus);
+		QHBoxLayout * bot = new QHBoxLayout;
+		bot->setMargin(0);
+		bot->setSpacing(0);
+		bot->setContentsMargins(0, 0, 0, 0);
 
 
+		top->addWidget((info_text = new ParupaintInfoBarText(this)));
+		top->addWidget((info_keys = new ParupaintInfoBarKeys(this)));
+		bot->addWidget((info_status = new ParupaintInfoBarStatus(this)));
 
-	QHBoxLayout * topbox = new QHBoxLayout;
-	topbox->setMargin(0);
-	topbox->setSpacing(0);
-	topbox->setContentsMargins(0, 0, 0, 0);
+		connect(info_status, &QTextBrowser::anchorClicked, this, &ParupaintInfoBar::onStatusClick);
 
-	QHBoxLayout * bottombox = new QHBoxLayout;
-	bottombox->setMargin(0);
-	bottombox->setSpacing(0);
-	bottombox->setContentsMargins(0, 0, 0, 0);
-
-
-	topbox->addWidget(ptext);
-	topbox->addWidget(key_list);
-	bottombox->addWidget(title);
-	bottombox->addWidget(tabtext);
-
-
-
-	box->addLayout(topbox);
-	box->addLayout(bottombox);
+	box->addLayout(top, 0);
+	box->addLayout(bot, 1);
 	this->setLayout(box);
 
-	this->SetCurrentTitle("Home");
-	this->SetCurrentDimensions(500, 500);
-	this->SetCurrentLayerFrame(1, 5);
-	this->ReloadTitle();
+	this->status()->updateTitle();
+	this->show();
 }
-void ParupaintInfoBar::SetKeyList(QStringList list)
+ParupaintInfoBarStatus * ParupaintInfoBar::status()
 {
+	return info_status;
+}
+
+void ParupaintInfoBar::setKeyList(const QStringList & list)
+{
+	// split up in to columns
+	QStringList copy(list);
 	int a = 0;
-	for(auto i = list.begin(); i != list.end(); ++i){
+	for(auto i = copy.begin(); i != copy.end(); ++i){
 		(*i).append("<br/>");
-		if(a && a % 9 == 0){ i = list.insert(i, "</td><td>"); }
+		if(a && a % 9 == 0){
+			i = copy.insert(i, "</td><td>");
+		}
 		a++;
 	}
-	list.prepend("<table id=\"keytable\" cellpadding=5 cellspacing=3><tr valign=\"top\"><td>");
-	list.append("</td></tr></table>");
-	QString res = list.join("").prepend("<html>").append("</html>");
-	key_list->setText(res);
-}
+	copy.prepend("<table id=\"keytable\" cellpadding=5 cellspacing=3><tr valign=\"top\"><td>");
+	copy.append("</td></tr></table>");
 
-void ParupaintInfoBar::ReloadTitle()
-{
-	QString text = "<titletext>"
-		"· PARUPAINT ALPHA " PARUPAINT_VERSION " · "
-		"[<a href=\"#name\">" + current_title + "</a>]  "
-		"<a href=\"#dim\">&lt;" + current_dimensions + "&gt;</a>  "
-		"<flayer>{" + current_lfstatus + "}</flayer>"
-	"</titletext>";
-	title->setHtml(text);
+	info_keys->setText(copy.join("").prepend("<html>").append("</html>"));
 }
-
-void ParupaintInfoBar::SetCurrentTitle(QString str)
-{
-	current_title = str;
-	this->ReloadTitle();
-}
-void ParupaintInfoBar::SetCurrentDimensions(int w, int h)
-{
-	current_dimensions = QString("%1 x %2").arg(w).arg(h);
-	this->ReloadTitle();
-}
-void ParupaintInfoBar::SetCurrentLayerFrame(int l, int f)
-{
-	current_lfstatus = QString("%1 : %2").arg(l).arg(f);
-	this->ReloadTitle();
-}
-
-

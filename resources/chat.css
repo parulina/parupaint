@@ -2,11 +2,9 @@ a {
 	color:#BBE;
 }
 
-/* chat */
 .chat-entry {
 	font-size:15px;
 	margin-top:1px;
-	margin-left:4px;
 	color:white;
 	background:rgba(0, 0, 0, 0.6);
 }
@@ -21,25 +19,29 @@ a {
 	background-color:transparent;
 }
 
-
-/* infobar */
-titletext {
+.about .alpha-notice {
 	color:white;
-	font-size:18px;
 }
 
-titletext a[href="#name"] {
+.titletext {
+	vertical-align:bottom;
+}
+.titletext, .titletext a {
+	color:white;
+	text-decoration:none;
 	font-size:16px;
-	color:rgb(200, 80, 80);
-	margin:10px;
-	padding:10px;
+	outline:none;
 }
 
-titletext a[href="#dim"] {
+.titletext a[href="#connected"] {
+	text-decoration:underline;
+	outline:none;
+}
+.titletext a[href="#dimensions"] {
 	font-size:13px;
 	color:rgb(80, 200, 80);
 }
-titletext flayer {
+.titletext span[href="#layerframe"] {
 	font-size:12px;
 	color:rgb(200, 200, 200);
 }

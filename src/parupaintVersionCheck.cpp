@@ -9,18 +9,17 @@
 
 const QString url = "https://api.github.com/repos/parulina/parupaint/releases/latest";
 
-ParupaintVersionCheck::ParupaintVersionCheck()
+ParupaintVersionCheck::ParupaintVersionCheck(QObject * parent) : QObject(parent)
 {
-	auto * qnam = new QNetworkAccessManager(this);
-	qnam->get(QNetworkRequest(QUrl(url)));
+	QNetworkAccessManager * qnam = new QNetworkAccessManager(this);
+	qDebug() << "Check update" << url;
 	this->connect(qnam, &QNetworkAccessManager::finished, this, &ParupaintVersionCheck::completed);
+	qnam->get(QNetworkRequest(QUrl(url)));
 }
 
 void ParupaintVersionCheck::completed(QNetworkReply* reply)
 {
-	if(reply->error()){
-		emit Response(false, reply->errorString());
-	} else {
+	if(!reply->error()){
 		QJsonParseError error;
 		auto doc = QJsonDocument::fromJson(reply->readAll(), &error);
 		if(error.error == QJsonParseError::NoError){
@@ -38,10 +37,10 @@ void ParupaintVersionCheck::completed(QNetworkReply* reply)
 
 			if(k && real_ver > real_cur){
 				QString msg = QString("New update is available! [<a href=\"%1\">%2 (%3)</a>]").arg(url, name, version);
-				emit Response(true, msg);
+				emit updateResponse(msg, true);
 				return;
 			}
 		}
-		emit Response(false);
+		emit updateResponse("", false);
 	}
 }

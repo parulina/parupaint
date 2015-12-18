@@ -8,13 +8,13 @@ class ParupaintVersionCheck : public QObject
 {
 Q_OBJECT
 	public:
-	ParupaintVersionCheck();
+	ParupaintVersionCheck(QObject * = nullptr);
 
 	private slots:
 	void completed(QNetworkReply*);
 
 	signals:
-	void Response(bool, const QString & = "");
+	void updateResponse(const QString & msg, bool update);
 };
 
 #endif

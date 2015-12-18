@@ -3,38 +3,39 @@
 
 #include <QScrollArea>
 
-class ParupaintCanvasObject;
-class ParupaintFlayerList;
+class ParupaintVisualCanvas;
+class ParupaintPanvas;
+class ParupaintFlayerLayer;
 
-
-enum FlayerStatus {
-	FLAYER_STATUS_IDLE,
-	FLAYER_STATUS_MOVING
-};
 
 class ParupaintFlayer : public QScrollArea
 {
+Q_OBJECT
 	private:
-	FlayerStatus FlayerState;
-	ParupaintFlayerList * list;
-	QPointF OldPosition;
+	QPoint 	old_pos;
+
+	void updateFromCanvas(ParupaintPanvas*);
+	void clearHighlight();
+
+	private slots:
+	void frame_click();
+	public slots:
+	void canvas_content_update();
+	void current_lf_update();
+
+	signals:
+	void onHighlightChange(int l, int f);
 
 	public:
 	ParupaintFlayer(QWidget * = nullptr);
-	ParupaintFlayerList * GetList();
 
-	void UpdateFromCanvas(ParupaintCanvasObject *);
-	void SetMarkedLayerFrame(int, int);
+	void setHighlightLayerFrame(int l, int f);
 
 	protected:
+	void resizeEvent(QResizeEvent*);
 	void enterEvent(QEvent * );
 	void leaveEvent(QEvent * );
-	void mousePressEvent(QMouseEvent * );
-	void mouseReleaseEvent(QMouseEvent * );
 	void mouseMoveEvent(QMouseEvent * );
-	void keyPressEvent(QKeyEvent *);
-	void keyReleaseEvent(QKeyEvent *);
-
 };
 
 #endif

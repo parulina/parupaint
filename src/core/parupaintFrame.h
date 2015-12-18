@@ -1,38 +1,44 @@
 #ifndef PARUPAINTFRAME_H
 #define PARUPAINTFRAME_H
 
+class ParupaintLayer;
+
+#include <QObject>
 #include <QImage>
 #include <QColor>
 
-class ParupaintStroke;
-
-class ParupaintFrame {
+class ParupaintFrame : public QObject
+{
+Q_OBJECT
 	private:
-	bool 	Extended;
-	QImage 	Frame;
-	float	Opacity;
+	QImage	frame;
+	qreal	frame_opacity;
+
+	signals:
+	void onResize();
+	void onChange(QRect);
+	void onOpacityChange();
 
 	public:
-	~ParupaintFrame();
-	ParupaintFrame();
-	ParupaintFrame(QSize rect, float opacity=1);
+	ParupaintFrame(QObject * = nullptr);
+	ParupaintFrame(const QSize &, QObject * = nullptr, qreal op = 1.0);
+	ParupaintFrame(const QImage &, QObject * = nullptr, qreal op = 1.0);
 
-	void New(QSize);
-	void Resize(QSize);
-	QImage GetImage() const;
-	void LoadFromData(const QByteArray&);
-	void Replace(QImage);
-	
-	void ClearColor(QColor);
-	void DrawStep(float x, float y, float x2, float y2, float width, QColor color);
-	void DrawStep(float x, float y, float x2, float y2, QPen &);
-	void DrawImage(int x, int y, QImage);
-	QRect Fill(int x, int y, QColor);
+	ParupaintLayer * parentLayer();
 
-	void SetOpacity(float);
-	void SetExtended(bool);
-	bool IsExtended() const;
-	float GetOpacity() const;
+	void resize(const QSize &);
+	void clear(const QColor);
+	void replaceImage(const QImage & img);
+	void setOpacity(qreal op);
+
+	qreal opacity();
+	const QImage & image();
+	QImage renderedImage();
+
+	QRect drawLine (const QLineF & line, const qreal w, const QColor);
+	QRect drawLine (const QLineF & line, const QPen &);
+	QRect drawImage(const QPointF & pos, const QImage &);
+	QRect drawFill (const QPointF & pos, QColor to_color, QColor from_color = QColor());
 };
 
 #endif

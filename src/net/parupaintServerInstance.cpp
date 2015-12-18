@@ -19,13 +19,33 @@ ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent)
 	canvas(nullptr), connectid(1),
 	record_player(nullptr), record_manager(nullptr)
 {
-	canvas = new ParupaintPanvas(540, 540, 1);
+	canvas = new ParupaintPanvas(this, QSize(540, 540), 1, 1);
 	this->ServerFill(0, 0, "#FFF");
 
 	this->StartRecordSystems();
 	// Start record systems before doing ANYTHING
 
-	connect(this, &ParupaintServer::onMessage, this, &ParupaintServerInstance::Message);
+	/*
+	auto * con = new ParupaintConnection(nullptr);
+	con->setId(connectid++);
+	this->ServerJoin(con, "test");
+	QTimer *timer = new QTimer(this);
+	connect(timer, &QTimer::timeout, [=](){
+		auto * b = this->brushes[con];
+		QPointF add(4, 4);
+		if(b->GetPosition().x() > 500 && b->GetPosition().y() > 500){
+			add = QPointF(-500, -500);
+		}
+		b->SetPosition(b->GetPosition() + add);
+		QJsonObject obj;
+		obj["id"] = con->getId();
+		obj["x"] = rand() % 255;
+		obj["y"] = rand() % 255;
+		obj["t"] = 1;
+		this->Broadcast("draw", obj);
+	});
+	timer->start(800);
+	*/
 }
 
 ParupaintPanvas * ParupaintServerInstance::GetCanvas()
@@ -36,22 +56,24 @@ ParupaintPanvas * ParupaintServerInstance::GetCanvas()
 QString ParupaintServerInstance::MarshalCanvas()
 {
 	QJsonObject obj;
-	obj["width"] = canvas->GetWidth();
-	obj["height"] = canvas->GetHeight();
+	obj["width"] = canvas->dimensions().width();
+	obj["height"] = canvas->dimensions().height();
 
+	qDebug() << "MarshalCanvas" << obj << canvas->layerCount();
 	QJsonArray layers;
-	for(auto l = 0; l < canvas->GetNumLayers(); l++){
-		auto * layer = canvas->GetLayer(l);
+	for(auto l = 0; l < canvas->layerCount(); l++){
+		auto * layer = canvas->layerAt(l);
 		if(!layer) continue;
 
+		qDebug() << " - l" << l << "frameCount" << layer->frameCount();
 		QJsonArray frames;
-		for(auto f = 0; f < layer->GetNumFrames(); f++){
-			auto * frame = layer->GetFrame(f);
+		for(auto f = 0; f < layer->frameCount(); f++){
+			auto * frame = layer->frameAt(f);
+
 
 			QJsonObject fobj;
-			fobj["extended"] = !(layer->IsFrameReal(f));
-			fobj["opacity"] = frame->GetOpacity();
-
+			fobj["extended"] = !(layer->isFrameReal(f));
+			fobj["opacity"] = frame->opacity();
 			frames.insert(f, fobj);
 		}
 		layers.insert(l, frames);
@@ -67,10 +89,10 @@ QJsonObject ParupaintServerInstance::MarshalConnection(ParupaintConnection* conn
 	QJsonObject obj;
 	obj["id"] = connection->getId();
 
-	obj["name"] = brushes[connection]->GetName();
-	obj["x"] = brushes[connection]->GetPosition().x();
-	obj["y"] = brushes[connection]->GetPosition().y();
-	obj["w"] = brushes[connection]->GetWidth();
+	obj["name"] = brushes[connection]->name();
+	obj["x"] = brushes[connection]->x();
+	obj["y"] = brushes[connection]->y();
+	obj["w"] = brushes[connection]->size();
 	
 	return obj;
 }

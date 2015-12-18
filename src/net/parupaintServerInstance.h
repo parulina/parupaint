@@ -18,7 +18,7 @@ class ParupaintServerInstance : public ParupaintServer
 Q_OBJECT
 	QByteArray log_recovery;
 
-	QHash<ParupaintConnection*, ParupaintBrush> record_backup;
+	QHash<ParupaintConnection*, ParupaintBrush*> record_backup;
 	QTimer record_timer;
 
 	ParupaintPanvas * canvas;
@@ -46,7 +46,7 @@ Q_OBJECT
 	public:
 	~ParupaintServerInstance();
 	ParupaintServerInstance(quint16 , QObject * = nullptr);
-
+	virtual void message(ParupaintConnection *, const QString &, const QByteArray & = QByteArray());
 
 	void ServerJoin(ParupaintConnection *, QString, bool=true);
 	void ServerLeave(ParupaintConnection *, bool=true);
@@ -69,9 +69,6 @@ Q_OBJECT
 	QJsonObject MarshalConnection(ParupaintConnection*);
 	ParupaintPanvas * GetCanvas();
 	int GetNumConnections();
-
-	private slots:
-	void Message(ParupaintConnection *, const QString, const QByteArray);
 
 	signals:
 	void OnMessage(const QString & id, const QJsonObject &obj);

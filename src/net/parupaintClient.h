@@ -22,6 +22,7 @@ Q_OBJECT
 	void Connect(QString, quint16);
 	void Disconnect(QString reason = "");
 
+	virtual void message(const QString &, const QByteArray & = QByteArray()) {};
 	qint64 send(const QString id, const QString data);
 	qint64 send(const QString data);
 
@@ -33,9 +34,6 @@ Q_OBJECT
 	void textReceived(QString);
 	void onError(QAbstractSocket::SocketError);
 	void onSocketStateChanged(QAbstractSocket::SocketState socketState);
-
-signals:
-	void onMessage(QString, const QByteArray=QByteArray());
 };
 
 

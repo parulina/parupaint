@@ -36,6 +36,7 @@ void ParupaintServer::onConnection()
 	connect(socket, &QWsSocket::disconnected, this, &ParupaintServer::onDisconnection);
 
 	// If someone from outside joins...
+	if(isProtective()) qDebug() << "onConnection" << socket->host();
 	if(isProtective() && socket->host() != "localhost"){
 		bool has = false;
 		// Check if the owner is in the server.
@@ -50,7 +51,7 @@ void ParupaintServer::onConnection()
 	}
 
 	connections << new ParupaintConnection(socket);
-	emit onMessage(connections.first(), "connect");
+	message(connections.first(), "connect");
 }
 
 void ParupaintServer::onDisconnection()
@@ -59,7 +60,7 @@ void ParupaintServer::onDisconnection()
 	if(socket) {
 		ParupaintConnection * con = GetConnection(socket);
 		if(con){
-			emit onMessage(con, "disconnect");
+			message(con, "disconnect");
 			connections.removeOne(con);
 		}
 		socket->deleteLater();
@@ -73,7 +74,7 @@ void ParupaintServer::textReceived(QString text)
 	if(text.isEmpty()) return;
 	const auto id = text.split(" ")[0];
 	const auto arg = text.mid(id.length()+1);
-	emit onMessage(GetConnection(socket), id, arg.toUtf8());
+	message(GetConnection(socket), id, arg.toUtf8());
 }
 
 ParupaintConnection * ParupaintServer::GetConnection(QWsSocket* s)

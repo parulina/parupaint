@@ -2,38 +2,26 @@
 #define PARUPAINTFLAYERLAYER_H
 
 #include <QWidget>
-#include <QList>
 
 class ParupaintFlayerFrame;
-class QHBoxLayout;
+class QRadioButton;
+class QLineEdit;
 
 class ParupaintFlayerLayer : public QWidget
 {
+	int firstchildren_count;
 Q_OBJECT
 	private:
-	QHBoxLayout * box;
-	QList<ParupaintFlayerFrame*> Frames;
+	QRadioButton * layer_visible;
+	QLineEdit * layer_name;
 
 	public:
-	int  Index;
-	ParupaintFlayerLayer(QWidget * parent = nullptr);
-	
+	ParupaintFlayerLayer(QWidget * = nullptr);
+	void setLayerVisible(bool hidden);
+	void setName(const QString & name);
 
-	ParupaintFlayerFrame * NewFrame();
-	ParupaintFlayerFrame * AddFrame(int);
-	ParupaintFlayerFrame * AddFrame(int, ParupaintFlayerFrame *);
-	void RemoveFrame(int);
-	void MoveFrame(int, int);
-	ParupaintFlayerFrame * GetFrame(int);
-	void Clear();
-	void ClearChecked();
-
-	private slots:
-	void FrameChange();
-
-	signals:
-	void frameCheck(ParupaintFlayerFrame*);
+	void addFrame(ParupaintFlayerFrame *);
+	ParupaintFlayerFrame * frameAt(int i);
 };
-
 
 #endif

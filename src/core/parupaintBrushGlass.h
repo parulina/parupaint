@@ -1,23 +1,39 @@
 #ifndef PARUPAINTBRUSHGLASS_H
 #define PARUPAINTBRUSHGLASS_H
 
+#include <QObject>
 #include <QList>
-#include "parupaintBrush.h"
+#include <QColor>
 
-class ParupaintBrushGlass
+class ParupaintBrush;
+
+class ParupaintBrushGlass : public QObject
 {
+Q_OBJECT
 	private:
-	QList<ParupaintBrush> brushes;
-	ParupaintBrush * brushptr;
-	int currentBrush;
+	QList<ParupaintBrush*> brushes;
+
+	// holds the original brush when
+	// selecting a brush >= 2
+	int swapped_brush;
+	int current_brush;
+
+	signals:
+	void onBrushChange();
+	void onBrushColorChange(QColor);
+	void onCurrentBrushChange(int currentBrush);
+
+	public slots:
+	void color_change(QColor);
 
 	public:
-	ParupaintBrushGlass();
+	ParupaintBrushGlass(QObject * = nullptr);
+	void addBrush(ParupaintBrush *);
 
-	ParupaintBrush * GetCurrentBrush() ;
-	int GetCurrentBrushNum() const;
-	void ToggleBrush(int, int);
-	void SetBrush(int);
+	ParupaintBrush * brush();
+	ParupaintBrush * toggleBrush(int newbrush);
+	ParupaintBrush * setBrush(int newbrush);
+	int brushNum();
 };
 
 #endif

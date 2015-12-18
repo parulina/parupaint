@@ -1,16 +1,17 @@
 #ifndef PARUPAINTFLAYERFRAME_H
 #define PARUPAINTFLAYERFRAME_H
 
+class ParupaintFrame;
+
 #include <QPushButton>
 
 class ParupaintFlayerFrame : public QPushButton
 {
-	private:
-
+Q_OBJECT
 	public:
-	int	Index;
-	bool 	Extended;
-	ParupaintFlayerFrame(QWidget * = nullptr);
+	int layer, frame;
+	ParupaintFlayerFrame(ParupaintFrame * frame = nullptr, QWidget * = nullptr);
+	QSize minimumSizeHint() const;
 };
 
 #endif

@@ -5,32 +5,29 @@
 #include <QJsonObject>
 
 #include "parupaintClient.h"
+#include "../core/parupaintBrush.h"
 
-class ParupaintCanvasBrush;
-class ParupaintCanvasPool;
+class ParupaintVisualCursor;
+class ParupaintCanvasScene;
 class ParupaintBrush;
 
-enum DrawMode {
-	DRAW_MODE_DIRECT,
-	DRAW_MODE_SIMPLE,
-	DRAW_MODE_UNDO,
-};
 class ParupaintClientInstance : public ParupaintClient
 {
 Q_OBJECT
 	bool playmode;
 	int me;
 	QString nickname;
-	ParupaintCanvasPool * pool;
+	ParupaintCanvasScene * pool;
 	// has to work with int because the server is the only connection
-	QHash<quint32, ParupaintCanvasBrush*> brushes;
-	DrawMode DrawMethod;
-	ParupaintBrush * shadow_brush;
+	QHash<quint32, ParupaintVisualCursor*> brushes;
+	ParupaintBrush shadow_brush;
+
 
 	public:
-	ParupaintClientInstance(ParupaintCanvasPool*, QObject * = nullptr);
-	~ParupaintClientInstance();
+	ParupaintClientInstance(ParupaintCanvasScene*, QObject * = nullptr);
 	virtual void send(const QString , const QJsonObject & = QJsonObject());
+	void message(const QString &, const QByteArray &);
+
 	void ReloadImage();
 	void ReloadCanvas();
 	void PlayRecord(QString, bool as_script);
@@ -44,12 +41,7 @@ Q_OBJECT
 	void PasteLayerFrameImage(int l, int f, int x, int y, QImage);
 
 	void SetNickname(QString);
-	void SendChat(QString);
-
-	DrawMode GetDrawMode() const;
-
-	private slots:
-	void Message(const QString, const QByteArray);
+	void SendChat(const QString & = QString());
 
 	signals:
 	void ChatMessageReceived(QString, QString);

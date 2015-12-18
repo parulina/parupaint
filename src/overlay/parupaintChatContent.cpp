@@ -1,6 +1,4 @@
-
 #include "parupaintChatContent.h"
-
 
 #include <QTextBrowser>
 #include <QSizePolicy>
@@ -13,13 +11,13 @@
 #include <QTextCursor>
 #include <QFileDialog>
 
-#include "parupaintScrollBar.h"
+#include "../widget/parupaintScrollBar.h"
 
 ParupaintChatContent::ParupaintChatContent(QWidget * parent) : QTextBrowser(parent)
 {
-	this->setObjectName("ChatContent");
 	this->setFocusPolicy(Qt::ClickFocus);
 	this->setStyleSheet("margin:0; padding:0; border:none; background:transparent;");
+	this->setVerticalScrollBar(new ParupaintScrollBar(Qt::Vertical, this));
 	this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	this->document()->setDocumentMargin(0);
 

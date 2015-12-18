@@ -1,25 +1,18 @@
-
 #include "parupaintColorPicker.h"
-
-#include "parupaintColorBar.h"
-#include "parupaintColorWheel.h"
 
 #include <QDebug>
 #include <QWheelEvent>
-
 #include <QPainter>
-
 #include <QScrollBar>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 
-ParupaintColorPicker::ParupaintColorPicker(QWidget * parent) : ParupaintOverlayWidget(parent)
+#include "parupaintColorBar.h"
+#include "parupaintColorWheel.h"
+
+ParupaintColorPicker::ParupaintColorPicker(QWidget * parent) : QFrame(parent)
 {
 	this->setFocusPolicy(Qt::ClickFocus);
-	this->setObjectName("ColorPicker");
-
-	// slider styling doesn't work otherwise...
-	this->setStyleSheet("background:transparent;");
 
 	this->setMinimumSize(200, 200);
 
@@ -108,6 +101,14 @@ void ParupaintColorPicker::SetAlp(qreal r)
 	emit ColorChange(preview_color);
 }
 
+// slot
+void ParupaintColorPicker::color_change(QColor color)
+{
+	bool signals_blocked = this->blockSignals(true);
+		this->SetColor(color);
+	this->blockSignals(signals_blocked);
+}
+
 void ParupaintColorPicker::keyPressEvent(QKeyEvent*e)
 {
 	e->ignore();
@@ -119,7 +120,7 @@ void ParupaintColorPicker::paintEvent(QPaintEvent* event)
 
 	QPainter paint(this);
 	
-	const int preview_width = 40;
+	const int preview_width = 38;
  	QPoint cr = ahs_hlayout->contentsRect().center();
 
  	QPen pen(preview_color, preview_width);
@@ -129,7 +130,7 @@ void ParupaintColorPicker::paintEvent(QPaintEvent* event)
 	paint.setPen(QPen(Qt::white, 2));
 	paint.drawEllipse(cr, preview_width, preview_width);
 
- 	this->ParupaintOverlayWidget::paintEvent(event);
+ 	this->QFrame::paintEvent(event);
 }
 
 void ParupaintColorPicker::SetColor(QColor c)

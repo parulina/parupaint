@@ -1,180 +1,193 @@
-
-#include <QPainter>
-
 #include "parupaintPanvas.h"
-#include "parupaintLayer.h"
-#include "parupaintFrame.h"
 
+#include <QDebug>
+#include <QPainter> // mergedImageFrames
 
-PanvasProjectInformation::PanvasProjectInformation()
+#define qtMax(x, y) (x > y ? x : y)
+
+ParupaintPanvasInfo::ParupaintPanvasInfo()
 {
-	Name = "Untitled";
 }
 
-ParupaintPanvas::~ParupaintPanvas()
+// loadDefaults to load from QSettings?
+
+
+ParupaintPanvas::ParupaintPanvas(QObject * parent, const QSize & dim, int layers, int frames) : QObject(parent)
 {
-	this->Clear();
-}
-
-ParupaintPanvas::ParupaintPanvas() : Info()
-{
-
-}
-
-// Initialize with given layers and frames...
-ParupaintPanvas::ParupaintPanvas(QSize dim, _lint l, _fint f)
-{
-	New(dim, l, f);
-}
-
-ParupaintPanvas::ParupaintPanvas(int width, int height, _lint l, _fint f) : ParupaintPanvas(QSize(width, height), l, f)
-{
-
-}
-
-
-void ParupaintPanvas::New(QSize dim, _lint l, _fint f)
-{
-	Info.Dimensions = dim;
-	Clear();
-	
-	SetLayers(l);
-	foreach(auto l, Layers){
-		l->New(dim);
-		l->SetFrames(f);
+	if(!dim.isNull()){
+		qDebug() << "Creating panvas with dimensions" << dim;
+		this->resize(dim);
+	}
+	if(layers){
+		for(int i = 0; i < layers; i++)
+			this->insertLayer(-1, frames);
 	}
 }
 
-void ParupaintPanvas::Resize(QSize dim)
+void ParupaintPanvas::removeLayerObject(QObject * object)
 {
-	Info.Dimensions = dim;
-	foreach(auto l, Layers){
-		l->Resize(dim);
-	}
-}
-void ParupaintPanvas::Fill(_lint l, _fint f, QColor col)
-{
-	auto * layer = this->GetLayer(l);
+	ParupaintLayer * layer = qobject_cast<ParupaintLayer*>(object);
 	if(layer){
-		layer->Fill(f, col);
-	}
-}
-void ParupaintPanvas::Fill(QColor col)
-{
-	foreach(auto l, Layers){
-		l->Fill(col);
+		this->removeLayer(layer);
 	}
 }
 
-void ParupaintPanvas::Clear()
+void ParupaintPanvas::resize(const QSize & size)
 {
-	foreach(auto l, Layers){
-		delete l;
+	this->info.dimensions = size;
+	foreach(auto l, layers){
+		l->resize(size);
 	}
-	Layers.clear();
+	emit onCanvasResize(size);
 }
 
-void ParupaintPanvas::SetLayers(_lint l, _fint f)
+void ParupaintPanvas::clearCanvas()
 {
-	auto diff = l - GetNumLayers();
-	while(diff != 0){
+	qDeleteAll(layers);
+	layers.clear();
 
-		if(diff < 0) {
-			if(Layers.isEmpty()) break;
-			Layers.removeLast();
-			diff ++;
-		} else {
-			Layers.append(new ParupaintLayer(Info.Dimensions, f));
-			diff --;
+	emit onCanvasContentChange();
+}
+void ParupaintPanvas::newCanvas(int l, int f)
+{
+	qDebug() << "Creating" << l << "layers with" << f << "frames.";
+	this->clearCanvas();
+	QList<ParupaintLayer*> list;
+	for(int i = 0; i < f; i++){
+		list.append(new ParupaintLayer(this, this->dimensions(), f));
+	}
+	this->newCanvas(list);
+}
+void ParupaintPanvas::newCanvas(const QList<ParupaintLayer*> & layerlist)
+{
+	layers = layerlist;
+	emit onCanvasContentChange();
+}
+
+void ParupaintPanvas::insertLayer(int i, int f)
+{
+	this->insertLayer(new ParupaintLayer(this, this->dimensions(), f), i);
+}
+
+void ParupaintPanvas::insertLayer(ParupaintLayer* l, ParupaintLayer* at)
+{
+	Q_ASSERT_X(l, "insertLayer(at)", "layer to insert is null");
+	int i = -1;
+	if(at){
+		int ii;
+		if((ii = layers.indexOf(at)) != -1){
+			i = ii;
 		}
 	}
+	this->insertLayer(l, i);
 }
-
-void ParupaintPanvas::AddLayers(_lint l, _lint n, _fint f)
+void ParupaintPanvas::insertLayer(ParupaintLayer* l, int i)
 {
-	if(l > GetNumLayers()) l = GetNumLayers(); // or -1?
-	else if(l < 0) l = 0;
+	Q_ASSERT_X(l, "insertLayer(i)", "layer to insert is null");
 
-	while(n > 0){
-		Layers.insert(l, new ParupaintLayer(Info.Dimensions, f));
-		n--;
+	if(i < 0) i += (layers.size());
+	if(layers.isEmpty()) i = 0;
+	if(i >= 0 && (i <= layers.size())){
+		layers.insert(i, l);
+		l->setParent(this);
+		this->connect(l, &ParupaintLayer::onContentChange, this, &ParupaintPanvas::onCanvasContentChange);
+		this->connect(l, &QObject::destroyed, this, &ParupaintPanvas::removeLayerObject);
+		emit onCanvasContentChange();
+	} else {
+		qDebug() << "insertLayer(i)" << i << "is out of range";
 	}
 }
 
-void ParupaintPanvas::RemoveLayers(_lint l, _lint n)
+void ParupaintPanvas::removeLayer(ParupaintLayer* l)
 {
-	if(Layers.isEmpty()) return;
+	this->removeLayer(this->layerIndex(l));
+}
 
-	if(l > GetNumLayers()) l = GetNumLayers(); // or -1...
-	else if(l < 0) l = 0;
-
-	while(n > 0){
-		if(l > GetNumLayers()) break;
-		delete Layers.at(l);
-		Layers.removeAt(l);
-		n--;
+void ParupaintPanvas::removeLayer(int i)
+{
+	if(i < 0) i += layers.size();
+	if(layers.isEmpty()) i = 0;
+	if(i >= 0 && i <= layers.size()){
+		ParupaintLayer * l = layers.takeAt(i);
+		l->setParent(nullptr);
+		this->disconnect(l, &ParupaintLayer::onContentChange, this, &ParupaintPanvas::onCanvasContentChange);
+		this->disconnect(l, &QObject::destroyed, this, &ParupaintPanvas::removeLayerObject);
+		// i'm not sure if this is okay...
+		delete l;
+		emit onCanvasContentChange();
+	} else {
+		qDebug() << "removeLayer(i)" << i << "is out of range";
 	}
 }
-
-ParupaintLayer* ParupaintPanvas::GetLayer(_lint l)
+int ParupaintPanvas::layerIndex(ParupaintLayer* l)
 {
-	if(Layers.isEmpty() || l >= Layers.size()) return nullptr;
-	return Layers.at(l);
+	Q_ASSERT_X(l, "removeLayer(l)", "layer to remove is null");
+	int i = layers.indexOf(l);
+	if(i == -1) qDebug() << "layerIndex" << l << "is not found";
+	return i;
+}
+ParupaintLayer * ParupaintPanvas::layerAt(int i)
+{
+	if(layers.isEmpty()) return nullptr;
+	return layers.at(i);
 }
 
-_fint ParupaintPanvas::GetTotalFrames()
+int ParupaintPanvas::totalFrameCount()
 {
-	auto fn = 0;
-	foreach(auto l, Layers){
-		auto n = l->GetNumFrames();
-		if(n > fn) fn = n;
+	int count = 0;
+	foreach(auto l, layers){
+		count = qtMax(l->frameCount(), count);
 	}
-	return fn;
+	return count;
 }
-
-_lint ParupaintPanvas::GetNumLayers()
+int ParupaintPanvas::layerCount()
 {
-	return Layers.length();
+	return layers.length();
 }
 
-QList<QImage> ParupaintPanvas::GetImageFrames()
+QList<QImage> ParupaintPanvas::mergedImageFrames(bool rendered)
 {
 	QList<QImage> images;
-	for(auto f = 0; f < this->GetTotalFrames(); f++){
-		QImage img(this->GetDimensions(), QImage::Format_ARGB32);
+	for(auto f = 0; f < this->totalFrameCount(); f++){
+		QImage img(this->dimensions(), QImage::Format_ARGB32);
 		img.fill(0);
-
-		for(auto l = 0; l < this->GetNumLayers(); l++){
-			auto * layer = this->GetLayer(l);
-			if(!layer) continue;
-
-			auto * frame = layer->GetFrame(f);
-			if(!frame) continue;
-
-			const QImage & fimg = frame->GetImage();
-			QPainter paint(&img);
-			paint.drawImage(img.rect(), fimg, fimg.rect());
-		}
 		images.append(img);
 	}
 
+	for(auto l = 0; l < this->layerCount(); l++){
+		auto * layer = this->layerAt(l);
+		if(!layer) continue;
+
+		QList<QImage> layerFrames = layer->imageFrames(rendered);
+		for(int i = 0; i < layerFrames.length(); i++){
+			QPainter painter(&images[i]);
+			painter.drawImage(images[i].rect(), layerFrames[i], layerFrames[i].rect());
+		}
+	}
 	return images;
 }
 
-int ParupaintPanvas::GetWidth() const
+void ParupaintPanvas::setProjectName(const QString & name)
 {
-	return Info.Dimensions.width();
+	this->info.name = name;
+	emit onCanvasChange();
 }
-int ParupaintPanvas::GetHeight() const 
+void ParupaintPanvas::setFrameRate(qreal framerate)
 {
-	return Info.Dimensions.height();
+	this->info.framerate = framerate;
+	emit onCanvasChange();
 }
 
-QSize ParupaintPanvas::GetDimensions() const
+const QString & ParupaintPanvas::projectName()
 {
-	return Info.Dimensions;
+	return this->info.name;
 }
-QSize ParupaintPanvas::GetSize() const
+qreal ParupaintPanvas::frameRate()
 {
-	return Info.Dimensions;
+	return this->info.framerate;
+}
+
+const QSize & ParupaintPanvas::dimensions() const
+{
+	return this->info.dimensions;
 }

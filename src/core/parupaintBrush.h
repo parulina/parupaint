@@ -1,10 +1,7 @@
 #ifndef PARUPAINTBRUSH_H
 #define PARUPAINTBRUSH_H
 
-#include "panvasTypedefs.h"
-
-class ParupaintStroke;
-
+#include <QObject>
 #include <QPointF>
 #include <QPen>
 #include <QColor>
@@ -12,62 +9,74 @@ class ParupaintStroke;
 enum ParupaintBrushToolTypes {
 	BrushToolNone = 0,
 	BrushToolFloodFill,
-	BrushToolDotPattern,
-	BrushToolOpacityDrawing
+	BrushToolOpacityDrawing,
+	BrushToolLine,
+	BrushToolDotShadingPattern,	// Dense5Pattern
+	BrushToolDotHighlightPattern,	// Dense6Pattern
+	BrushToolCrossPattern,		// DiagCrossPattern
+	BrushToolMax // don't change this!
 };
 
-class ParupaintBrush {
-
+class ParupaintBrush : public QObject
+{
+Q_OBJECT
 	private:
-	QColor 	color;
-	QString	name;
-	QPointF position;
-	double 	width;
-	double   pressure;
-	_lint	layer;
-	_fint	frame;
-	bool 	drawing;
-	int 	tooltype;
+	QColor 	brush_color;
+	QString brush_name;
+	QPointF brush_position;
 
+	qreal 	brush_size;
+	qreal 	brush_pressure;
 
-	ParupaintStroke * CurrentStroke;
-	ParupaintStroke * LastStroke;
-	
+	int 	brush_layer;
+	int 	brush_frame;
+
+	bool 	brush_drawing;
+	int 	brush_tool;
+
+	signals:
+	void onNameChange(const QString &);
+	void onColorChange(const QColor &);
+	void onPositionChange(const QPointF &);
+	void onToolChange(int);
 
 	public:
-	ParupaintBrush();
-	ParupaintBrush(QString, double=1, QColor=Qt::black, int=0);
+	ParupaintBrush(QObject * = nullptr, qreal size = 1.0, const QColor = QColor(-1, -1, -1, -1), const QString & name = "", int tool = ParupaintBrushToolTypes::BrushToolNone);
 
-	QPen ToPen();
+	virtual void setName(const QString &);
+	virtual void setColor(const QColor &);
+	virtual void setSize(qreal);
+	virtual void setPosition(const QPointF &);
+	void setX(qreal);
+	void setY(qreal);
+	void setPressure(qreal);
+	void setLayerFrame(int l, int f);
+	void setLayer(int l);
+	void setFrame(int f);
+	void setDrawing(bool);
+	void setTool(int);
 
+	const QString & name() const;
+	const QColor & color() const;
+	qreal size() const;
+	const QPointF & position() const;
+	qreal pressure() const;
+	int layer() const;
+	int frame() const;
+	bool drawing() const;
+	int tool() const;
 
-	void SetName(QString);
-	void SetColor(QColor);
-	void SetPosition(QPointF);
-	void SetPosition(double, double);
-	void SetWidth(double);
-	void SetPressure(double);
-	void SetLayer(_lint);
-	void SetFrame(_fint);
-	void SetDrawing(bool);
-	void SetCurrentStroke(ParupaintStroke *);
-	void SetLastStroke(ParupaintStroke *);
-	void SetToolType(int t);
+	// handy funcs
+	qreal x();
+	qreal y();
+	QRgb rgba();
+	QPen pen() ;
+	QPoint pixelPosition();
+	qreal pressureSize();
+	QString colorString();
+	QRectF localRect();
 
-	QColor GetColor() const;
-	QString GetColorString() const;
-	QPointF GetPosition() const;
-	QString GetName() const;
-	double GetWidth() const;
-	double GetPressure() const;
-	double GetPressureWidth() const;
-	_lint GetLayer() const;
-	_fint GetFrame() const;
-	bool IsDrawing() const;
-	ParupaintStroke * GetCurrentStroke() const;
-	ParupaintStroke * GetLastStroke() const;
-	int GetToolType() const;
-
+	void copyTo(ParupaintBrush &);
 };
 
 #endif

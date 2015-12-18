@@ -1,7 +1,7 @@
 #ifndef PARUPAINTCHATINPUT_H
 #define PARUPAINTCHATINPUT_H
 
-#include "../parupaintLineEdit.h"
+#include "../widget/parupaintLineEdit.h"
 
 class ParupaintChatInput : public ParupaintLineEdit
 {

@@ -1,110 +1,100 @@
 #ifndef PARUPAINTCANVASVIEW_H
 #define PARUPAINTCANVASVIEW_H
 
-#include <QTabletEvent>
 #include <QGraphicsView>
+#include <QTabletEvent>
+
+class QPainter; // drawForeground
+class QTimer; // toast_timer
 class QWidget;
-class QPainter;
 
-class ParupaintBrush;
-class ParupaintCanvasPool;
-class ParupaintCanvasBrush;
+typedef QTabletEvent::PointerType QPointerType;
+typedef Qt::MouseButton QMouseButton;
 
-enum PenStatus {
-	PEN_STATE_UP,
-	PEN_STATE_MOUSE_DOWN,
-	PEN_STATE_TABLET_DOWN
-};
-enum CanvasStatus {
-	CANVAS_STATUS_IDLE,
-	CANVAS_STATUS_MOVING,
-	CANVAS_STATUS_ZOOMING,
-	CANVAS_STATUS_BRUSH_ZOOMING
+struct penInfo {
+	QPointF pos, old_pos;
+	QPointF gpos, old_gpos;
+	QPointerType pointer;
+	Qt::MouseButtons buttons;
+	Qt::KeyboardModifiers modifiers;
+	qreal pressure;
 };
 
 class ParupaintCanvasView : public QGraphicsView {
 Q_OBJECT
 	private:
-	ParupaintCanvasPool *CurrentCanvas;
-	CanvasStatus	CanvasState;
-	PenStatus	PenState;
-	QTabletEvent::PointerType	LastTabletPointerType;
-	QPointF		OldPosition;
-	QPointF		OriginPosition; // origin for zoom/bzoom
-	float		OriginZoom;
+	Q_PROPERTY(qreal canvas_zoom READ zoom WRITE setZoom NOTIFY zoomChange)
+	Q_PROPERTY(bool pixel_grid READ pixelGrid WRITE setPixelGrid NOTIFY pixelGridChange)
+	Q_PROPERTY(bool smooth_zoom READ smoothZoom WRITE setSmoothZoom)
 
-	float		Zoom;
-	bool		Drawing;
-	bool 		pixelgrid;
+	QTimer *toast_timer;
+	QString toast_message;
 
-	QPixmap		paste_pixmap;
-	// TODO: rename all vars to lowercase_underscore?
+	qreal canvas_zoom;
+	bool pixel_grid;
+	bool smooth_zoom;
 
-	ParupaintCanvasBrush* CurrentBrush;
+	QPointerType	pointer_type;
+	QPointF		pointer_oldpos;
+	penInfo		pen_info;
+	bool		tablet_active;
 
-	Qt::MouseButton DrawButton;
-	Qt::MouseButton MoveButton;
-	Qt::MouseButton SwitchButton;
+	bool 		canvas_horflip, canvas_verflip;
+
+	signals:
+	void zoomChange(qreal);
+	void viewportChange();
+	void pixelGridChange(bool);
+
+	void pointerRelease(const penInfo & info);
+	void pointerPress(const penInfo & info);
+	void pointerMove(const penInfo & info);
+	void pointerPointer(const penInfo & info);
+	void pointerScroll(QWheelEvent *);
+
+	private slots:
+	void toastTimeout();
+	void scrollbarMove(const QPoint&);
+
+	public:
+	qreal zoom();
+	bool smoothZoom();
+	bool pixelGrid();
+	const QPixmap & pastePreview();
+
+	void setZoom(qreal z);
+	void setSmoothZoom(bool sz);
+	void setPixelGrid(bool pg);
+
+	void addZoom(qreal z);
+
+	// -1 = hide immediately
+	void showToast(const QString & text, qreal timeout = 3000);
+
+	void resetFlip();
+	void flipView(bool h, bool v);
+	bool isFlipped();
+
+	void moveView(const QPointF & move);
 
 
 	protected:
-	void enterEvent(QEvent * event);
-	void leaveEvent(QEvent * event);
+	bool viewportEvent(QEvent *event);
+	void showEvent(QShowEvent * event);
+	void mouseDoubleClickEvent(QMouseEvent *event);
 	void mousePressEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent* event);
-	void keyPressEvent(QKeyEvent * event);
-	void keyReleaseEvent(QKeyEvent * event);
-
-	void wheelEvent(QWheelEvent* event);
+	void wheelEvent(QWheelEvent * event);
 	void drawForeground(QPainter *painter, const QRectF& rect);
-	bool viewportEvent(QEvent *event);
+	void paintEvent(QPaintEvent * event);
+
+	// not sure why these are needed...
+	void enterEvent(QEvent * event){ QGraphicsView::enterEvent(event); }
+	void leaveEvent(QEvent * event){ QGraphicsView::leaveEvent(event); }
 
 	public:
-	~ParupaintCanvasView();
 	ParupaintCanvasView(QWidget* parent);
-	void SetCanvas(ParupaintCanvasPool * canvas);
-	void SetCurrentBrush(ParupaintBrush * brush);
-	void UpdateCurrentBrush(ParupaintBrush * brush);
-
-	float GetZoom() const;
-	void SetZoom(float z);
-	void AddZoom(float z);
-
-	void SetPixelGrid(bool);
-	bool GetPixelGrid() const;
-
-	void SetPastePreview(QImage &img);
-	void UnsetPastePreview();
-	bool HasPastePreview();
-
-	QPointF RealPosition(const QPointF &pos);
-
-	bool OnScroll(const QPointF & pos, Qt::KeyboardModifiers modifiers, float);
-	void OnPenDown(const QPointF &pos, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, float pressure);
-	void OnPenUp(const QPointF &pos, Qt::MouseButtons buttons);
-	void OnPenMove(const QPointF &pos, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, float pressure);
-	bool OnKeyDown(QKeyEvent * event);
-	bool OnKeyUp(QKeyEvent * event);
-	// set/reset zoom, rotation, etc...
-//	void UpdateTitle();
-
-
-	signals:
-	void PenDrawStart(ParupaintBrush *);
-	void PenMove(ParupaintBrush *);
-	void PenDrawStop(ParupaintBrush *);
-	void PenPointerType(QTabletEvent::PointerType old, QTabletEvent::PointerType nuw);
-
-	void CursorChange(ParupaintBrush *);
-
-public slots:
-	void OnCanvasUpdate();
-
 };
-
-
-
-
 
 #endif

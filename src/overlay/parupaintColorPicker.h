@@ -1,7 +1,7 @@
 #ifndef PARUPAINTCOLORPICKER_H
 #define PARUPAINTCOLORPICKER_H
 
-#include "parupaintOverlayWidget.h"
+#include <QFrame>
 
 class QVBoxLayout;
 class QHBoxLayout;
@@ -9,7 +9,7 @@ class QHBoxLayout;
 class ParupaintColorBar;
 class ParupaintColorWheel;
 
-class ParupaintColorPicker : public ParupaintOverlayWidget
+class ParupaintColorPicker : public QFrame
 {
 Q_OBJECT
 
@@ -34,6 +34,9 @@ Q_OBJECT
 	void SetSat(qreal);
 	void SetLit(qreal);
 	void SetAlp(qreal);
+
+	public slots:
+	void color_change(QColor);
 
 	signals:
 	void ColorChange(QColor);

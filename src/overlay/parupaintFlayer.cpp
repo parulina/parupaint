@@ -1,123 +1,146 @@
-
 #include "parupaintFlayer.h"
-#include "parupaintFlayerList.h"
-
-
-#include "parupaintFlayerLayer.h"
-#include "parupaintFlayerFrame.h"
-#include "../parupaintCanvasObject.h"
-#include "../core/parupaintLayer.h"
-#include "../core/parupaintFrame.h"
-
-#include <QScrollBar>
-#include <QMouseEvent>
-#include <QKeyEvent>
 
 #include <QDebug>
+#include <QRadioButton>
+#include <QLabel>
+#include <QScrollBar>
+#include <QMouseEvent>
+#include <QResizeEvent>
+#include <QGridLayout>
+
+#include "../parupaintVisualCanvas.h"
+#include "parupaintFlayerLayer.h"
+#include "parupaintFlayerFrame.h"
+
+typedef QVBoxLayout FlayerLayout;
 
 ParupaintFlayer::ParupaintFlayer(QWidget * parent) : QScrollArea(parent)
 {
-	this->setFocusPolicy(Qt::ClickFocus);
-	this->setObjectName("Flayer");
-
-	this->resize(0, 200);
+	this->setFocusPolicy(Qt::NoFocus);
 	this->setContextMenuPolicy(Qt::NoContextMenu);
-	this->setWidgetResizable(true);
+	this->setAutoFillBackground(false);
+	this->setContentsMargins(4, 4, 4, 4);
+	this->resize(0, 200);
 
-	list = new ParupaintFlayerList(this);
-	this->setWidget(list);
+	this->setWidget(new QWidget(this));
+	this->widget()->setObjectName("FlayerList");
+	this->widget()->setAutoFillBackground(false);
+	this->widget()->setContentsMargins(0, 0, 0, 0);
 
-	viewport()->setMouseTracking(true);
+	FlayerLayout * layout = new FlayerLayout(this->widget());
+		layout->setAlignment(Qt::AlignTop);
+		layout->setSpacing(1);
+		layout->setMargin(0);
+		layout->setContentsMargins(0, 0, 0, 0);
+
+	this->widget()->setLayout(layout);
 }
 
-ParupaintFlayerList * ParupaintFlayer::GetList()
+void ParupaintFlayer::canvas_content_update()
 {
-	return list;
+	ParupaintPanvas * canvas = qobject_cast<ParupaintPanvas*>(sender());
+	if(canvas){
+		this->updateFromCanvas(canvas);
+	}
 }
-
-
-void ParupaintFlayer::UpdateFromCanvas(ParupaintCanvasObject * canvas)
+void ParupaintFlayer::current_lf_update()
 {
-	// clear everything
-	list->Clear();
-
-	ParupaintPanvas * panvas = static_cast<ParupaintPanvas*>(canvas);
-	for(auto l = 0; l < panvas->GetNumLayers(); l++){
-		auto * layer = panvas->GetLayer(l);
-		auto * nlayer = list->AddLayer(l);
-
-		nlayer->Index = l;
-		for(auto f = 0; f < layer->GetNumFrames(); f++){
-			auto * frame = layer->GetFrame(f);
-			auto * nframe = nlayer->AddFrame(f);
-			nframe->Index = f;
-			nframe->Extended = frame->IsExtended();
-			if(nframe->Extended) nframe->setObjectName("FlayerFrameExtended");
-		}
-	};
-}
-void ParupaintFlayer::SetMarkedLayerFrame(int layer, int frame)
-{
-	list->ClearAllChecked();
-	auto *l = list->GetLayer(layer);
-	if(l) {
-		auto *f = l->GetFrame(frame);
-		if(f) {
-			f->setChecked(true);
-		}
+	ParupaintVisualCanvas * canvas = qobject_cast<ParupaintVisualCanvas*>(sender());
+	if(canvas){
+		this->setHighlightLayerFrame(canvas->currentLayer(), canvas->currentFrame());
 	}
 }
 
-
-
-
-
-void ParupaintFlayer::mousePressEvent(QMouseEvent * event)
+void ParupaintFlayer::frame_click()
 {
-	if(event->buttons() & Qt::RightButton) {
-		FlayerState = FLAYER_STATUS_MOVING;
+	ParupaintFlayerFrame * frame = qobject_cast<ParupaintFlayerFrame*>(sender());
+	if(frame){
+		this->clearHighlight();
+		frame->setChecked(true);
+
+		emit onHighlightChange(frame->layer, frame->frame);
 	}
-	OldPosition = event->pos();
-	QScrollArea::mousePressEvent(event);
 }
 
-void ParupaintFlayer::mouseReleaseEvent(QMouseEvent * event)
+void ParupaintFlayer::clearHighlight()
 {
-	FlayerState = FLAYER_STATUS_IDLE;
-	OldPosition = event->pos();
-	QScrollArea::mouseReleaseEvent(event);
+	FlayerLayout * layout = qobject_cast<FlayerLayout*>(this->widget()->layout());
+	for(int i = 0; i < layout->count(); i++){
+		QLayoutItem * item = layout->itemAt(i);
+		ParupaintFlayerLayer * layer = qobject_cast<ParupaintFlayerLayer*>(item->widget());
+		if(layer){
+			ParupaintFlayerFrame * frame;
+			int ff = 0;
+			while((frame = layer->frameAt(ff))){
+				frame->setChecked(false);
+				ff++;
+			}
+		}
+	}
+}
+void ParupaintFlayer::updateFromCanvas(ParupaintPanvas* panvas)
+{
+	FlayerLayout * layout = qobject_cast<FlayerLayout*>(this->widget()->layout());
+	QLayoutItem * item;
+	while((item = layout->takeAt(0)) != nullptr){
+		delete item->widget();
+		delete item;
+	}
+
+	for(int l = 0; l < panvas->layerCount(); l++){
+		
+		ParupaintFlayerLayer * flayer_layer = new ParupaintFlayerLayer;
+		flayer_layer->setLayerVisible(panvas->layerAt(l)->visible());
+		layout->addWidget(flayer_layer);
+
+		for(int f = 0; f < panvas->layerAt(l)->frameCount(); f++){
+
+			ParupaintFlayerFrame * frame = new ParupaintFlayerFrame;
+			frame->layer = l; frame->frame = f;
+
+			connect(frame, &ParupaintFlayerFrame::clicked, this, &ParupaintFlayer::frame_click);
+			flayer_layer->addFrame(frame);
+		}
+	}
+	this->setHighlightLayerFrame(0, 0);
+}
+void ParupaintFlayer::setHighlightLayerFrame(int l, int f)
+{
+	this->clearHighlight();
+
+	FlayerLayout * layout = qobject_cast<FlayerLayout*>(this->widget()->layout());
+	QLayoutItem * item = layout->itemAt(l);
+	if(!item) return;
+
+	ParupaintFlayerLayer * layer = qobject_cast<ParupaintFlayerLayer*>(item->widget());
+	if(layer){
+		ParupaintFlayerFrame * frame = layer->frameAt(f);
+		if(frame){
+			frame->setChecked(true);
+		}
+	}
+}
+void ParupaintFlayer::resizeEvent(QResizeEvent* event)
+{
+	this->widget()->setGeometry(QRect(QPoint(0, 0), event->size()));
+	this->QScrollArea::resizeEvent(event);
 }
 
 void ParupaintFlayer::mouseMoveEvent(QMouseEvent * event)
 {
-	if(FlayerState == FLAYER_STATUS_MOVING){
+	if(old_pos.isNull()) old_pos = event->pos();
+
+	if((event->modifiers() & Qt::ShiftModifier) ||
+	   (event->buttons() & Qt::MiddleButton)){
 		QScrollBar *ver = this->verticalScrollBar();
 		QScrollBar *hor = this->horizontalScrollBar();
-		auto dif = OldPosition - event->pos();
+		QPoint dif = (event->pos() - old_pos);
 		hor->setSliderPosition(hor->sliderPosition() + dif.x());
 		ver->setSliderPosition(ver->sliderPosition() + dif.y());
 	}
-	OldPosition = event->pos();
+
+	event->accept();
 	QScrollArea::mouseMoveEvent(event);
-}
-
-void ParupaintFlayer::keyPressEvent(QKeyEvent * event)
-{
-	if(event->key() == Qt::Key_Space && !event->isAutoRepeat() && 
-			FlayerState != FLAYER_STATUS_MOVING){
-		FlayerState = FLAYER_STATUS_MOVING;
-
-	}
-	QScrollArea::keyPressEvent(event);
-}
-
-void ParupaintFlayer::keyReleaseEvent(QKeyEvent * event)
-{
-	if(event->key() == Qt::Key_Space && !event->isAutoRepeat() &&
-			FlayerState != FLAYER_STATUS_IDLE){
-		FlayerState = FLAYER_STATUS_IDLE;
-	}
-	QScrollArea::keyReleaseEvent(event);
 }
 
 void ParupaintFlayer::enterEvent(QEvent * event)

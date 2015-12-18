@@ -34,6 +34,7 @@ void ParupaintClient::Connect(QString u, quint16 p)
 		SwitchHost = true;
 		return this->Disconnect("SwitchHost");
 	} else {
+		qDebug() << "connectToHost";
 		socket.connectToHost(host, p);
 	}
 }
@@ -42,6 +43,7 @@ void ParupaintClient::Disconnect(QString reason)
 {
 	if(socket.state() != QAbstractSocket::UnconnectedState) {
 		if(socket.state() == QAbstractSocket::ConnectedState){
+			qDebug() << "Disconnecting with reason" << reason;
 			socket.disconnectFromHost(reason);
 		} else {
 			socket.abort();
@@ -49,13 +51,14 @@ void ParupaintClient::Disconnect(QString reason)
 	}
 }
 
-void ParupaintClient::onSocketStateChanged(QAbstractSocket::SocketState)
+void ParupaintClient::onSocketStateChanged(QAbstractSocket::SocketState state)
 {
+	qDebug() << "socketstatechange" << state;
 }
 
 void ParupaintClient::onError(QAbstractSocket::SocketError)
 {
-	emit onMessage("error", socket.errorString().toUtf8());
+	message("error", socket.errorString().toUtf8());
 }
 qint64 ParupaintClient::send(const QString data)
 {
@@ -69,11 +72,12 @@ qint64 ParupaintClient::send(const QString id, const QString data)
 
 void ParupaintClient::onConnect()
 {
-	emit onMessage("connect");
+	message("connect");
 }
 void ParupaintClient::onDisconnect()
 {
-	emit onMessage("disconnect", socket.closeReason().toUtf8());
+	qDebug() << "disconnect:" << socket.closeReason();
+	message("disconnect", socket.closeReason().toUtf8());
 
 	if(SwitchHost){
 		SwitchHost = false;
@@ -86,7 +90,7 @@ void ParupaintClient::textReceived(QString text)
 	if(text.isEmpty()) return;
 	const auto id = text.split(' ')[0];
 	const auto arg = text.mid(id.length()+1);
-	emit onMessage(id, arg.toUtf8());
+	message(id, arg.toUtf8());
 }
 
 QUrl ParupaintClient::url()

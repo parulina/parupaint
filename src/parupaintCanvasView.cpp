@@ -1,515 +1,294 @@
+#include "parupaintCanvasView.h"
 
-#include <QScrollBar>
-#include <QMouseEvent>
-#include <QBitmap>
-#include <QShortcut>
-#include <QKeySequence>
-#include <QObject>
-#include <cmath>
+// ParupaintCanvasView handles the view of the canvas:
+// pixel grid, scrollbars, zoom, etc
 
-#include <QSettings>
 #include <QDebug>
+#include <QSettings>
 #include <QTimer>
 
-#include "parupaintCanvasBrush.h"
-#include "core/parupaintBrush.h"
+#include "widget/parupaintScrollBar.h"
 
-#include "parupaintCanvasView.h"
-#include "parupaintCanvasPool.h"
-#include "parupaintCanvasBrushPool.h"
-#include "parupaintCanvasObject.h"
-#include "parupaintCanvasBanner.h"
-
-//QGraphicsView for canvas view
-
-ParupaintCanvasView::~ParupaintCanvasView()
+ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(parent),
+	toast_timer(new QTimer(this)),
+	tablet_active(false),
+	canvas_horflip(false), canvas_verflip(false)
 {
-
-}
-
-ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(parent), CurrentCanvas(nullptr),
-	// Canvas stuff
-	CanvasState(CANVAS_STATUS_IDLE), PenState(PEN_STATE_UP), LastTabletPointerType(QTabletEvent::UnknownPointer),
-	Zoom(1.0), Drawing(false), pixelgrid(true),
-	// Brush stuff
-	CurrentBrush(nullptr),
-	// Button stuff
-	DrawButton(Qt::LeftButton), MoveButton(Qt::MiddleButton), SwitchButton(Qt::RightButton)
-{
-	// mouse pointers and canvas itself
-	//
 	this->setObjectName("CanvasView");
+	this->setAcceptDrops(false);
+
+	// Cursors move quickly, creating artifacts
+	// The visualcursor bounds are correct and everything, but
+	// for some reason when the cursor moves around quickly
+	// the graphicsview lags behind.
+	//this->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 
 	this->setFocusPolicy(Qt::WheelFocus);
+	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+	ParupaintScrollBar * vbar = new ParupaintScrollBar(Qt::Vertical, this, true);
+	ParupaintScrollBar * hbar = new ParupaintScrollBar(Qt::Horizontal, this, true);
+	this->setVerticalScrollBar(vbar);
+	this->setHorizontalScrollBar(hbar);
+	this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+	this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
+	connect(vbar, &ParupaintScrollBar::directionMove, this, &ParupaintCanvasView::scrollbarMove);
+	connect(hbar, &ParupaintScrollBar::directionMove, this, &ParupaintCanvasView::scrollbarMove);
+
 	setBackgroundBrush(QColor(200, 200, 200));
 	viewport()->setMouseTracking(true);
 	
-	SetZoom(Zoom);
-
 	QSettings cfg;
-	if(!cfg.contains("client/pixelgrid")){
-		cfg.setValue("client/pixelgrid", true);
-	}
-	this->SetPixelGrid(cfg.value("client/pixelgrid").toBool());
+	this->setPixelGrid(cfg.value("client/pixelgrid", true).toBool());
+	this->setSmoothZoom(cfg.value("client/smoothzoom", true).toBool());
+	cfg.setValue("client/pixelgrid", this->pixelGrid());
+	cfg.setValue("client/smoothzoom", this->smoothZoom());
 
-	this->setAcceptDrops(false);
-	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	connect(toast_timer, &QTimer::timeout, this, &ParupaintCanvasView::toastTimeout);
+	this->showToast("");
 
+	this->setCursor(Qt::BlankCursor);
+	this->setZoom(1.0);
 	this->show();
 }
 
-void ParupaintCanvasView::SetPixelGrid(bool b)
+void ParupaintCanvasView::showToast(const QString & text, qreal timeout)
 {
-	pixelgrid = b;
-	viewport()->update();
-}
-bool ParupaintCanvasView::GetPixelGrid() const
-{
-	return pixelgrid;
-}
+	toast_timer->setSingleShot(true);
+	toast_timer->stop();
 
-
-void ParupaintCanvasView::UpdateCurrentBrush(ParupaintBrush * brush)
-{
-	if(CurrentBrush){
-		*((ParupaintBrush*)CurrentBrush) = *brush;
-		CurrentBrush->setPos(brush->GetPosition());
-		this->viewport()->update();
+	if(text.length() == 0 || timeout < 0) return;
+	if(timeout == 0) toast_timer->setSingleShot(false);
+	if(timeout > 0) {
+		toast_timer->start(timeout);
 	}
-}
-
-void ParupaintCanvasView::SetCurrentBrush(ParupaintBrush * brush)
-{
-	if(CurrentBrush){
-		brush->SetPosition(CurrentBrush->GetPosition());
-	}
-	if(CurrentBrush && CurrentCanvas) {
-		CurrentCanvas->RemoveCursor(CurrentBrush);
-		delete CurrentBrush;
-	}
-
-	if(brush) {
-		ParupaintCanvasBrush * cursor = new ParupaintCanvasBrush;
-		viewport()->setCursor(Qt::BlankCursor);
-		CurrentBrush = cursor;
-
-		this->UpdateCurrentBrush(brush);
-		CurrentBrush->ShowName(1000);
-		CurrentBrush->SetPosition(brush->GetPosition());
-		CurrentBrush->SetDrawing(brush->IsDrawing());
-		// copy the options
-
-		if(CurrentCanvas) CurrentCanvas->AddCursor(" ", cursor);
-	} else {
-		viewport()->setCursor(Qt::ArrowCursor);
-		CurrentBrush = nullptr;
-	}
-
-} 
-
-void ParupaintCanvasView::SetCanvas(ParupaintCanvasPool * canvas)
-{
-	CurrentCanvas = canvas;
-	setScene(canvas);
-	if(CurrentBrush) CurrentCanvas->AddCursor(" ", CurrentBrush);
-
-	connect(canvas, SIGNAL(UpdateView()), this, SLOT(OnCanvasUpdate()));
-}
-
-float ParupaintCanvasView::GetZoom() const
-{
-	return Zoom;
-}
-void ParupaintCanvasView::SetZoom(float z)
-{
-	if(z < 0.2) z = 0.2;
-
-	this->setRenderHint(QPainter::SmoothPixmapTransform, !(z > 3));
-	Zoom = z;
-	
-	QMatrix nm(1,0,0,1, matrix().dx(), matrix().dy());
-	nm.scale(Zoom, Zoom);
-
-	setMatrix(nm);
-}
-void ParupaintCanvasView::AddZoom(float z)
-{
-	SetZoom(Zoom + z);
-}
-
-void ParupaintCanvasView::SetPastePreview(QImage & img)
-{
-	paste_pixmap = QPixmap::fromImage(img);
-}
-void ParupaintCanvasView::UnsetPastePreview()
-{
-	paste_pixmap = QPixmap();
-}
-bool ParupaintCanvasView::HasPastePreview()
-{
-	return (!paste_pixmap.isNull());
-}
-
-
-// Events
-
-void ParupaintCanvasView::OnPenDown(const QPointF &pos, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, float pressure)
-{
-	if(CurrentBrush == nullptr) return;
-
-	CurrentBrush->SetPosition(RealPosition(pos));
-	CurrentBrush->SetPressure(pressure);
-
-	if(buttons == DrawButton && !Drawing){
-		Drawing = true;
-		CurrentBrush->SetDrawing(Drawing);
-		emit PenDrawStart(CurrentBrush);
-		emit CursorChange(CurrentBrush);
-
-	} else if(buttons == MoveButton && CanvasState != CANVAS_STATUS_MOVING){
-		CanvasState = CANVAS_STATUS_MOVING;
-	}
-	viewport()->update();
-}
-
-void ParupaintCanvasView::OnPenUp(const QPointF &pos, Qt::MouseButtons buttons)
-{
-	if(CurrentBrush == nullptr) return;
-
-	CurrentBrush->SetPosition(RealPosition(pos));
-	CurrentBrush->SetPressure(0.0);
-	if(Drawing){
-		Drawing = false;
-		CurrentBrush->SetDrawing(Drawing);
-		emit PenDrawStop(CurrentBrush);
-		emit CursorChange(CurrentBrush);
-	}
-	if(CanvasState == CANVAS_STATUS_MOVING){
-		CanvasState = CANVAS_STATUS_IDLE;
-	}
-
-	viewport()->update();
-}
-
-void ParupaintCanvasView::OnPenMove(const QPointF &pos, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, float pressure)
-{
-	if(CurrentBrush == nullptr) return;
-
-	if(CanvasState == CANVAS_STATUS_MOVING){
-		QScrollBar *ver = verticalScrollBar();
-		QScrollBar *hor = horizontalScrollBar();
-		auto dif = OldPosition.toPoint() - pos.toPoint();
-		hor->setSliderPosition(hor->sliderPosition() + dif.x());
-		ver->setSliderPosition(ver->sliderPosition() + dif.y());
-
-	} else if(CanvasState == CANVAS_STATUS_ZOOMING || CanvasState == CANVAS_STATUS_BRUSH_ZOOMING) {
-		auto dif = ((OriginPosition - pos).y());
-		auto hd = float(dif) / float( viewport()->height());
-
-
-		auto zdl = 0.0;
-		if(CanvasState == CANVAS_STATUS_ZOOMING) {
-			zdl = OriginZoom + (10 * hd);
-			SetZoom(zdl);
-
-		} else if (CanvasState == CANVAS_STATUS_BRUSH_ZOOMING) {
-			zdl = OriginZoom + floor(45 * hd);
-			CurrentBrush->SetWidth(zdl);
-			emit CursorChange(CurrentBrush);
-		}
-		viewport()->update();
-
-	}
-
-	CurrentBrush->SetPosition(RealPosition(pos));
-	CurrentBrush->SetPressure(pressure);
-	
-	emit PenMove(CurrentBrush);
-
-
-	OldPosition = pos;
+	this->toast_message = text;
 	this->viewport()->update();
 }
 
-bool ParupaintCanvasView::OnScroll(const QPointF & pos, Qt::KeyboardModifiers modifiers, float delta_y)
+void ParupaintCanvasView::resetFlip()
 {
-	if(CurrentBrush == nullptr) return false;
+	canvas_horflip = canvas_verflip = false;
+	this->setZoom(this->zoom());
+}
+void ParupaintCanvasView::flipView(bool h, bool v)
+{
+	if(h) canvas_horflip = !canvas_horflip;
+	if(v) canvas_verflip = !canvas_verflip;
 
-	float actual_zoom = delta_y / 120.0;
-	if((modifiers & Qt::ControlModifier) || CanvasState == CANVAS_STATUS_MOVING){
-		AddZoom(actual_zoom * 0.2);
-		
-	} else {
-		float new_size = CurrentBrush->GetWidth() + (actual_zoom*4);
-		CurrentBrush->SetWidth(new_size);
-		emit CursorChange(CurrentBrush);
-
-	}
-	CurrentBrush->SetPosition(RealPosition(OldPosition));
-	emit PenMove(CurrentBrush);
-	viewport()->update();
-	return false;
+	this->setZoom(this->zoom());
+}
+bool ParupaintCanvasView::isFlipped()
+{
+	return (canvas_horflip || canvas_verflip);
 }
 
-bool ParupaintCanvasView::OnKeyDown(QKeyEvent * event)
+void ParupaintCanvasView::moveView(const QPointF & move)
 {
-	if(CurrentBrush == nullptr) return false;
-
-	if(event->key() == Qt::Key_Space){
-		if((event->modifiers() & Qt::ShiftModifier) &&
-			CanvasState != CANVAS_STATUS_BRUSH_ZOOMING){
-			
-			CanvasState = CANVAS_STATUS_BRUSH_ZOOMING;
-			OriginZoom = CurrentBrush->GetWidth();
-			OriginPosition = OldPosition;
-			return true;
-
-		} else if((event->modifiers() & Qt::ControlModifier) &&
-			CanvasState != CANVAS_STATUS_ZOOMING) {
-
-			CanvasState = CANVAS_STATUS_ZOOMING;
-			OriginZoom = GetZoom();
-			OriginPosition = OldPosition;
-			return true;
-
-		} else if(CanvasState != CANVAS_STATUS_MOVING){
-			CanvasState = CANVAS_STATUS_MOVING;
-		}
-	}
-	return false; // Let keys go by default
+	QScrollBar * hor = this->horizontalScrollBar();
+	QScrollBar * ver = this->verticalScrollBar();
+	hor->setSliderPosition(hor->sliderPosition() + move.x());
+	ver->setSliderPosition(ver->sliderPosition() + move.y());
 }
 
-bool ParupaintCanvasView::OnKeyUp(QKeyEvent * event)
+void ParupaintCanvasView::toastTimeout()
 {
-	if(CurrentBrush == nullptr) return false;
+	this->viewport()->update();
+}
+void ParupaintCanvasView::scrollbarMove(const QPoint & move)
+{
+	QPoint move_added(move.x() * this->zoom(), move.y() * this->zoom());
+	this->moveView(move_added);
+}
+
+// getters
+qreal ParupaintCanvasView::zoom()
+{
+	return canvas_zoom;
+}
+bool ParupaintCanvasView::smoothZoom()
+{
+	return smooth_zoom;
+}
+bool ParupaintCanvasView::pixelGrid()
+{
+	return pixel_grid;
+}
+
+// setters
+void ParupaintCanvasView::setZoom(qreal z)
+{
+	if(z < 0.2) z = 0.2;
+	canvas_zoom = z;
+
+	if(smooth_zoom) this->setRenderHint(QPainter::SmoothPixmapTransform, !(z > 3));
 	
-	if(event->key() == Qt::Key_Control) {
-		if(CanvasState == CANVAS_STATUS_ZOOMING){
-			CanvasState = CANVAS_STATUS_MOVING;
-		}
-	}
-	if(event->key() == Qt::Key_Shift) {
-		if(CanvasState == CANVAS_STATUS_BRUSH_ZOOMING){
-			CanvasState = CANVAS_STATUS_MOVING;
-		}
-	}
-	if(event->key() == Qt::Key_Space && 
-		(CanvasState != CANVAS_STATUS_IDLE)){
-		CanvasState = CANVAS_STATUS_IDLE;
-	}
-	// Mini-rant.
-	// Okay, so Qt seems to fire the key events while you're holding it.
-	// That's fine by me, because it has a flag for auto repeat. But for some 
-	// reason the flag sometimes flips around, seemingly randomly?! ?!?!?!
-	// I've tried really hard to find out the reason, but i have
-	// not found it. I've only found one or two obscure forum posts, and
-	// i'm not even sure if this is the thing they're talking about.
-	// I tried different Qt version as well, but they all seem to have the
-	// same problem.... Tried Qt5 and 4, same problems.
-	//
-	// Whatever.
-	// Just gotta optimize this for that... 'bug'.
-	OriginPosition = OldPosition;
-	return false;
+	QMatrix nm(1,0,0,1, matrix().dx(), matrix().dy());
+	nm.scale(canvas_zoom, canvas_zoom);
+	nm.scale(canvas_horflip ? -1 : 1, canvas_verflip ? -1 : 1);
+	setMatrix(nm);
 }
-
-
-// Other events
-
-void ParupaintCanvasView::OnCanvasUpdate()
+void ParupaintCanvasView::setSmoothZoom(bool sz)
 {
-	viewport()->update();
+	smooth_zoom = sz;
+}
+void ParupaintCanvasView::setPixelGrid(bool pg)
+{
+	pixel_grid = pg;
+	this->viewport()->update();
 }
 
+// various
+void ParupaintCanvasView::addZoom(qreal z)
+{
+	this->setZoom(this->zoom() + z);
+}
 
-// ...
-
-QPointF ParupaintCanvasView::RealPosition(const QPointF &pos)
+inline QPointF mapToSceneF(QGraphicsView * view, const QPointF & pos)
 {
 	double tmp;
 	qreal xf = qAbs(modf(pos.x(), &tmp));
 	qreal yf = qAbs(modf(pos.y(), &tmp));
 
 	QPoint p0(floor(pos.x()), floor(pos.y()));
-	QPointF p1 = mapToScene(p0);
-	QPointF p2 = mapToScene(p0 + QPoint(1,1));
+	QPointF p1 = view->mapToScene(p0);
+	QPointF p2 = view->mapToScene(p0 + QPoint(1, 1));
 
-	QPointF mapped(
-		(p1.x()-p2.x()) * xf + p2.x(),
-		(p1.y()-p2.y()) * yf + p2.y()
+	return QPointF(
+		(p1.x() - p2.x()) * xf + p2.x(),
+		(p1.y() - p2.y()) * yf + p2.y()
 	);
-
-	return mapped;	
 }
-
-
-// Qt events
-
-
-void ParupaintCanvasView::drawForeground(QPainter *painter, const QRectF & rect)
+void ParupaintCanvasView::showEvent(QShowEvent * event)
 {
-	if(CurrentBrush == nullptr) return;
-
-	if(CanvasState == CANVAS_STATUS_BRUSH_ZOOMING){
-		auto ww = CurrentBrush->GetWidth();
-		auto cc = CurrentBrush->GetColor();
-
-		painter->save();
-
-		auto tt = QColor(cc.red(), cc.green(), cc.blue(), 70);
-		QPen pen(	QBrush(tt), 		ww, Qt::SolidLine, Qt::RoundCap);
-		QPen pen_small(	QBrush(QColor(0, 0, 0)), 1,  Qt::SolidLine, Qt::RoundCap);
-		
-		pen_small.setCosmetic(true);
-		
-		painter->setPen(pen);
-		painter->drawLine(CurrentBrush->GetPosition(), RealPosition(OriginPosition));
-		painter->setPen(pen_small);
-		painter->drawLine(CurrentBrush->GetPosition(), RealPosition(OriginPosition));
-
-		painter->restore();
-
-	}
-	if(pixelgrid && this->GetZoom() > 8 && !this->CurrentCanvas->GetCanvas()->IsPreview()){
-		QPen pen(Qt::gray);
-		pen.setCosmetic(true);
-		painter->setPen(pen);
-		for(int x = rect.left(); x <= rect.right(); ++x){
-			painter->drawLine(x, rect.top(), x, rect.bottom()+1);
-		}
-		for(int y = rect.top(); y <= rect.bottom(); ++y){
-			painter->drawLine(rect.left(), y, rect.right()+1, y);
-		}
-	}
-	if(this->HasPastePreview()){
-		QRectF target(CurrentBrush->pos(), paste_pixmap.size());
-		painter->setPen(Qt::white);
-		painter->setOpacity(0.4);
-		painter->drawPixmap(target, paste_pixmap, paste_pixmap.rect());
-	}
+	QGraphicsView::showEvent(event);
 }
 
 bool ParupaintCanvasView::viewportEvent(QEvent * event)
 {
-	if(event->type() == QEvent::TabletPress){
-		QTabletEvent *tevent = static_cast<QTabletEvent*>(event);
+	if(event->type() == QEvent::Resize){
+		emit viewportChange();
+	}
+	if(event->type() == QEvent::TabletMove ||
+	   event->type() == QEvent::TabletPress ||
+	   event->type() == QEvent::TabletRelease) {
 
-		if(tevent->pointerType() != LastTabletPointerType){
-			emit PenPointerType(LastTabletPointerType, tevent->pointerType());
-			LastTabletPointerType = tevent->pointerType();
+		QTabletEvent * tablet = static_cast<QTabletEvent*>(event);
+		tablet->accept();
+
+		pen_info.old_pos = pen_info.pos;
+		pen_info.pos = mapToSceneF(this, tablet->pos());
+
+		pen_info.old_gpos = pen_info.gpos;
+		pen_info.gpos = tablet->globalPos();
+
+		if(tablet->pointerType() != pen_info.pointer){
+			pen_info.pointer = tablet->pointerType();
+			emit pointerPointer(pen_info);
 		}
+		pen_info.buttons = tablet->buttons();
+		pen_info.modifiers = tablet->modifiers();
+		pen_info.pressure = tablet->pressure();
 
-		PenState = PEN_STATE_TABLET_DOWN;
-		LastTabletPointerType = tevent->pointerType();
-		tevent->accept();
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
-			OnPenDown(tevent->posF(),
-			tevent->buttons(),
-#else
-			OnPenDown(tevent->pos(),
-			Qt::NoButton,
-#endif
-			tevent->modifiers(),
-			tevent->pressure()
-		);
-		return true;
-
-	} else if(event->type() == QEvent::TabletRelease){
-		QTabletEvent *tevent = static_cast<QTabletEvent*>(event);
-		PenState = PEN_STATE_UP;
-
-		OnPenUp(
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
-			tevent->posF(),
-			tevent->buttons()
-#else
-			tevent->pos(),
-			Qt::NoButton
-#endif
-		);
-		return true;
-
-	} else if(event->type() == QEvent::TabletMove) {
-		QTabletEvent *tevent = static_cast<QTabletEvent*>(event);
-
-		tevent->accept();
-		OnPenMove(
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
-				tevent->posF(),
-				tevent->buttons(),
-#else
-				tevent->pos(),
-				Qt::NoButton,
-#endif
-				tevent->modifiers(),
-				tevent->pressure()
-				);
+		if(event->type() == QEvent::TabletRelease){
+			if(tablet->pointerType() != QTabletEvent::Cursor) tablet_active = false;
+			emit pointerRelease(pen_info);
+		}
+		if(event->type() == QEvent::TabletPress){
+			if(tablet->pointerType() != QTabletEvent::Cursor) tablet_active = true;
+			emit pointerPress(pen_info);
+		}
+		if(event->type() == QEvent::TabletMove){
+			emit pointerMove(pen_info);
+		}
 		return true;
 	}
 	return QGraphicsView::viewportEvent(event);
 }
 
-void ParupaintCanvasView::mouseMoveEvent(QMouseEvent * event)
-{
-	if(PenState != PEN_STATE_TABLET_DOWN){
-		OnPenMove(event->pos(), event->buttons(), event->modifiers(), 1.0);
-	}
-	QGraphicsView::mouseMoveEvent(event);
+
+// following functions redirect mouse events to tablet events.
+
+inline QTabletEvent MouseToTabletEvent(QEvent::Type type, QMouseEvent * event){
+	return QTabletEvent(type, event->localPos(), event->globalPos(),
+			QTabletEvent::NoDevice,
+			QTabletEvent::Cursor,
+			1.0, // pressure
+			0, 0, 0, 0, 0, // xtilt, ytilt, tang_rot, rot, z
+			event->modifiers(), 0, event->button(), event->buttons());
+
 }
 
+void ParupaintCanvasView::mouseDoubleClickEvent(QMouseEvent * event)
+{
+	this->ParupaintCanvasView::mousePressEvent(event);
+}
 void ParupaintCanvasView::mousePressEvent(QMouseEvent * event)
 {
-	if(PenState == PEN_STATE_TABLET_DOWN && event->buttons() != Qt::RightButton)
-	{
-		return;
-	}
-
-	PenState = PEN_STATE_MOUSE_DOWN;
-	OnPenDown(event->pos(), event->button(), event->modifiers(), 1.0);
-	QGraphicsView::mousePressEvent(event);
+	if(tablet_active) return;
+	QTabletEvent tablet = MouseToTabletEvent(QEvent::TabletPress, event);
+	this->viewportEvent(&tablet);
+	event->accept();
 }
 void ParupaintCanvasView::mouseReleaseEvent(QMouseEvent * event)
 {
-	if(PenState != PEN_STATE_MOUSE_DOWN){
-		return;
-	}
-	OnPenUp(event->pos(), event->button());
-	PenState = PEN_STATE_UP;
+	if(tablet_active) return;
+	QTabletEvent tablet = MouseToTabletEvent(QEvent::TabletRelease, event);
+	this->viewportEvent(&tablet);
+	event->accept();
 }
-
+void ParupaintCanvasView::mouseMoveEvent(QMouseEvent * event)
+{
+	if(tablet_active) return;
+	QTabletEvent tablet = MouseToTabletEvent(QEvent::TabletMove, event);
+	this->viewportEvent(&tablet);
+	QGraphicsView::mouseMoveEvent(event);
+}
 void ParupaintCanvasView::wheelEvent(QWheelEvent * event)
 {
-	auto angle = 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
-		event->angleDelta().y();
-#else
-		event->delta();
-#endif
-	if(!OnScroll(event->pos(), event->modifiers(), angle)){
-		event->ignore();	
+	// angle = event->angleDelta().y();
+	emit pointerScroll(event);
+}
+
+void ParupaintCanvasView::drawForeground(QPainter * painter, const QRectF & rect)
+{
+	// true = !is preview
+	if(this->pixelGrid() && this->zoom() > 8.0 && true){
+
+		// to prevent edge stuff fucking up with brush
+		QRect pixel_rect = rect.toRect().adjusted(-1, -1, 1, 1);
+
+		QPen grid_pen(Qt::gray);
+		grid_pen.setCosmetic(true);
+		painter->setPen(grid_pen);
+
+		for(int x = pixel_rect.left(); x <= rect.right(); ++x){
+			painter->drawLine(x, pixel_rect.top(), x, pixel_rect.bottom()+1);
+		}
+		for(int y = pixel_rect.top(); y <= rect.bottom(); ++y){
+			painter->drawLine(pixel_rect.left(), y, pixel_rect.right()+1, y);
+		}
 	}
 }
 
-void ParupaintCanvasView::keyPressEvent(QKeyEvent * event)
+void ParupaintCanvasView::paintEvent(QPaintEvent * event)
 {
-	if(!event->isAutoRepeat() && OnKeyDown(event)){
-		return;
-	}
-	QGraphicsView::keyPressEvent(event);
-}
-void ParupaintCanvasView::keyReleaseEvent(QKeyEvent * event)
-{
-	if(!event->isAutoRepeat() && OnKeyUp(event)){
-		return;
-	}
-	QGraphicsView::keyReleaseEvent(event);
-}
+	QGraphicsView::paintEvent(event);
 
-void ParupaintCanvasView::enterEvent(QEvent * event)
-{
-	QGraphicsView::enterEvent(event);
-}
-void ParupaintCanvasView::leaveEvent(QEvent * event)
-{
-	QGraphicsView::leaveEvent(event);
+	if(toast_timer->isActive() || (!toast_timer->isSingleShot() && !toast_timer->isActive())){
+
+		QPainter painter(viewport());
+		QFont font = painter.font();
+		font.setPointSize(15);
+		painter.setFont(font);
+
+		const QTransform & t = painter.transform();
+		painter.setTransform(QTransform(1.0, t.m12(), t.m13(), t.m21(), 1.0, t.m23(), t.m31(), t.m32(), t.m33()));
+
+		QSize text_size = painter.fontMetrics().size(Qt::TextSingleLine, toast_message) + QSize(10, 4);
+		QRectF rect(QPointF(this->width()/2 - text_size.width()/2, 0), text_size);
+		painter.fillRect(rect, Qt::black);
+		painter.drawText(rect, Qt::AlignCenter, toast_message);
+	}
 }
