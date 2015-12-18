@@ -225,6 +225,8 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 		this->restoreState(cfg.value("window/mainstate").toByteArray());
 	}
 
+	this->hideOverlay();
+	scene->canvas()->redraw();
 
 	// accept drops...
 	this->setMinimumSize(QSize(700, 700));
