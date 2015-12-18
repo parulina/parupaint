@@ -479,7 +479,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 					case ParupaintBrushToolTypes::BrushToolDotHighlightPattern:
 						tool = ParupaintBrushToolTypes::BrushToolCrossPattern; break;
 					case ParupaintBrushToolTypes::BrushToolCrossPattern:
-						tool = ParupaintBrushToolTypes::BrushToolDotShadingPattern; break;
+						tool = ParupaintBrushToolTypes::BrushToolNone; break;
 				}
 			}
 			if(shortcut_name.endsWith("line")){
