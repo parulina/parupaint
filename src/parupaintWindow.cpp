@@ -273,11 +273,19 @@ void ParupaintWindow::showOverlay(overlayStates state)
 	this->updateOverlay();
 }
 
+inline bool widgetContainsCursor(QWidget * widget)
+{
+	if(!widget) return false;
+	
+	return (widget->rect().contains(widget->mapFromGlobal(QCursor::pos())));
+}
+
 void ParupaintWindow::hideOverlay()
 {
-	if(chat->geometry().contains(QCursor::pos()) ||
-	   picker->geometry().contains(QCursor::pos()) ||
-	   flayer->geometry().contains(QCursor::pos())) {
+	if((overlay_state != overlayHiddenState) &&
+	   (widgetContainsCursor(chat) ||
+	    widgetContainsCursor(picker) ||
+	    widgetContainsCursor(flayer))) {
 		return;
 	}
 
@@ -571,7 +579,10 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 	if(event->key() == Qt::Key_Backtab && !event->isAutoRepeat()){
 		// if(overlay_button) ->stop
 		if(overlay_button)   overlay_button_timeout->stop();
-		if(!overlay_button)  this->hideOverlay();
+		if(!overlay_button) {
+			overlay_state = overlayHiddenState;
+			this->hideOverlay();
+		}
 	}
 	if(event->key() == Qt::Key_Tab){
 		overlay_button_timeout->stop();
