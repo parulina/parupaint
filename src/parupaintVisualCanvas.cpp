@@ -87,19 +87,17 @@ void ParupaintVisualCanvas::redraw(QRect area)
 	const QPointF ppp(area.x() % checker_pixmap.width(), area.y() % checker_pixmap.height());
 	painter.drawTiledPixmap(area, checker_pixmap, ppp);
 
-	QRect img_area(area);
 	if(!flash_timeout->isActive()){
 		// normal view - draw all layer's current_frame
 		// if preview, draw with less opacity
-		if(!this->isPreview()){ painter.setOpacity(0.6); }
 		for(int i = 0; i < this->layerCount(); i++){
 
 			ParupaintLayer* layer = this->layerAt(i);
 			if(layer && current_frame < layer->frameCount()){
 				ParupaintFrame* frame = layer->frameAt(current_frame);
 				if(frame){
-					const QImage & img = this->isPreview() ? frame->renderedImage() : frame->image();
-					painter.drawImage(area, img, area);
+					painter.setOpacity(this->isPreview() ? frame->opacity() : 0.6);
+					painter.drawImage(area, frame->image(), area);
 				}
 			}
 		}
@@ -107,11 +105,11 @@ void ParupaintVisualCanvas::redraw(QRect area)
 	// now draw the focused frame
 	if(!this->isPreview() || flash_timeout->isActive()){
 		// always draw current frame with max op
-		painter.setOpacity(1.0);
 		ParupaintLayer * layer = this->layerAt(current_layer);
 		if(layer != nullptr){
 			ParupaintFrame* frame = layer->frameAt(current_frame);
 			if(frame != nullptr) {
+				painter.setOpacity(this->isPreview() ? frame->opacity() : 0.6);
 				painter.drawImage(area, frame->image(), area);
 			}
 		}

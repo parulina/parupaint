@@ -45,7 +45,8 @@
 	connect(new QShortcut(key_shortcuts->GetKeySequence(key), this), &QShortcut::activated, w, f)
 
 ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
-	overlay_state(overlayHiddenState), overlay_button(false)
+	overlay_state(overlayHiddenState), canvas_state(noCanvasState),
+	overlay_button(false)
 {
 	// default keys
 	key_shortcuts = new ParupaintKeys(QStringList{
@@ -110,7 +111,7 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	connect(view, &ParupaintCanvasView::pointerScroll, this, &ParupaintWindow::OnPenScroll);
 
 	// update the overlay items with the viewport change
-	connect(view, &ParupaintCanvasView::viewportChange, this, &ParupaintWindow::updateOverlay, Qt::QueuedConnection);
+	connect(view, &ParupaintCanvasView::viewportChange, this, &ParupaintWindow::updateOverlay);
 
 	// create the client and connect it
 	client = new ParupaintClientInstance(scene, this);
