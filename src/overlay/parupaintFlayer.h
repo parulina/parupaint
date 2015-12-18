@@ -8,11 +8,19 @@ class ParupaintPanvas;
 class ParupaintFlayerLayer;
 
 
+class ParupaintFlayerList : public QFrame
+{
+Q_OBJECT
+	public:
+	ParupaintFlayerList(QWidget * = nullptr);
+};
+
 class ParupaintFlayer : public QScrollArea
 {
 Q_OBJECT
 	private:
 	QPoint 	old_pos;
+	ParupaintFlayerList * layers;
 
 	void updateFromCanvas(ParupaintPanvas*);
 	void clearHighlight();
@@ -28,14 +36,12 @@ Q_OBJECT
 
 	public:
 	ParupaintFlayer(QWidget * = nullptr);
-
 	void setHighlightLayerFrame(int l, int f);
 
 	protected:
-	void resizeEvent(QResizeEvent*);
-	void enterEvent(QEvent * );
-	void leaveEvent(QEvent * );
 	void mouseMoveEvent(QMouseEvent * );
+	bool event(QEvent * event);
+	QSize minimumSizeHint() const;
 };
 
 #endif

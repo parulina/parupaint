@@ -11,8 +11,22 @@
 #include "../parupaintVisualCanvas.h"
 #include "parupaintFlayerLayer.h"
 #include "parupaintFlayerFrame.h"
+#include "../widget/parupaintScrollBar.h"
 
-typedef QVBoxLayout FlayerLayout;
+ParupaintFlayerList::ParupaintFlayerList(QWidget * parent) : QFrame(parent)
+{
+	this->setAutoFillBackground(false);
+	this->setContentsMargins(0, 0, 0, 0);
+
+	QVBoxLayout * layout = new QVBoxLayout;
+		layout->setAlignment(Qt::AlignTop);
+		layout->setSpacing(1);
+		layout->setMargin(0);
+		layout->setContentsMargins(0, 0, 0, 0);
+		layout->setSizeConstraint(QLayout::SetFixedSize);
+	this->setLayout(layout);
+}
+
 
 ParupaintFlayer::ParupaintFlayer(QWidget * parent) : QScrollArea(parent)
 {
@@ -20,20 +34,14 @@ ParupaintFlayer::ParupaintFlayer(QWidget * parent) : QScrollArea(parent)
 	this->setContextMenuPolicy(Qt::NoContextMenu);
 	this->setAutoFillBackground(false);
 	this->setContentsMargins(4, 4, 4, 4);
-	this->resize(0, 200);
 
-	this->setWidget(new QWidget(this));
-	this->widget()->setObjectName("FlayerList");
-	this->widget()->setAutoFillBackground(false);
-	this->widget()->setContentsMargins(0, 0, 0, 0);
+	this->setVerticalScrollBar(new ParupaintScrollBar(Qt::Vertical, this));
+	this->setHorizontalScrollBar(new ParupaintScrollBar(Qt::Horizontal, this));
 
-	FlayerLayout * layout = new FlayerLayout(this->widget());
-		layout->setAlignment(Qt::AlignTop);
-		layout->setSpacing(1);
-		layout->setMargin(0);
-		layout->setContentsMargins(0, 0, 0, 0);
+	this->setWidgetResizable(true);
+	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-	this->widget()->setLayout(layout);
+	this->setWidget((layers = new ParupaintFlayerList));
 }
 
 void ParupaintFlayer::canvas_content_update()
@@ -64,7 +72,7 @@ void ParupaintFlayer::frame_click()
 
 void ParupaintFlayer::clearHighlight()
 {
-	FlayerLayout * layout = qobject_cast<FlayerLayout*>(this->widget()->layout());
+	QVBoxLayout * layout = qobject_cast<QVBoxLayout* >(layers->layout());
 	for(int i = 0; i < layout->count(); i++){
 		QLayoutItem * item = layout->itemAt(i);
 		ParupaintFlayerLayer * layer = qobject_cast<ParupaintFlayerLayer*>(item->widget());
@@ -80,7 +88,8 @@ void ParupaintFlayer::clearHighlight()
 }
 void ParupaintFlayer::updateFromCanvas(ParupaintPanvas* panvas)
 {
-	FlayerLayout * layout = qobject_cast<FlayerLayout*>(this->widget()->layout());
+	QVBoxLayout * layout = qobject_cast<QVBoxLayout* >(layers->layout());
+
 	QLayoutItem * item;
 	while((item = layout->takeAt(0)) != nullptr){
 		delete item->widget();
@@ -104,11 +113,12 @@ void ParupaintFlayer::updateFromCanvas(ParupaintPanvas* panvas)
 	}
 	this->setHighlightLayerFrame(0, 0);
 }
+
 void ParupaintFlayer::setHighlightLayerFrame(int l, int f)
 {
 	this->clearHighlight();
 
-	FlayerLayout * layout = qobject_cast<FlayerLayout*>(this->widget()->layout());
+	QVBoxLayout * layout = qobject_cast<QVBoxLayout* >(layers->layout());
 	QLayoutItem * item = layout->itemAt(l);
 	if(!item) return;
 
@@ -120,11 +130,6 @@ void ParupaintFlayer::setHighlightLayerFrame(int l, int f)
 		}
 	}
 }
-void ParupaintFlayer::resizeEvent(QResizeEvent* event)
-{
-	this->widget()->setGeometry(QRect(QPoint(0, 0), event->size()));
-	this->QScrollArea::resizeEvent(event);
-}
 
 void ParupaintFlayer::mouseMoveEvent(QMouseEvent * event)
 {
@@ -132,25 +137,31 @@ void ParupaintFlayer::mouseMoveEvent(QMouseEvent * event)
 
 	if((event->modifiers() & Qt::ShiftModifier) ||
 	   (event->buttons() & Qt::MiddleButton)){
+
+		QPoint dif = (old_pos - event->pos());
 		QScrollBar *ver = this->verticalScrollBar();
 		QScrollBar *hor = this->horizontalScrollBar();
-		QPoint dif = (event->pos() - old_pos);
 		hor->setSliderPosition(hor->sliderPosition() + dif.x());
 		ver->setSliderPosition(ver->sliderPosition() + dif.y());
 	}
+	old_pos = event->pos();
 
 	event->accept();
 	QScrollArea::mouseMoveEvent(event);
 }
 
-void ParupaintFlayer::enterEvent(QEvent * event)
+bool ParupaintFlayer::event(QEvent * event)
 {
-	viewport()->setMouseTracking(true);
-	QScrollArea::enterEvent(event);
-}
-void ParupaintFlayer::leaveEvent(QEvent * event)
-{
-	viewport()->setMouseTracking(false);
-	QScrollArea::leaveEvent(event);
+	if(event->type() == QEvent::LayoutRequest){
+
+		int height = layers->height() + 1;
+		if(height > 200) height = 200;
+		this->setFixedHeight(height);
+	}
+	return QScrollArea::event(event);
 }
 
+QSize ParupaintFlayer::minimumSizeHint() const
+{
+	return QSize(200, 20);
+}

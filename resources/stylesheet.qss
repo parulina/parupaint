@@ -124,6 +124,10 @@ ParupaintScrollBar::down-arrow {
 }
 
 
+ParupaintFlayerList {
+	background:transparent;
+}
+
 ParupaintFlayerLayer #FlayerLayerVisible {
 	background:none;
 	spacing:0;

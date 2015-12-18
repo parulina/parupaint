@@ -181,6 +181,7 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 		QVBoxLayout * main_layout = new QVBoxLayout;
 			main_layout->addWidget(infobar, 0, Qt::AlignBottom);
 			main_layout->addWidget(view, 1);
+			main_layout->addWidget(flayer, 0, Qt::AlignBottom);
 		central_widget->setLayout(main_layout);
 	this->setCentralWidget(central_widget);
 
@@ -306,7 +307,6 @@ void ParupaintWindow::updateOverlay()
 
 	picker->move(inner_size.topLeft());
 	chat->move(inner_size.topRight() - QPoint(chat->width(), 0));
-	flayer->setGeometry(inner_size.adjusted(0, (inner_size.height() - flayer->height()), 0, 0));
 }
 
 void ParupaintWindow::keyReleaseEvent(QKeyEvent * event)
