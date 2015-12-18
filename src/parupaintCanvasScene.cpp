@@ -45,7 +45,19 @@ void ParupaintCanvasScene::updateMainCursor(ParupaintBrush * cursor)
 	main_cursor->setPos(cursor->position());
 
 	rect |= main_cursor->sceneBoundingRect();
+
+	// FIXME despite the rect being the correct dimensions,
+	// the cursor flickers when being moved around.
+	// perhaps it's moving too fast and the rendering gets interrupted?
+	// setting the graphicsview to fullupdatemode, or updating it here
+	// fixes the issue, but it uses cpu.
+	// not sure what do.
 	this->update(rect);
+	/*
+	foreach(QGraphicsView* v, this->views()){
+		v->update(v->mapFromScene(rect).boundingRect());
+	}
+	*/
 }
 
 ParupaintVisualCursor * ParupaintCanvasScene::mainCursor()
