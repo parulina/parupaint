@@ -308,6 +308,14 @@ void ParupaintWindow::hideOverlay()
 }
 void ParupaintWindow::updateOverlay()
 {
+	if(view_pos.isNull()) view_pos = view->pos();
+	if(view->pos() != view_pos){
+
+		QPointF diff = view->pos() - view_pos;
+		view->moveView(diff);
+		view_pos = view->pos();
+	}
+
 	infobar->setFixedHeight(overlay_state == overlayExpandedState ? 180 : 30);
 	const QRect inner_size = QRect(view->pos(), view->viewport()->size()).adjusted(1, 1, 1, 1);
 

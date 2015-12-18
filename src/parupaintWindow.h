@@ -48,6 +48,7 @@ Q_OBJECT
 	QTimer * 	overlay_timeout;
 	QTimer * 	overlay_button_timeout;
 
+	QPointF 	view_pos;
 	QPointF 	current_pen, origin_pen;
 	qreal 		origin_zoom;
 	QString 	local_server;
