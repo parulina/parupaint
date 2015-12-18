@@ -6,6 +6,7 @@
 
 #include <QDebug>
 #include <QPainter>
+#include <QSettings>
 #include <QGraphicsView>
 
 #include "parupaintVisualCanvas.h"
@@ -20,14 +21,17 @@ ParupaintCanvasScene::ParupaintCanvasScene(QObject * parent) : QGraphicsScene(pa
 {
 	this->addItem(panvas = new ParupaintVisualCanvas());
 	connect(panvas, &ParupaintVisualCanvas::onCanvasResize, [&](){
-		qreal pad = 200;
+		QSettings cfg;
+
+		const qreal pad = cfg.value("client/canvaspadding", 200).toDouble();
 		this->setSceneRect(panvas->boundingRect().adjusted(-pad, -pad, pad, pad));
 	});
+
 	panvas->resize(QSize(500, 500));
 	panvas->newCanvas(1, 1);
 
-	main_cursor = new ParupaintVisualCursor();
-	addItem(main_cursor);
+	// create cursor
+	addItem((main_cursor = new ParupaintVisualCursor()));
 }
 
 ParupaintVisualCanvas * ParupaintCanvasScene::canvas()
