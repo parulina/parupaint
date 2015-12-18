@@ -59,8 +59,17 @@ INCLUDEPATH +=		src/bundled/ffmpeg
 nogui {
  !build_pass:message("Compiling without GUI (standalone).")
  QT -=		widgets
- HEADERS -=	$$files(src/dialog/*.h)   $$files(src/*.h)   $$files(src/net/parupaintClient*.h)   $$files(src/overlay/*.h)
- SOURCES -=	$$files(src/dialog/*.cpp) $$files(src/*.cpp) $$files(src/net/parupaintClient*.cpp) $$files(src/overlay/*.cpp)
+ HEADERS -=	$$files(src/dialog/*.h) \
+		$$files(src/widget/*.h) \
+		$$files(src/*.h) \
+		$$files(src/net/parupaintClient*.h) \
+		$$files(src/overlay/*.h)
+
+ SOURCES -=	$$files(src/dialog/*.cpp) \
+		$$files(src/widget/*.cpp) \
+		$$files(src/*.cpp) \
+		$$files(src/net/parupaintClient*.cpp) \
+		$$files(src/overlay/*.cpp)
 
  SOURCES += 	src/main/server.cpp
  TARGET = 	parupaint-server
