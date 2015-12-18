@@ -93,7 +93,6 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 		server_str = QString("localhost:%1").arg(server_port);
 		main_window->setLocalServer(server_str);
 	}
-	sleep(1000);
 	main_window->doConnect(server_str);
 
 	if(first_start){
