@@ -257,6 +257,8 @@ void ParupaintWindow::OnNetworkDisconnect(QString reason)
 	chat->show();
 	chat->AddMessage("You were disconnected from the server.");
 	infobar->status()->setConnectedTo("");
+
+	QApplication::alert(this, 2000);
 }
 
 
@@ -790,6 +792,7 @@ void ParupaintWindow::addChatMessage(const QString & msg, const QString & usr)
 {
 	chat->show();
 	chat->AddMessage(msg, usr);
+	QApplication::alert(this, 1000);
 }
 
 QSize ParupaintWindow::canvasDimensions()
