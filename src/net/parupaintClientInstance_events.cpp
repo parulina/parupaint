@@ -32,13 +32,16 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		emit OnDisconnect(bytes);
 
 	} else if(id == "peer") {
-		auto c = object["id"].toInt();
-		auto d = object["disconnect"].toBool();
+		int c = object["id"].toInt();
+		bool d = object["disconnect"].toBool();
 
-		auto n(object["name"].toString());
-		auto x(object["x"].toDouble());
-		auto y(object["y"].toDouble());
-		auto w(object["w"].toDouble());
+		QString n(object["name"].toString("???"));
+		qreal 	x(object["x"].toDouble(0)),
+			y(object["y"].toDouble(0));
+		qreal 	w(object["w"].toDouble(1));
+		int 	t(object["t"].toInt(0));
+		int 	l(object["l"].toInt(0)),
+			f(object["f"].toInt(0));
 
 		if(c > 0){
 			if(!d) {
@@ -46,6 +49,8 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 				brushes[c]->setName(n);
 				brushes[c]->setSize(w);
 				brushes[c]->setPosition(QPointF(x, y));
+				brushes[c]->setTool(t);
+				brushes[c]->setLayerFrame(l, f);
 
 				brushes[c]->setCursorName(n);
 
