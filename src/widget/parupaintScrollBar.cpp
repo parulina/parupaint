@@ -49,15 +49,18 @@ void ParupaintScrollBar::mousePressEvent(QMouseEvent * event)
 }
 void ParupaintScrollBar::mouseMoveEvent(QMouseEvent * event)
 {
-	QPoint dif = event->globalPos() - old_pos;
-	if(!use_direction_signal){
-		if(this->orientation() == Qt::Horizontal) dif.setX(0);
-		if(this->orientation() == Qt::Vertical) dif.setY(0);
+	if(this->isSliderDown()){
+		QPoint dif = event->globalPos() - old_pos;
+		if(!use_direction_signal){
+			if(this->orientation() == Qt::Horizontal) dif.setX(0);
+			if(this->orientation() == Qt::Vertical) dif.setY(0);
+		}
+
+		emit directionMove(dif);
+		old_pos = event->globalPos();
+
+		if(use_direction_signal) return;
 	}
-
-	emit directionMove(dif);
-	old_pos = event->globalPos();
-
-	if(!use_direction_signal) QScrollBar::mouseMoveEvent(event);
+	QScrollBar::mouseMoveEvent(event);
 }
 

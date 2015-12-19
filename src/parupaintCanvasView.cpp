@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QSettings>
 #include <QTimer>
+#include <cmath> // clang?
 
 #include "widget/parupaintScrollBar.h"
 
