@@ -138,7 +138,9 @@ void ParupaintVisualCanvas::redraw(QRect area)
 void ParupaintVisualCanvas::setPastePreview(const QImage & image, const QPointF & pos)
 {
 	if(image.isNull()){
+		QRect rect(pastepreview_pos.toPoint(), pastepreview_pixmap.size());
 		pastepreview_pixmap = QPixmap();
+		this->redraw(rect);
 		return;
 	}
 	pastepreview_pixmap = QPixmap::fromImage(image);
