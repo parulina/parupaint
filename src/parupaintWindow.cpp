@@ -819,10 +819,9 @@ QDir ParupaintWindow::saveDir() const
 	QString default_path = (QDir::homePath() + "/parupaint/");
 #ifdef Q_OS_WIN
 		default_path = ".";
-#endif
-	QFileInfo saved = cfg.value("client/directory", default_path).toString();
-	saved.setFile("");
 
+#endif
+	QFileInfo saved(cfg.value("client/directory", default_path).toString());
 	QDir dir = saved.dir();
 	if(!dir.exists()) dir.mkpath(dir.path());
 	qDebug() << "Save dir:" << dir.path();

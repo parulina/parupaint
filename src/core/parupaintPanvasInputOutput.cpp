@@ -28,7 +28,7 @@ bool ParupaintPanvasInputOutput::savePanvas(ParupaintPanvas * panvas, QString & 
 
 	if(file.fileName().section(".", 0, 0).isEmpty()){
 		QDateTime time = QDateTime::currentDateTime();
-		file.setFile(("drawing_at_" + time.toString("yyyy-MM-dd_HH.mm.ss") + "." + file.completeSuffix()));
+		file.setFile(file.dir().path(), "drawing_at_" + time.toString("yyyy-MM-dd_HH.mm.ss") + "." + file.completeSuffix());
 	}
 	filename = file.fileName();
 
