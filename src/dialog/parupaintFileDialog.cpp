@@ -19,8 +19,7 @@ ParupaintFileDialog::ParupaintFileDialog(ParupaintFileDialogType type, QWidget *
 	if(type == dialogTypeOpen){
 		this->setWindowTitle("open...");
 		this->setFileMode(QFileDialog::ExistingFile);
-		//this->setNameFilter("supported files (*.png *.ora *.ppa)");
-		this->setMimeTypeFilters(QStringList{"image/png", "image/openraster", "application/x-tar"});
+		this->setNameFilter("supported files (*.png *.ora *.ppa)");
 		config_key = "lastopen";
 	}
 	if(type == dialogTypeSaveAs){
