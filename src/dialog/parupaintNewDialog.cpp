@@ -177,6 +177,10 @@ ParupaintNewDialog::ParupaintNewDialog(QWidget * parent) :
 		emit NewSignal(cwidth, cheight, false);
 	});
 
+	connect(enter, &QPushButton::pressed, this, &ParupaintDialog::close);
+	connect(resize, &QPushButton::pressed, this, &ParupaintDialog::close);
+	connect(reset, &QPushButton::pressed, this, &ParupaintDialog::close);
+
 	button_layout->addWidget(enter);
 	button_layout->addWidget(resize);
 	button_layout->addWidget(reset);
