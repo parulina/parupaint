@@ -1,3 +1,16 @@
+0.91
+! Almost-full cleanup of code!
++ Updated interface: as a result of cleanup, the interface was cleaned and upgraded as well.
++ New pattern tools: shading pattern, highlight pattern and cross pattern.
++ Fill preview: pressing T (default key) will show you a preview of what the fill area is.
++ Dynamic FFMPEG library support: can now export using libav dlls.
++ Added new commands: see /help for an overview.
++ Default save directory is $HOME/parupaint/
++ Better file dialog.
++ Better layer list.
++ Cursors hide correctly when hovering over them.
++ Fix fill tool crash.
+
 0.85
 + Session log and recovery: a session log is now written while drawing to allow recovery and playback.
 + Run/play scripts: the session logs can also be replayed back for everyone else.
