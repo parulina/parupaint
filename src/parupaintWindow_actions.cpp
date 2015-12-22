@@ -12,6 +12,9 @@ void ParupaintWindow::showOpenDialog()
 	ParupaintFileDialog * dialog = new ParupaintFileDialog(ParupaintFileDialogType::dialogTypeOpen, this);
 	connect(dialog, &ParupaintFileDialog::fileSelected, this, &ParupaintWindow::doOpen);
 
+	QSettings cfg;
+	if(!cfg.contains("client/lastopen")) dialog->setDirectory(this->saveDir().path());
+
 	dialog->activateWindow();
 }
 void ParupaintWindow::showSaveAsDialog()
