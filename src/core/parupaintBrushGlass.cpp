@@ -11,9 +11,9 @@ ParupaintBrushGlass::ParupaintBrushGlass(QObject * parent) : QObject(parent),
 	swapped_brush(-1), current_brush(0)
 {
 	this->addBrush(new ParupaintBrush(this,  1, Qt::black, "pencil"));
-	this->addBrush(new ParupaintBrush(this, 30, Qt::white, "cotape"));
-	this->addBrush(new ParupaintBrush(this,  4, Qt::black, "brush"));
 	this->addBrush(new ParupaintBrush(this, 30, Qt::transparent, "eraser"));
+	this->addBrush(new ParupaintBrush(this,  4, Qt::black, "brush"));
+	this->addBrush(new ParupaintBrush(this, 30, Qt::white, "cotape"));
 	this->addBrush(new ParupaintBrush(this, 10, Qt::red, "red"));
 	this->addBrush(new ParupaintBrush(this, 10, Qt::green, "green"));
 	this->addBrush(new ParupaintBrush(this, 10, Qt::blue, "blue"));

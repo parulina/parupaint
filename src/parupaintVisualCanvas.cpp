@@ -7,7 +7,7 @@
 
 ParupaintVisualCanvas::ParupaintVisualCanvas(QGraphicsItem * parent) :
 	QGraphicsItem(parent),
-	current_layer(0), current_frame(0), canvas_preview(true),
+	current_layer(0), current_frame(0), canvas_preview(false),
 	checker_pixmap(":/resources/checker.png")
 {
 	this->resize(QSize(500, 500));
@@ -104,12 +104,17 @@ void ParupaintVisualCanvas::redraw(QRect area)
 	}
 	// now draw the focused frame
 	if(!this->isPreview() || flash_timeout->isActive()){
+		if(!flash_timeout->isActive()){
+			painter.setOpacity(1.0);
+			painter.fillRect(area, Qt::white);
+		}
+
 		// always draw current frame with max op
 		ParupaintLayer * layer = this->layerAt(current_layer);
 		if(layer != nullptr){
 			ParupaintFrame* frame = layer->frameAt(current_frame);
 			if(frame != nullptr) {
-				painter.setOpacity(this->isPreview() ? frame->opacity() : 0.6);
+				painter.setOpacity(this->isPreview() ? frame->opacity() : 1.0);
 				painter.drawImage(area, frame->image(), area);
 			}
 		}

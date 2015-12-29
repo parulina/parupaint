@@ -24,7 +24,6 @@ ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent)
 	this->server_password = server_cfg.value("password").toString();
 
 	canvas = new ParupaintPanvas(this, QSize(540, 540), 1, 1);
-	this->ServerFill(0, 0, "#FFF");
 
 	this->StartRecordSystems();
 	// Start record systems before doing ANYTHING

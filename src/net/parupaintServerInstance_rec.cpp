@@ -49,11 +49,6 @@ void ParupaintServerInstance::StartRecordSystems()
 
 	if(canvas){
 		record_manager->Resize(canvas->dimensions().width(), canvas->dimensions().height(), false);
-		//FIXME don't just add 0,0 to historyfile, just in case
-		QList<QImage> list = canvas->mergedImageFrames();
-		if(!list.isEmpty()){
-			record_manager->Paste(0, 0, 0, 0, ParupaintSnippets::ImageToBase64Gzip(list[0]));
-		}
 	}
 
 	if(cfg.value("client/recoverlogfile", true).toBool()){
