@@ -12,6 +12,9 @@ a {
 	font-size:13px;
 	margin-bottom:4px;
 }
+.msg-highlight {
+	font-size:16px;
+}
 .chat-user {
 	background-color:#B1A087;
 }

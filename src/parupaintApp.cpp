@@ -86,6 +86,20 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 		ParupaintBundledServer* server = new ParupaintBundledServer(server_port, this);
 		server->setProtective(true);
 
+		QString password;
+		password = cfg.value("client/sessionpassword", password).toString();
+		if(password != "none"){
+			if(password.isEmpty()){
+				QString charas("ABCDEFGHIJKLMOPQRSTUVWXYZ0123456789");
+				for(int i = 0; i < 5; i++) password += QChar(charas.at(rand() % charas.length()));
+			}
+
+			server->setPassword(password);
+			if(!server->password().isEmpty()){
+				main_window->addChatMessage("Your session password is: <span class=\"msg-highlight\">" + server->password() + "</span>");
+			}
+		}
+
 		server_str = QString("localhost:%1").arg(server_port);
 		main_window->setLocalServer(server_str);
 	}
