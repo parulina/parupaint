@@ -75,6 +75,7 @@ Q_OBJECT
 
 	public:
 	ParupaintWindow(QWidget * = nullptr);
+	ParupaintClientInstance * networkClient();
 
 	void updateOverlay();
 	void showOverlay(overlayStates state);

@@ -249,6 +249,11 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	this->show();
 }
 
+ParupaintClientInstance * ParupaintWindow::networkClient()
+{
+	return client;
+}
+
 void ParupaintWindow::OnNetworkConnect()
 {
 	QUrl url = client->url();

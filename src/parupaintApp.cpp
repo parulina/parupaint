@@ -12,6 +12,7 @@
 #include <QInputDialog>
 
 #include "net/parupaintServerInstance.h"
+#include "net/parupaintClientInstance.h"
 #include "parupaintWindow.h"
 #include "parupaintVersion.h"
 #include "parupaintVersionCheck.h"
@@ -106,6 +107,11 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 	main_window->doConnect(server_str);
 
 	if(first_start){
-		main_window->showSettingsDialog();
+		QStringList list = {
+			"<span class=\"msg-highlight\">Welcome to parupaint!</span>",
+			"You're currently drawing with yourself, but others are able to join you.",
+			"Your current nickname is '" + main_window->networkClient()->name() + "'.<br/>Type '/name &lt;name&gt;' to set it to something else."
+		};
+		main_window->addChatMessage(list.join("<br/>"));
 	}
 }
