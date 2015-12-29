@@ -1,4 +1,3 @@
-
 #include "parupaintKeys.h"
 
 #include <QSettings>
@@ -89,7 +88,7 @@ void ParupaintKeys::Load() {
 	QSettings cfg;
 	cfg.beginGroup("keys");
 	foreach(const QString & key, cfg.childKeys()){
-		if(key.startsWith("toolswitch_")) continue;
+		if(keys.find(key) == keys.end()) continue;
 		QString val = key + "=" + cfg.value(key).toString();
 		this->AddKey(val);
 	}
