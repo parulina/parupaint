@@ -60,6 +60,12 @@ void ParupaintClient::onError(QAbstractSocket::SocketError)
 {
 	message("error", socket.errorString().toUtf8());
 }
+
+bool ParupaintClient::connected()
+{
+	return (socket.state() == QAbstractSocket::ConnectedState);
+}
+
 qint64 ParupaintClient::send(const QString data)
 {
 	if(socket.state() != QAbstractSocket::ConnectedState) return 0;

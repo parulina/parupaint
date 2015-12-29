@@ -21,33 +21,23 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 
-// Makes someone join the server with a given name.
+// Makes someone join the server.
 // a brush is created.
-void ParupaintServerInstance::ServerJoin(ParupaintConnection * c, QString name, bool propagate)
+void ParupaintServerInstance::ServerJoin(ParupaintConnection * c, bool propagate)
 {
 	if(!c) return;
 	if(!brushes[c]){
 		brushes[c] = new ParupaintBrush();
 	}
 
-	brushes[c]->setName(name);
-	if(record_manager) record_manager->Join(c->getId(), name);
+	if(record_manager) record_manager->Join(c->id());
 
 	if(!propagate) return;
-	foreach(auto c2, brushes.keys()){
 
-		QJsonObject obj_me = this->MarshalConnection(c);
-		if(c2 == c) obj_me["id"] = -(c->getId());
-		obj_me["disconnect"] = false;
 
-		// send me to others
-		c2->send("peer", obj_me);
-		if(c2 == c) continue;
-
-		// send them to me
-		QJsonObject obj_them = this->MarshalConnection(c2);
-		c->send("peer", obj_them);
-	}
+	QJsonObject obj_me = this->MarshalConnection(c);
+	obj_me["disconnect"] = false;
+	this->sendAll("peer", obj_me, c);
 }
 
 void ParupaintServerInstance::ServerLeave(ParupaintConnection * c, bool propagate)
@@ -57,28 +47,49 @@ void ParupaintServerInstance::ServerLeave(ParupaintConnection * c, bool propagat
 	delete brushes[c];
 	brushes.remove(c);
 
-	if(record_manager) record_manager->Leave(c->getId());
+	if(record_manager) record_manager->Leave(c->id());
 
 	if(!propagate) return;
+
 	QJsonObject obj;
 	obj["disconnect"] = true;
-	obj["id"] = c->getId();
-	this->Broadcast("peer", obj);
+	obj["id"] = c->id();
+	this->sendAll("peer", obj, c);
+}
+// set the name!
+void ParupaintServerInstance::ServerName(ParupaintConnection * c, QString name, bool propagate)
+{
+	if(!c) return;
+
+	c->setName(name);
+
+	ParupaintBrush * brush = brushes.value(c);
+	if(brush){
+		brush->setName(name);
+	}
+
+	if(record_manager) record_manager->Name(c->id(), name);
+
+	if(!propagate) return;
+
+	if(brush){
+		QJsonObject obj;
+		obj["name"] = name;
+		obj["id"] = c->id();
+		this->sendAll("name", obj, c);
+	}
 }
 void ParupaintServerInstance::ServerChat(ParupaintConnection * c, QString msg, bool propagate)
 {
-	if(record_manager) record_manager->Chat(c->getId(), msg);
+	if(record_manager) record_manager->Chat(c->id(), msg);
 
 	if(!propagate) return;
 
-	auto * brush = brushes.value(c);
-	if(brush) {
-		QJsonObject obj;
-		obj["message"] = msg;
-		obj["name"] = brush->name();
-		obj["id"] = c->getId();
-		this->Broadcast("chat", obj);
-	}
+	QJsonObject obj;
+	obj["message"] = msg;
+	obj["name"] = c->name();
+	obj["id"] = c->id();
+	this->sendAll("chat", obj);
 }
 void ParupaintServerInstance::ServerLfc(int l, int f, int lc, int fc, bool e, bool propagate)
 {
@@ -128,7 +139,7 @@ void ParupaintServerInstance::ServerLfc(int l, int f, int lc, int fc, bool e, bo
 	// TODO and make sure they update their values too
 
 	if((lc != 0 || fc != 0) && changed){
-		this->Broadcast("canvas", MarshalCanvas());
+		this->sendAll("canvas", this->canvasObj());
 	}
 
 }
@@ -150,7 +161,7 @@ void ParupaintServerInstance::ServerFill(int l, int f, QString fill, bool propag
 	obj["l"] = l;
 	obj["f"] = f;
 	obj["c"] = fill;
-	this->Broadcast("fill", obj);
+	this->sendAll("fill", obj);
 }
 
 void ParupaintServerInstance::ServerPaste(int l, int f, int x, int y, QImage img, bool propagate)
@@ -174,12 +185,12 @@ void ParupaintServerInstance::ServerPaste(int l, int f, int x, int y, QString ba
 
 	if(!propagate) return;
 	QJsonObject obj;
-	obj["layer"] = l;
-	obj["frame"] = f;
+	obj["l"] = l;
+	obj["f"] = f;
 	obj["x"] = x;
 	obj["y"] = y;
 	obj["paste"] = base64_img;
-	this->Broadcast("paste", obj);
+	this->sendAll("paste", obj);
 }
 
 void ParupaintServerInstance::ServerResize(int w, int h, bool r, bool propagate)
@@ -193,50 +204,69 @@ void ParupaintServerInstance::ServerResize(int w, int h, bool r, bool propagate)
 	if(record_manager) record_manager->Resize(w, h, r);
 
 	if(!propagate) return;
-	this->Broadcast("canvas", MarshalCanvas());
+	this->sendAll("canvas", this->canvasObj());
 }
 
 void ParupaintServerInstance::message(ParupaintConnection * c, const QString & id, const QByteArray & bytes)
 {
 	const QJsonObject obj = QJsonDocument::fromJson(bytes).object();
 	QJsonObject obj_copy = obj;
-	emit OnMessage(id, obj);
 
 	if(c) {
 		if(id == "connect"){
+			// send everyone and the canvas too
+			foreach(ParupaintConnection * con, brushes.keys()){
+				c->send("peer", this->MarshalConnection(con));
+			}
+			c->send("canvas", this->canvasObj());
+
+		// disconnect is handled lower down
+		// } else if(id == "disconnect"){
+			// connect and disconnect is for stuff that
+			// should always happen to joining people
 
 		} else if(id == "join"){
-			QString ver = obj["version"].toString("N/A");
-			const QString name = obj["name"].toString("unnamed_mofo");
-			qDebug() << name << "joined, version" << ver;
+			qreal ver = obj["version"].toString("0.00").toDouble();
+			if(ver < 0.92) return; // 0.91 and previous autojoins
+
+			// let the connection know we accepted them
+			c->send("join", "");
 
 			c->setId(connectid++);
-			this->ServerJoin(c, name, true);
-			this->BroadcastChat(name + " joined.");
+			this->ServerJoin(c, true);
 
-			// TODO is there a better way to do this (collect info and send it all?)
-			if(record_timer.isActive()){
-				QJsonObject obj;
-				obj["count"] = record_player->GetTotalLines();
-				c->send("play", obj);
+		// happens even if client doesn't send leave message
+		} else if(id == "leave" || id == "disconnect") {
+			if(id == "leave"){
+				c->send("leave", "");
+			}
+			ParupaintBrush * brush = brushes.value(c);
+			if(brush){
+				this->ServerLeave(c, true);
 			}
 
-		} else if(id == "disconnect") {
-			const QString name = this->brushes[c]->name();
-			this->ServerLeave(c, true);
-			this->BroadcastChat(name + " left.");
+		} else if(id == "name") {
+			if(!obj["name"].isString()) return;
+			QString name = obj["name"].toString();
 
-		} else if(id == "lf") {
+			if(name.length() > 24) return;
+			this->ServerName(c, name, true);
+
+		} else if(id == "lfc") {
+			if(brushes.find(c) == brushes.end()) return;
+
 			if(!obj["l"].isDouble()) return;
 			if(!obj["f"].isDouble()) return;
-			//TODO rename to lc/fc?
-			if(!obj["ll"].isDouble()) return;
-			if(!obj["ff"].isDouble()) return;
+			if(!obj["lc"].isDouble()) return;
+			if(!obj["fc"].isDouble()) return;
+
 			this->ServerLfc(obj["l"].toInt(), obj["f"].toInt(),
-					obj["ll"].toInt(), obj["ff"].toInt(),
+					obj["lc"].toInt(), obj["fc"].toInt(),
 					obj["ext"].toBool(false));
 
 		} else if(id == "fill"){
+			if(brushes.find(c) == brushes.end()) return;
+
 			if(!obj["l"].isDouble()) return;
 			if(!obj["f"].isDouble()) return;
 			if(!obj["c"].isString()) return;
@@ -260,24 +290,24 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 
 				if(obj["c"].isString()) {
 					brush->setColor(ParupaintSnippets::toColor(obj["c"].toString()));
-					if(record_manager) record_manager->Color(c->getId(), obj["c"].toString());
+					if(record_manager) record_manager->Color(c->id(), obj["c"].toString());
 				}
-				if(obj["w"].isDouble()) {
+				if(obj["s"].isDouble()) {
 					brush->setSize(obj["w"].toDouble());
-					if(record_manager) record_manager->Width(c->getId(), brush->size());
+					if(record_manager) record_manager->Width(c->id(), brush->size());
 				}
 				if(obj["t"].isDouble()) {
 					brush->setTool(obj["t"].toInt());
-					if(record_manager) record_manager->Tool(c->getId(), brush->tool());
+					if(record_manager) record_manager->Tool(c->id(), brush->tool());
 				}
 				if(obj["p"].isDouble()) brush->setPressure(obj["p"].toDouble());
 				if(obj["d"].isBool())	{
 					const bool drawing = obj["d"].toBool();
 					if(drawing && !brush->drawing()){
-						if(record_manager) record_manager->Pos(c->getId(), x, y, brush->pressure(), false);
+						if(record_manager) record_manager->Pos(c->id(), x, y, brush->pressure(), false);
 						if(brush->tool() == ParupaintBrushToolTypes::BrushToolFloodFill){
 							// ink click
-							if(record_manager) record_manager->Pos(c->getId(), x, y, 1, true);
+							if(record_manager) record_manager->Pos(c->id(), x, y, 1, true);
 						}
 					}
 					old_x = x; old_y = y;
@@ -287,11 +317,11 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 				if(obj["l"].isDouble()) brush->setLayer(obj["l"].toInt());
 				if(obj["f"].isDouble()) brush->setFrame(obj["f"].toInt());
 				if(obj["l"].isDouble() || obj["f"].isDouble()) {
-					if(record_manager) record_manager->Lf(c->getId(), brush->layer(), brush->frame());
+					if(record_manager) record_manager->Lf(c->id(), brush->layer(), brush->frame());
 				}
 
 				if(obj["x"].isDouble() && obj["y"].isDouble() && brush->drawing()) {
-					if(record_manager) record_manager->Pos(c->getId(), x, y, brush->pressure(), true);
+					if(record_manager) record_manager->Pos(c->id(), x, y, brush->pressure(), true);
 				}
 
 				if(brush->drawing()){
@@ -303,14 +333,13 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 
 				brush->setPosition(QPointF(x, y));
 
-				obj_copy["id"] = c->getId();
-				this->Broadcast(id, obj_copy);
+				obj_copy["id"] = c->id();
+				this->sendAll(id, obj_copy, c);
 			}
 		} else if(id == "canvas") {
-			c->send("canvas", this->MarshalCanvas());
-			qDebug("Request canvas");
+			c->send(id, this->canvasObj());
 
-		} else if (id == "img") {
+		} else if (id == "image") {
 
 			for(auto l = 0; l < canvas->layerCount(); l++){
 				auto * layer = canvas->layerAt(l);
@@ -330,10 +359,53 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 					obj["h"] = img.height();
 					obj["l"] = l;
 					obj["f"] = f;
-					c->send("img", QJsonDocument(obj).toJson(QJsonDocument::Compact));
+					c->send(id, QJsonDocument(obj).toJson(QJsonDocument::Compact));
 				}
 			}
+		} else if(id == "new") {
+			if(brushes.find(c) == brushes.end()) return;
+
+			if(!obj["w"].isDouble()) return;
+			if(!obj["h"].isDouble()) return;
+			if(!obj["r"].isBool()) return;
+
+			int width =  obj["w"].toInt(),
+			    height = obj["h"].toInt();
+			bool resize = obj["r"].toBool();
+
+			if(width >= 8192 || height >= 8192) return;
+			if(width <=    0 || height <=    0) return;
+
+			this->ServerResize(width, height, resize);
+
+		} else if(id == "paste"){
+			if(brushes.find(c) == brushes.end()) return;
+
+			if(!obj["image"].isString()) return;
+			if(!obj["l"].isDouble()) return;
+			if(!obj["f"].isDouble()) return;
+
+			QString image = obj["image"].toString();
+			int l = obj["l"].toInt(0),
+			    f = obj["f"].toInt(0),
+			    x = obj["x"].toInt(0),
+			    y = obj["y"].toInt(0);
+			this->ServerPaste(l, f, x, y, image);
+
+		} else if(id == "chat") {
+			if(obj["message"].isString()){
+				QString msg = obj["message"].toString();
+				this->ServerChat(c, obj["message"].toString());
+			} else {
+				QJsonObject obj;
+				obj["id"] = c->id();
+				this->sendAll("chat", obj, c);
+			}
+
 		} else if(id == "save") {
+			if(brushes.find(c) == brushes.end()) return;
+
+			// TODO clean this up
 			QSettings cfg;
 			QString name = obj["filename"].toString();
 			QString load_dir = cfg.value("canvas/directory").toString();
@@ -349,11 +421,14 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 					this->BroadcastChat(msg);
 				}
 			}
+
 		} else if(id == "load") {
+			if(brushes.find(c) == brushes.end()) return;
 
 			QSettings cfg;
 			QString load_dir = cfg.value("server/directory").toString();
 
+			// TODO clean this up
 			if(obj["file"].isString() && obj["filename"].isString()){
 
 				// a gzipped base64 encoded file is sent, uncompress it and write to temp file
@@ -361,10 +436,10 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 				QByteArray uncompressed;
 				QCompressor::gzipDecompress(data, uncompressed);
 
-				QString temp_file = obj["filename"].toString();
+				obj["filename"] = "temp_load" + QFileInfo(obj["filename"].toString()).suffix();
 
 				load_dir = QDir::temp().path();
-				QFileInfo ff(load_dir, temp_file);
+				QFileInfo ff(load_dir, obj["filename"].toString());
 
 				QFile file(ff.filePath());
 				if(!file.open(QIODevice::WriteOnly)){
@@ -383,51 +458,15 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 				bool ret = false;
 				if((ret = ParupaintPanvasInputOutput::loadPanvas(canvas, fname, err))){
 					this->BroadcastChat("Server loaded file successfully!");
-					this->Broadcast("canvas", MarshalCanvas());
+					this->sendAll("canvas", this->canvasObj());
 				} else {
 					QString msg("Failed loading canvas: " + err);
 					this->BroadcastChat(msg);
 				}
 			}
-		} else if(id == "new") {
-			if(!obj["width"].isDouble()) return;
-			if(!obj["height"].isDouble()) return;
-
-			int width = obj["width"].toInt();
-			int height = obj["height"].toInt();
-			bool resize = obj["resize"].toBool();
-
-			if(width <= 0 || height <= 0) return;
-
-			this->ServerResize(width, height, resize);
-
-			QString msg = QString("canvas: %1 x %2").arg(width).arg(height);
-			msg.prepend(resize ? "Resize " : "New ");
-			this->BroadcastChat(msg);
-
-		} else if(id == "paste"){
-			if(!obj["image"].isString()) return;
-			QString image = obj["image"].toString();
-
-			if(obj["layer"].isDouble() && obj["frame"].isDouble()){
-				int l = obj["layer"].toInt(),
-				    f = obj["frame"].toInt(),
-				    x = obj["x"].toInt(0),
-				    y = obj["y"].toInt(0);
-				this->ServerPaste(l, f, x, y, image);
-			}
-
-		} else if(id == "chat") {
-			if(obj["message"].isString()){
-				QString msg = obj["message"].toString();
-				this->ServerChat(c, obj["message"].toString());
-			} else {
-				QJsonObject obj;
-				obj["id"] = c->getId();
-				this->Broadcast("chat", obj, c);
-			}
-
 		} else if(id == "play") {
+			if(brushes.find(c) == brushes.end()) return;
+
 			if(!obj["filename"].isString()) return;
 			if(!obj["as_script"].isBool()) return;
 			QString filename = obj["filename"].toString();
@@ -440,7 +479,7 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 
 				QJsonObject obj;
 				obj["count"] = record_player->GetTotalLines();
-				this->Broadcast("play", obj);
+				this->sendAll("play", obj);
 
 				this->SaveRecordBrushes();
 				if(as_script){
@@ -456,7 +495,7 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 
 					QJsonObject obj;
 					obj["count"] = 0;
-					this->Broadcast("play", obj);
+					this->sendAll("play", obj);
 
 				} else {
 					this->StartRecordTimer();
@@ -466,6 +505,9 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 			//qDebug() << id << obj;
 		}
 	}
-
+	// put at the end because some messages
+	// are return; ing because error/access level/etc
+	// it only reaches this point if everything went well
+	emit OnMessage(id, obj);
 }
 

@@ -36,12 +36,11 @@ void ParupaintServer::onConnection()
 	connect(socket, &QWsSocket::disconnected, this, &ParupaintServer::onDisconnection);
 
 	// If someone from outside joins...
-	if(isProtective()) qDebug() << "onConnection" << socket->host();
 	if(isProtective() && socket->host() != "localhost"){
 		bool has = false;
 		// Check if the owner is in the server.
 		foreach(ParupaintConnection * con, connections){
-			if(con->getSocket()->host() == "localhost") has = true;
+			if(con->socket()->host() == "localhost") has = true;
 		}
 		if(!has){
 			socket->abort("Not allowed.");
@@ -56,31 +55,42 @@ void ParupaintServer::onConnection()
 
 void ParupaintServer::onDisconnection()
 {
-	auto *socket = dynamic_cast<QWsSocket* >(sender());
-	if(socket) {
-		ParupaintConnection * con = GetConnection(socket);
-		if(con){
-			message(con, "disconnect");
-			connections.removeOne(con);
-		}
-		socket->deleteLater();
+	QWsSocket * socket = qobject_cast<QWsSocket* >(sender());
+	if(!socket) return;
+
+	ParupaintConnection * con = this->ppConnection(socket);
+	if(con){
+		message(con, "disconnect");
+		connections.removeOne(con);
+		delete con;
 	}
+	socket->deleteLater();
 }
 
 void ParupaintServer::textReceived(QString text)
 {
-	auto * socket = qobject_cast<QWsSocket* >(sender());
+	QWsSocket * socket = qobject_cast<QWsSocket* >(sender());
+	if(!socket) return;
 
 	if(text.isEmpty()) return;
-	const auto id = text.split(" ")[0];
-	const auto arg = text.mid(id.length()+1);
-	message(GetConnection(socket), id, arg.toUtf8());
+
+	ParupaintConnection * con = this->ppConnection(socket);
+	if(con){
+		const QString id = text.split(" ")[0];
+		const QString arg = text.mid(id.length()+1);
+		message(con, id, arg.toUtf8());
+	}
 }
 
-ParupaintConnection * ParupaintServer::GetConnection(QWsSocket* s)
+ParupaintConnection * ParupaintServer::ppConnection(QWsSocket* s)
 {
 	for(auto i = connections.begin(); i != connections.end(); ++i){
-		if( (*i)->getSocket() == s ) return (*i);
+		if( (*i)->socket() == s ) return (*i);
 	}
 	return nullptr;
+}
+
+QList<ParupaintConnection*> ParupaintServer::ppConnections()
+{
+	return connections;
 }

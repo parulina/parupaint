@@ -48,8 +48,9 @@ Q_OBJECT
 	ParupaintServerInstance(quint16 , QObject * = nullptr);
 	virtual void message(ParupaintConnection *, const QString &, const QByteArray & = QByteArray());
 
-	void ServerJoin(ParupaintConnection *, QString, bool=true);
+	void ServerJoin(ParupaintConnection *, bool=true);
 	void ServerLeave(ParupaintConnection *, bool=true);
+	void ServerName(ParupaintConnection *, QString, bool=true);
 	void ServerChat(ParupaintConnection *, QString, bool=true);
 
 	// special - uses no id
@@ -59,13 +60,11 @@ Q_OBJECT
 	void ServerPaste(int l, int f, int x, int y, QString base64_img, bool propagate=true);
 	void ServerResize(int, int, bool, bool=true);
 
-	void Broadcast(QString, QJsonObject, ParupaintConnection * = nullptr);
-	void Broadcast(QString, QString, ParupaintConnection * = nullptr);
-	void Broadcast(QString, const QByteArray, ParupaintConnection * = nullptr);
+	QJsonObject canvasObj();
+	void sendAll(const QString &, const QJsonObject &, ParupaintConnection * = nullptr);
 
 	void BroadcastChat(QString);
 	
-	QString MarshalCanvas();
 	QJsonObject MarshalConnection(ParupaintConnection*);
 	ParupaintPanvas * GetCanvas();
 	int GetNumConnections();

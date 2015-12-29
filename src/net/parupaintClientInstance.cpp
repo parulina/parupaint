@@ -6,6 +6,7 @@
 #include <QJsonObject>
 #include <QPen> // brush draw
 #include <QBuffer>
+#include <QSettings>
 
 // LoadCanvasLocal
 #include <QFile> 
@@ -17,12 +18,15 @@
 #include "../core/parupaintSnippets.h"
 
 #include "../bundled/qcompressor.h"
+#include "../parupaintVersion.h"
 
-ParupaintClientInstance::ParupaintClientInstance(ParupaintCanvasScene * p, QObject * parent) : ParupaintClient(parent)
+ParupaintClientInstance::ParupaintClientInstance(ParupaintCanvasScene * p, QObject * parent) :
+	ParupaintClient(parent),
+	read_only(false), client_joined(false), me(-1),
+	pool(p)
 {
-	playmode = false;
-	me = -1;
-	pool = p;
+	QSettings cfg;
+	this->setName(cfg.value("client/username").toString());
 }
 
 void ParupaintClientInstance::send(const QString id, const QJsonObject & obj)
@@ -30,30 +34,77 @@ void ParupaintClientInstance::send(const QString id, const QJsonObject & obj)
 	this->ParupaintClient::send(id, QJsonDocument(obj).toJson(QJsonDocument::Compact));
 }
 
-void ParupaintClientInstance::ReloadImage()
+
+void ParupaintClientInstance::setName(const QString & str)
 {
-	this->ParupaintClient::send("img");
+	this->client_name = str;
 }
-void ParupaintClientInstance::ReloadCanvas()
+void ParupaintClientInstance::setReadOnly(bool r)
 {
-	this->ParupaintClient::send("canvas");
+	this->read_only = r;
 }
-void ParupaintClientInstance::SendLayerFrame(int layer, int frame, int ll, int ff, bool ext)
+
+const QString ParupaintClientInstance::name()
 {
-	if(playmode) return;
+	return this->client_name.isEmpty() ? "Noname" : this->client_name;
+}
+bool ParupaintClientInstance::readOnly()
+{
+	return this->read_only;
+}
+bool ParupaintClientInstance::isJoined()
+{
+	return client_joined;
+}
+
+
+
+void ParupaintClientInstance::doJoin()
+{
 	QJsonObject obj;
-	obj["l"] = layer;
-	obj["f"] = frame;
-	obj["ll"] = ll;
-	obj["ff"] = ff;
-	obj["ext"] = ext;
-	this->send("lf", obj);
+	obj["version"] = PARUPAINT_VERSION;
+	this->send("join", obj);
 }
 
-
-void ParupaintClientInstance::SendBrushUpdate(ParupaintBrush * brush)
+void ParupaintClientInstance::doLeave()
 {
-	if(playmode) return;
+	this->send("leave");
+}
+
+void ParupaintClientInstance::doName()
+{
+	QJsonObject obj;
+	obj["name"] = this->name();
+	this->send("name", obj);
+}
+
+void ParupaintClientInstance::doReloadCanvas()
+{
+	this->send("canvas");
+}
+
+void ParupaintClientInstance::doReloadImage(int l, int f)
+{
+	QJsonObject obj;
+	if(l != -1) obj["l"] = l;
+	if(f != -1) obj["f"] = f;
+	this->send("image", obj);
+}
+
+void ParupaintClientInstance::doChat(const QString & str)
+{
+	QJsonObject obj;
+	if(!str.isEmpty()){
+		obj["message"] = str;
+		obj["name"] = this->name();
+	}
+	this->send("chat", obj);
+}
+
+void ParupaintClientInstance::doBrushUpdate(ParupaintBrush * brush)
+{
+	if(this->readOnly()) return;
+
 	QJsonObject obj;
 	if(brush->position() != shadow_brush.position()){
 		obj["x"] = brush->x();
@@ -66,7 +117,7 @@ void ParupaintClientInstance::SendBrushUpdate(ParupaintBrush * brush)
 		obj["f"] = brush->frame();
 
 	if(brush->size() != shadow_brush.size())
-		obj["w"] = brush->size();
+		obj["s"] = brush->size();
 
 	if(brush->pressure() != shadow_brush.pressure())
 		obj["p"] = brush->pressure();
@@ -86,60 +137,93 @@ void ParupaintClientInstance::SendBrushUpdate(ParupaintBrush * brush)
 	brush->copyTo(shadow_brush);
 }
 
-void ParupaintClientInstance::PasteLayerFrameImage(int l, int f, int x, int y, QImage img)
+void ParupaintClientInstance::doLayerFrameChange(int l, int f, int lc, int fc, bool ext)
 {
+	if(this->readOnly()) return;
+
 	QJsonObject obj;
-	obj["layer"] = l;
-	obj["frame"] = f;
+	obj["l"] = l;
+	obj["f"] = f;
+	obj["lc"] = lc;
+	obj["fc"] = fc;
+	obj["ext"] = ext;
+	this->send("lfc", obj);
+}
+
+void ParupaintClientInstance::doPasteImage(int l, int f, int x, int y, const QImage & img)
+{
+	if(this->readOnly()) return;
+
+	QJsonObject obj;
+	obj["l"] = l;
+	obj["f"] = f;
 	obj["x"] = x;
 	obj["y"] = y;
 	obj["image"] = ParupaintSnippets::ImageToBase64Gzip(img);
 	this->send("paste", obj);
 }
 
-void ParupaintClientInstance::LoadCanvasLocal(const QString filename)
+void ParupaintClientInstance::doFill(int l, int f, const QString & col)
 {
-	QFile file(filename);
-	if(!file.open(QIODevice::ReadOnly)) return;
-	QByteArray compressed;
-	QCompressor::gzipCompress(file.readAll(), compressed);
-	
-	QJsonObject obj;
-	obj["file"] = QString(compressed.toBase64());
-	obj["filename"] = QFileInfo(filename).fileName();
-	this->send("load", obj);
-}
-void ParupaintClientInstance::LoadCanvas(const QString filename)
-{
-	QJsonObject obj;
-	obj["filename"] = filename;
-	this->send("load", obj);
-}
-void ParupaintClientInstance::SaveCanvas(const QString filename)
-{
-	QJsonObject obj;
-	obj["filename"] = filename;
-	this->send("save", obj);
-}
+	if(this->readOnly()) return;
+	if(col.isEmpty()) return;
 
-void ParupaintClientInstance::NewCanvas(int w, int h, bool resize)
-{
-	QJsonObject obj;
-	obj["width"] = w;
-	obj["height"] = h;
-	obj["resize"] = resize;
-	this->send("new", obj);
-}
-
-void ParupaintClientInstance::FillCanvas(int l, int f, QString col)
-{
 	QJsonObject obj;
 	obj["l"] = l;
 	obj["f"] = f;
 	obj["c"] = col;
 	this->send("fill", obj);
 }
+void ParupaintClientInstance::doNew(int w, int h, bool resize)
+{
+	if(this->readOnly()) return;
 
+	// 2 ^ 13
+	if(w >= 8192 || h >= 8192) return;
+	if(w <=    0 || h <=    0) return;
+
+	QJsonObject obj;
+	obj["w"] = w;
+	obj["h"] = h;
+	obj["r"] = resize;
+	this->send("new", obj);
+}
+
+void ParupaintClientInstance::doLoadLocal(const QString & filename)
+{
+	if(this->readOnly()) return;
+
+	QFile file(filename);
+	if(!file.open(QIODevice::ReadOnly)) return;
+
+	QByteArray compressed;
+	QCompressor::gzipCompress(file.readAll(), compressed);
+	if(compressed.isEmpty()) return;
+
+	QJsonObject obj;
+	obj["file"] = QString(compressed.toBase64());
+	obj["filename"] = QFileInfo(filename).fileName();
+	this->send("load", obj);
+}
+void ParupaintClientInstance::doLoad(const QString & filename)
+{
+	if(this->readOnly()) return;
+	if(filename.isEmpty()) return;
+
+	QJsonObject obj;
+	obj["filename"] = filename;
+	this->send("load", obj);
+}
+void ParupaintClientInstance::doSave(const QString & filename)
+{
+	if(this->readOnly()) return;
+	if(filename.isEmpty()) return;
+
+	QJsonObject obj;
+	obj["filename"] = filename;
+	this->send("save", obj);
+}
+/*
 void ParupaintClientInstance::PlayRecord(QString filename, bool as_script)
 {
 	if(filename.isEmpty()) return;
@@ -149,19 +233,4 @@ void ParupaintClientInstance::PlayRecord(QString filename, bool as_script)
 	obj["as_script"] = as_script;
 	this->send("play", obj);
 }
-
-void ParupaintClientInstance::SetNickname(QString str)
-{
-	nickname = str;
-}
-
-void ParupaintClientInstance::SendChat(const QString & str)
-{
-	QJsonObject obj;
-	if(!str.isEmpty()){
-		obj["message"] = str;
-		obj["name"] = nickname;
-	}
-	this->send("chat", obj);
-}
-
+*/

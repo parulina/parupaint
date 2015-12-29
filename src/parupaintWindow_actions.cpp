@@ -1,5 +1,6 @@
 #include "parupaintWindow.h"
 
+#include <QDebug>
 #include <QSettings>
 
 #include "dialog/parupaintConnectionDialog.h"

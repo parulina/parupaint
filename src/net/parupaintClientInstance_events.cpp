@@ -8,7 +8,6 @@
 #include "../core/parupaintSnippets.h"
 #include "../core/parupaintFrameBrushOps.h"
 #include "../bundled/qcompressor.h"
-#include "../parupaintVersion.h"
 
 #include "../parupaintVisualCursor.h"
 #include "../parupaintVisualCanvas.h"
@@ -19,17 +18,19 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 	const QJsonObject object = QJsonDocument::fromJson(bytes).object();
 
 	if(id == "connect"){
+		emit onConnect();
+		emit onJoinedChange((client_joined = false));
 
-		QJsonObject obj;
-		obj["name"] = nickname;
-		obj["version"] = PARUPAINT_VERSION;
-		this->send("join", obj);
-		emit OnConnect();
-
-		this->ReloadCanvas();
+		this->doName();
 
 	} else if(id == "disconnect"){
-		emit OnDisconnect(bytes);
+		emit onDisconnect(bytes);
+
+	// we got confirmation
+	} else if(id == "join"){
+		emit onJoinedChange((client_joined = true));
+	} else if(id == "leave"){
+		emit onJoinedChange((client_joined = false));
 
 	} else if(id == "peer") {
 		int c = object["id"].toInt();
@@ -97,21 +98,22 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		}
 	} else if (id == "paste") {
 		if(!object["paste"].isString()) return;
+		if(!object["l"].isDouble()) return;
+		if(!object["f"].isDouble()) return;
+
 		QImage image = ParupaintSnippets::Base64GzipToImage(object["paste"].toString());
 		if(image.isNull()) return;
 
-		if(object["layer"].isDouble() && object["frame"].isDouble()){
-			int l = object["layer"].toInt(),
-			    f = object["frame"].toInt(),
-			    x = object["x"].toInt(),
-			    y = object["y"].toInt();
-			ParupaintLayer * layer = pool->canvas()->layerAt(l);
-			if(layer){
-				ParupaintFrame * frame = layer->frameAt(f);
-				if(frame){
-					QRect rect = frame->drawImage(QPointF(x, y), image);
-					pool->canvas()->redraw(rect);
-				}
+		int l = object["l"].toInt(),
+		    f = object["f"].toInt(),
+		    x = object["x"].toInt(),
+		    y = object["y"].toInt();
+		ParupaintLayer * layer = pool->canvas()->layerAt(l);
+		if(layer){
+			ParupaintFrame * frame = layer->frameAt(f);
+			if(frame){
+				QRect rect = frame->drawImage(QPointF(x, y), image);
+				pool->canvas()->redraw(rect);
 			}
 		}
 	} else if (id == "fill") {
@@ -131,8 +133,8 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		pool->canvas()->redraw();
 
 	} else if (id == "canvas") {
-		int w = object["width"].toInt();
-		int h = object["height"].toInt();
+		int w = object["w"].toInt();
+		int h = object["h"].toInt();
 		QJsonArray layers = object["layers"].toArray();
 
 		ParupaintVisualCanvas* canvas = pool->canvas();
@@ -168,10 +170,11 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 			ll++;
 		}
 		canvas->setCurrentLayerFrame(canvas->currentLayer(), canvas->currentFrame());
-		// sends a reload signal
-		this->ReloadImage();
 
-	} else if (id == "img") {
+		// reload all images
+		this->doReloadImage();
+
+	} else if (id == "image") {
 
 		auto l = object["l"].toInt();
 		auto f = object["f"].toInt();
@@ -198,7 +201,7 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		const QString name = object["name"].toString(),
 		              message = object["message"].toString();
 		if(object["message"].isString()){
-			emit ChatMessageReceived(message, name);
+			emit onChatMessage(message, name);
 		}
 
 		int id = object["id"].toInt();
@@ -214,11 +217,6 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 			}
 			brush->update();
 		}
-
-	} else if(id == "play") {
-		if(!object["count"].isDouble()) return;
-		int count = object["count"].toInt();
-		playmode = (bool)(count);
 
 	} else {
 		//qDebug() << id << object;

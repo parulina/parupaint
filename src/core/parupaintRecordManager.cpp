@@ -1,3 +1,4 @@
+#include "parupaintRecordManager.h"
 
 #include <QLocale>
 #include <QTextStream>
@@ -7,7 +8,6 @@
 
 #include <QDebug>
 
-#include "parupaintRecordManager.h"
 #define PARUPAINT_ENDL qSetFieldWidth(0) << endl << qSetFieldWidth(3)
 
 ParupaintRecordManager::~ParupaintRecordManager()
@@ -30,16 +30,23 @@ void ParupaintRecordManager::Write(QStringList list)
 	temp_stream->flush();
 }
 
-void ParupaintRecordManager::Join(int id, QString name)
+void ParupaintRecordManager::Join(int id)
 {
 	if(temp_stream){
-		this->Write({"join", QString::number(id), name});
+		this->Write({"join", QString::number(id)});
 	}
 }
 void ParupaintRecordManager::Leave(int id)
 {
 	if(temp_stream){
 		this->Write({"leave", QString::number(id)});
+	}
+}
+
+void ParupaintRecordManager::Name(int id, QString name)
+{
+	if(temp_stream){
+		this->Write({"name", QString::number(id), name});
 	}
 }
 void ParupaintRecordManager::Pos(int id, int x, int y, double p, bool d)

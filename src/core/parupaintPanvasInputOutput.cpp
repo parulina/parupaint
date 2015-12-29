@@ -20,6 +20,8 @@
 #endif
 
 // todo return new filename instead of bool?
+// todo use mimetype instead of endsWidth()?
+
 bool ParupaintPanvasInputOutput::savePanvas(ParupaintPanvas * panvas, QString & filename, QString & errorStr)
 {
 	Q_ASSERT(panvas);
@@ -37,21 +39,21 @@ bool ParupaintPanvasInputOutput::savePanvas(ParupaintPanvas * panvas, QString & 
 	// mkpath returns true if it already exists
 
 	const QString filepath = file.filePath();
-	if(filepath.endsWith(".png")){
-		return ParupaintPanvasInputOutput::savePNG(panvas, file.absoluteFilePath(), errorStr);
+	if(filepath.endsWith(".png") || filepath.endsWith(".jpg")){
+		return ParupaintPanvasInputOutput::saveImage(panvas, file.absoluteFilePath(), errorStr);
 	} else if(filepath.endsWith(".ppa")){
 		return ParupaintPanvasInputOutput::savePPA(panvas, file.absoluteFilePath(), errorStr);
 	} else {
 		return ParupaintPanvasInputOutput::exportAV(panvas, file.absoluteFilePath(), errorStr);
 	}
 }
-bool ParupaintPanvasInputOutput::savePNG(ParupaintPanvas * panvas, const QString & filename, QString & errorStr)
+bool ParupaintPanvasInputOutput::saveImage(ParupaintPanvas * panvas, const QString & filename, QString & errorStr)
 {
 	Q_ASSERT(panvas);
 	if(filename.isEmpty())
 		return (errorStr = "Enter a filename to save to.").isEmpty();
 
-	QImage png(panvas->dimensions(), QImage::Format_ARGB32);
+	QImage img(panvas->dimensions(), QImage::Format_ARGB32);
 	for(int l = 0; l < panvas->layerCount(); l++){
 		ParupaintLayer * layer = panvas->layerAt(l);
 
@@ -60,12 +62,12 @@ bool ParupaintPanvasInputOutput::savePNG(ParupaintPanvas * panvas, const QString
 		
 		ParupaintFrame * frame = layer->frameAt(0);
 		if(frame){
-			QPainter paint(&png);
+			QPainter paint(&img);
 			paint.drawImage(QPointF(0, 0), frame->renderedImage());
 		}
 	}
-	if(!png.save(filename))
-		return (errorStr = "PNG save failed").isEmpty();
+	if(!img.save(filename))
+		return (errorStr = "Image save failed.").isEmpty();
 	return true;
 }
 bool ParupaintPanvasInputOutput::savePPA(ParupaintPanvas * panvas, const QString & filename, QString & errorStr)
@@ -159,22 +161,22 @@ bool ParupaintPanvasInputOutput::loadPanvas(ParupaintPanvas * panvas, const QStr
 		return (errorStr = "File " + filename + " doesn't exist.").isEmpty();
 
 	const QString filepath = file.filePath();
-	if(filepath.endsWith(".png")){
-		return ParupaintPanvasInputOutput::loadPNG(panvas, filepath, errorStr);
+	if(filepath.endsWith(".png") || filepath.endsWith(".jpg")){
+		return ParupaintPanvasInputOutput::loadImage(panvas, filepath, errorStr);
 	} else if(filepath.endsWith(".ora")){
 		return ParupaintPanvasInputOutput::loadORA(panvas, filepath, errorStr);
 	} else if(filepath.endsWith(".ppa")){
 		return ParupaintPanvasInputOutput::loadPPA(panvas, filepath, errorStr);
 	}
-	return false;
+	return (errorStr = "File format not recognized.").isEmpty();
 }
-bool ParupaintPanvasInputOutput::loadPNG(ParupaintPanvas * panvas, const QString & filename, QString & errorStr)
+bool ParupaintPanvasInputOutput::loadImage(ParupaintPanvas * panvas, const QString & filename, QString & errorStr)
 {
 	Q_ASSERT(panvas);
 
 	QImage img(filename);
 	if(img.isNull())
-		return (errorStr = "Couldn't load PNG").isEmpty();
+		return (errorStr = "Couldn't load image.").isEmpty();
 
 	panvas->clearCanvas();
 	panvas->resize(img.size());

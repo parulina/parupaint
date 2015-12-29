@@ -3,23 +3,25 @@
 
 #include "ws/QWsSocket.h"
 
-typedef int sid;
-
 class ParupaintConnection
 {
 	private:
-	QWsSocket * socket;
-	sid id;
+	QWsSocket * connection_socket;
+	int connection_id;
+	QString connection_name;
 
 	public:
 	ParupaintConnection(QWsSocket * s);
 	qint64 send(const QString id, const QJsonObject &obj);
 	qint64 send(const QString id, const QString msg);
 
-	void setId(sid);
-	sid getId() const;
+	void setId(int id);
+	int id() const;
 
-	QWsSocket * getSocket();
+	void setName(const QString &);
+	QString name();
+
+	QWsSocket * socket();
 };
 
 #endif

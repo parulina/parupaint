@@ -115,9 +115,12 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 
 	// create the client and connect it
 	client = new ParupaintClientInstance(scene, this);
-	connect(client, &ParupaintClientInstance::ChatMessageReceived, this, &ParupaintWindow::addChatMessage);
-	connect(client, &ParupaintClientInstance::OnDisconnect, this, &ParupaintWindow::OnNetworkDisconnect);
-	connect(client, &ParupaintClientInstance::OnConnect, this, &ParupaintWindow::OnNetworkConnect);
+	connect(client, &ParupaintClientInstance::onChatMessage, this, &ParupaintWindow::addChatMessage);
+	connect(client, &ParupaintClientInstance::onDisconnect, this, &ParupaintWindow::OnNetworkDisconnect);
+	connect(client, &ParupaintClientInstance::onConnect, this, &ParupaintWindow::OnNetworkConnect);
+	connect(client, &ParupaintClientInstance::onJoinedChange, [&](bool j){
+		if(!j && client->connected()) this->addChatMessage("You are currently spectating.");
+	});
 
 
 	chat =	  new ParupaintChat(this);
@@ -129,7 +132,7 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	QString key_str = key_shortcuts->GetKeySequence("chat").toString(QKeySequence::NativeText);
 	chat->setChatInputPlaceholder(QString("press [%1] to chat.").arg(key_str).toLower());
 	connect(chat, &ParupaintChat::onActivity, [this](){
-			this->client->SendChat();
+			this->client->doChat();
 	});
 	
 	connect(flayer, &ParupaintFlayer::onHighlightChange, scene->canvas(), &ParupaintVisualCanvas::current_lf_update);
@@ -137,7 +140,7 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	connect(flayer, &ParupaintFlayer::onHighlightChange, [&](int l, int f){
 		ParupaintBrush * brush = this->brushes->brush();
 		brush->setLayerFrame(l, f);
-		this->client->SendBrushUpdate(brush);
+		this->client->doBrushUpdate(brush);
 	});
 
 	connect(scene->canvas(), &ParupaintVisualCanvas::onCurrentLayerFrameChange, flayer, &ParupaintFlayer::current_lf_update);
@@ -145,7 +148,7 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	connect(scene->canvas(), &ParupaintVisualCanvas::onCurrentLayerFrameChange, [&](int l, int f){
 		ParupaintBrush * brush = this->brushes->brush();
 		brush->setLayerFrame(l, f);
-		this->client->SendBrushUpdate(brush);
+		this->client->doBrushUpdate(brush);
 	});
 
 	// canvas content -> flayer content
@@ -358,7 +361,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 
 				brush->setTool(ParupaintBrushToolTypes::BrushToolNone);
 				scene->updateMainCursor(brush);
-				client->SendBrushUpdate(brush);
+				client->doBrushUpdate(brush);
 			}
 		}
 	}
@@ -384,11 +387,11 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 		// canvas stuff
 		} else if(shortcut_name == "reload_canvas"){
 			view->showToast("reloaded canvas", 2000);
-			client->ReloadCanvas();
+			client->doReloadCanvas();
 
 		} else if(shortcut_name == "reload_image"){
 			view->showToast("reloaded image", 2000);
-			client->ReloadImage();
+			client->doReloadImage();
 
 		} else if(shortcut_name == "copy"){
 			if(view->hasFocus()){
@@ -414,7 +417,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 								int 	l = scene->canvas()->currentLayer(),
 									f = scene->canvas()->currentFrame();
 
-								client->PasteLayerFrameImage(l, f, p.x(), p.y(), img);
+								client->doPasteImage(l, f, p.x(), p.y(), img);
 							}
 							// skip view update for now
 						} else {
@@ -435,7 +438,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 
 			} else if(shortcut_name.endsWith("clear")){
 				ParupaintBrush * brush = brushes->brush();
-				client->FillCanvas(brush->layer(), brush->frame(), brush->colorString());
+				client->doFill(brush->layer(), brush->frame(), brush->colorString());
 
 			} else if(shortcut_name.endsWith("reset")){
 				if(view->zoom() != 1.0){
@@ -529,22 +532,18 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 				brush->setLayerFrame(
 					scene->canvas()->currentLayer(),
 					scene->canvas()->currentFrame());
-				client->SendBrushUpdate(brush);
+				client->doBrushUpdate(brush);
 
 			} else {
-				auto current_layer = scene->canvas()->currentLayer(),
-				     current_frame = scene->canvas()->currentFrame();
+				int cl = scene->canvas()->currentLayer(),
+				     cf = scene->canvas()->currentFrame();
 
 				auto shift = (event->modifiers() & Qt::ShiftModifier),
 				     control = (event->modifiers() & Qt::ControlModifier);
 
-				if(ll > 0 && !shift){
-					current_layer ++;
-				}
-				if(ff > 0 && !shift && !control){
-					current_frame ++;
-				}
-				client->SendLayerFrame(current_layer, current_frame, ll, ff, control);
+				if(ll > 0 && !shift) 		 cl ++;
+				if(ff > 0 && !shift && !control) cf ++;
+				client->doLayerFrameChange(cl, cf, ll, ff, control);
 			}
 		}
 		else if(shortcut_name == "pick_layer_color" || shortcut_name == "pick_canvas_color"){
@@ -644,8 +643,7 @@ void ParupaintWindow::dropEvent(QDropEvent *ev)
 		QUrl link = ev->mimeData()->urls().first();
 		if(link.isLocalFile()){
 			QString file = link.toLocalFile();
-			qDebug() << "Loading" << file;
-			client->LoadCanvasLocal(file);
+			client->doLoadLocal(file);
 		}
 	}
 }
@@ -659,9 +657,6 @@ void ParupaintWindow::dragEnterEvent(QDragEnterEvent *ev)
 void ParupaintWindow::doConnect(const QString & url)
 {
 	if(url.isEmpty()) return;
-
-	QSettings cfg;
-	client->SetNickname(cfg.value("client/username").toString());
 
 	client->Connect(url);
 }
@@ -684,7 +679,7 @@ void ParupaintWindow::doOpen(const QString & file)
 {
 	if(file.isEmpty()) return;
 
-	client->LoadCanvasLocal(file);
+	client->doLoadLocal(file);
 }
 QString ParupaintWindow::doSaveAs(const QString & file)
 {
@@ -698,7 +693,7 @@ QString ParupaintWindow::doSaveAs(const QString & file)
 }
 void ParupaintWindow::doNew(int w, int h, bool resize)
 {
-	client->NewCanvas(w, h, resize);
+	client->doNew(w, h, resize);
 }
 
 void ParupaintWindow::doChat(const QString & msg)
@@ -713,26 +708,18 @@ void ParupaintWindow::doChat(const QString & msg)
 		cmd = cmd.mid(1);
 		return this->doCommand(cmd, params);
 	}
-	client->SendChat(msg);
+	client->doChat(msg);
 }
 void ParupaintWindow::doCommand(const QString & cmd, const QString & params)
 {
 	this->addChatMessage(cmd + " " + params);
-	if(!params.isEmpty()){
-		if(cmd == "load"){
-			client->LoadCanvas(params);
-
-		} else if(cmd == "save"){
-			client->SaveCanvas(params);
-
-		// record commands
-		} else if(cmd == "play") {
-			client->PlayRecord(params, false);
-
-		} else if(cmd == "script") {
-			client->PlayRecord(params, true);
-		}
+	if(cmd == "join"){
+		return client->doJoin();
 	}
+	if(cmd == "leave"){
+		return client->doLeave();
+	}
+
 	if(cmd == "key"){
 		if(params.isEmpty()){
 			QStringList list = key_shortcuts->GetKeys();
@@ -747,12 +734,13 @@ void ParupaintWindow::doCommand(const QString & cmd, const QString & params)
 	}
 	else if(cmd == "load"){
 		if(params.isEmpty()) return chat->AddMessage("Usage: /load file<br/>Load a file on the server.");
-		client->LoadCanvas(params);
+		client->doLoad(params);
 	}
 	else if(cmd == "save"){
 		if(params.isEmpty()) return chat->AddMessage("Usage: /save file<br/>Saves to a file on the server.");
-		client->SaveCanvas(params);
+		client->doSave(params);
 	}
+	/*
 	else if(cmd == "play"){
 		if(params.isEmpty()) return chat->AddMessage("Usage: /play file<br/>Plays a record on the server.");
 		client->PlayRecord(params, false);
@@ -761,6 +749,7 @@ void ParupaintWindow::doCommand(const QString & cmd, const QString & params)
 		if(params.isEmpty()) return chat->AddMessage("Usage: /script file<br/>Plays a script (might be laggy!).");
 		client->PlayRecord(params, true);
 	}
+	*/
 	else if(cmd == "connect"){
 		if(params.isEmpty()) return chat->AddMessage("Usage: /connect hostname [port]<br/>Reconnect to a different server.");
 
@@ -796,7 +785,10 @@ void ParupaintWindow::doCommand(const QString & cmd, const QString & params)
 
 void ParupaintWindow::doUserName(const QString & username)
 {
-	client->SetNickname(username);
+	client->setName(username);
+	if(client->connected()){
+		client->doName();
+	}
 }
 
 // General funcs
@@ -804,7 +796,7 @@ void ParupaintWindow::addChatMessage(const QString & msg, const QString & usr)
 {
 	chat->show();
 	chat->AddMessage(msg, usr);
-	QApplication::alert(this, 1000);
+	//QApplication::alert(this, 1000);
 }
 
 QSize ParupaintWindow::canvasDimensions()

@@ -18,9 +18,16 @@ void ParupaintWindow::OnPenPress(const penInfo & info)
 	
 	current_brush->setPressure(info.pressure);
 
-	if(info.buttons == Qt::LeftButton && canvas_state == noCanvasState){
+	if(info.buttons == Qt::LeftButton &&
+	   canvas_state == noCanvasState){
+
 		current_brush->setDrawing(true);
-		canvas_state = canvasDrawingState;
+		if(client->connected() &&
+		   (client->readOnly() || !client->isJoined()))
+			current_brush->setDrawing(false);
+
+		if(current_brush->drawing())
+			canvas_state = canvasDrawingState;
 	}
 	if(info.buttons & Qt::MiddleButton){
 		canvas_state = canvasMovingState;
@@ -44,7 +51,7 @@ void ParupaintWindow::OnPenPress(const penInfo & info)
 	}
 
 	scene->updateMainCursor(brushes->brush());
-	client->SendBrushUpdate(current_brush);
+	client->doBrushUpdate(current_brush);
 
 	if(current_brush->tool() == ParupaintBrushToolTypes::BrushToolFloodFill){
 		current_brush->setDrawing(false);
@@ -105,7 +112,7 @@ void ParupaintWindow::OnPenMove(const penInfo& info)
 	scene->updateMainCursor(current_brush);
 
 	if(send_update){
-		client->SendBrushUpdate(current_brush);
+		client->doBrushUpdate(current_brush);
 	}
 }
 
@@ -123,11 +130,11 @@ void ParupaintWindow::OnPenRelease(const penInfo& info)
 		bool signals_blocked = current_brush->blockSignals(true);
 			current_brush->setPosition(info.pos);
 		current_brush->blockSignals(signals_blocked);
-		client->SendBrushUpdate(current_brush);
+		client->doBrushUpdate(current_brush);
 	}
 	current_brush->setDrawing(false);
 
-	client->SendBrushUpdate(current_brush);
+	client->doBrushUpdate(current_brush);
 	scene->updateMainCursor(current_brush);
 
 	canvas_state = noCanvasState;

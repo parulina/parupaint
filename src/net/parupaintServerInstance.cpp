@@ -53,41 +53,10 @@ ParupaintPanvas * ParupaintServerInstance::GetCanvas()
 	return canvas;
 }
 
-QString ParupaintServerInstance::MarshalCanvas()
-{
-	QJsonObject obj;
-	obj["width"] = canvas->dimensions().width();
-	obj["height"] = canvas->dimensions().height();
-
-	qDebug() << "MarshalCanvas" << obj << canvas->layerCount();
-	QJsonArray layers;
-	for(auto l = 0; l < canvas->layerCount(); l++){
-		auto * layer = canvas->layerAt(l);
-		if(!layer) continue;
-
-		qDebug() << " - l" << l << "frameCount" << layer->frameCount();
-		QJsonArray frames;
-		for(auto f = 0; f < layer->frameCount(); f++){
-			auto * frame = layer->frameAt(f);
-
-
-			QJsonObject fobj;
-			fobj["extended"] = !(layer->isFrameReal(f));
-			fobj["opacity"] = frame->opacity();
-			frames.insert(f, fobj);
-		}
-		layers.insert(l, frames);
-	}
-	obj["layers"] = layers;
-		
-
-	return QJsonDocument(obj).toJson(QJsonDocument::Compact);
-}
-
 QJsonObject ParupaintServerInstance::MarshalConnection(ParupaintConnection* connection)
 {
 	QJsonObject obj;
-	obj["id"] = connection->getId();
+	obj["id"] = connection->id();
 
 	obj["name"] = brushes[connection]->name();
 	obj["x"] = brushes[connection]->x();
@@ -108,23 +77,42 @@ void ParupaintServerInstance::BroadcastChat(QString str)
 {
 	QJsonObject obj;
 	obj["message"] = str;
-	this->Broadcast("chat", obj);
+	this->sendAll("chat", obj);
 }
 
-void ParupaintServerInstance::Broadcast(QString id, QJsonObject ba, ParupaintConnection * c)
+QJsonObject ParupaintServerInstance::canvasObj()
 {
-	this->Broadcast(id, QJsonDocument(ba).toJson(QJsonDocument::Compact), c);
-}
-void ParupaintServerInstance::Broadcast(QString id, QString ba, ParupaintConnection * c)
-{
-	return this->Broadcast(id, ba.toUtf8(), c);
-}
-void ParupaintServerInstance::Broadcast(QString id, const QByteArray ba, ParupaintConnection * c)
-{
-	foreach(auto i, brushes.keys()){
-		if(i != c){
-			if(i->getSocket()) i->send(id, ba);
+	QJsonObject obj;
+
+	obj["w"] = canvas->dimensions().width();
+	obj["h"] = canvas->dimensions().height();
+
+	QJsonArray layers;
+	for(int l = 0; l < canvas->layerCount(); l++){
+		ParupaintLayer * layer = canvas->layerAt(l);
+		if(!layer) continue;
+
+		QJsonArray frames;
+		for(int f = 0; f < layer->frameCount(); f++){
+			ParupaintFrame * frame = layer->frameAt(f);
+
+			QJsonObject fobj;
+			fobj["extended"] = !(layer->isFrameReal(f));
+			fobj["opacity"] = frame->opacity();
+			frames.insert(f, fobj);
 		}
+		layers.insert(l, frames);
+	}
+	obj["layers"] = layers;
+
+	return obj;
+}
+
+void ParupaintServerInstance::sendAll(const QString & id, const QJsonObject & obj, ParupaintConnection * con)
+{
+	foreach(ParupaintConnection * c, this->ppConnections()){
+		if(c == con) continue;
+		c->send(id, obj);
 	}
 }
 

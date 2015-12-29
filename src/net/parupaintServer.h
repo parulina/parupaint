@@ -18,7 +18,6 @@ Q_OBJECT
 	QWsServer* server;
 	bool protective;
 
-	ParupaintConnection * GetConnection(QWsSocket*);
 
 	private slots:
 	void onConnection();
@@ -29,13 +28,12 @@ Q_OBJECT
 	ParupaintServer(quint16 port, QObject * = nullptr);
 	~ParupaintServer();
 
+	ParupaintConnection * ppConnection(QWsSocket*);
+	QList<ParupaintConnection*> ppConnections();
 	virtual void message(ParupaintConnection *, const QString &, const QByteArray & = QByteArray()) {};
 
 	void setProtective(bool);
 	bool isProtective();
-
-	signals:
-	void onMessage(ParupaintConnection*, QString, const QByteArray = "");
 };
 
 

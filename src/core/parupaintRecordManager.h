@@ -3,6 +3,8 @@
 
 #include <QFile>
 
+class QTextStream;
+
 class ParupaintRecordManager
 {
 	private:
@@ -14,8 +16,9 @@ class ParupaintRecordManager
 	ParupaintRecordManager(QString);
 	~ParupaintRecordManager();
 
-	void Join(int, QString);
+	void Join(int);
 	void Leave(int);
+	void Name(int, QString);
 	void Pos(int, int, int, double, bool);
 	void Lf(int, int, int);
 	void Tool(int, int);

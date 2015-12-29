@@ -22,6 +22,8 @@ Q_OBJECT
 	void Connect(QString, quint16);
 	void Disconnect(QString reason = "");
 
+	bool connected();
+
 	virtual void message(const QString &, const QByteArray & = QByteArray()) {};
 	qint64 send(const QString id, const QString data);
 	qint64 send(const QString data);

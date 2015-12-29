@@ -151,7 +151,7 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 	ParupaintConnection * con = nullptr;
 	foreach(auto k, brushes.keys()){
 		// find connection from id
-		if(k->getId() == b) {con = k; break;}
+		if(k->id() == b) {con = k; break;}
 	}
 
 	// con should now hold a ParupaintConnection
@@ -162,12 +162,18 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 			con = new ParupaintConnection(nullptr);
 			con->setId(b);
 		}
-		this->ServerJoin(con, str.takeFirst(), !recovery);
+		this->ServerJoin(con, !recovery);
+		if(str.length() == 1){
+			this->ServerName(con, str.takeFirst(), !recovery);
+		}
 		return;
 	}
 	if(con){
 		if(id == "leave") {
 			this->ServerLeave(con, !recovery);
+
+		} else if(id == "name") {
+			this->ServerName(con, str.takeFirst(), !recovery);
 
 		// these are written at "draw" usually.
 		} else if(id == "width" && ct == 1) {
@@ -177,7 +183,7 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 				QJsonObject obj;
 				obj["id"] = b;
 				obj["w"] = size;
-				this->Broadcast("draw", obj);
+				this->sendAll("draw", obj);
 			} else {
 				if(record_manager) record_manager->Width(b, size);
 			}
@@ -194,7 +200,7 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 				QJsonObject obj;
 				obj["id"] = b;
 				obj["c"] = col;
-				this->Broadcast("draw", obj);
+				this->sendAll("draw", obj);
 			} else {
 				if(record_manager) record_manager->Color(b, col);
 			}
@@ -206,7 +212,7 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 				QJsonObject obj;
 				obj["id"] = b;
 				obj["t"] = tool;
-				this->Broadcast("draw", obj);
+				this->sendAll("draw", obj);
 			} else {
 				if(record_manager) record_manager->Tool(b, tool);
 			}
@@ -220,7 +226,7 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 				obj["id"] = b;
 				obj["l"] = l;
 				obj["f"] = f;
-				this->Broadcast("draw", obj);
+				this->sendAll("draw", obj);
 			} else {
 				if(record_manager) record_manager->Lf(b, l, f);
 			}
@@ -249,7 +255,7 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 				obj["y"] = y;
 				obj["p"] = p;
 				obj["d"] = d;
-				this->Broadcast("draw", obj);
+				this->sendAll("draw", obj);
 			} else {
 				if(record_manager) record_manager->Pos(b, x, y, p, d);
 			}
@@ -292,11 +298,11 @@ void ParupaintServerInstance::RestoreRecordBrushes()
 		obj["t"] = b->tool();
 		obj["c"] = b->colorString();
 
-		obj["id"] = c->getId();
+		obj["id"] = c->id();
 		obj["d"] = false;
 		obj["l"] = b->layer();
 		obj["f"] = b->frame();
-		this->Broadcast("draw", obj);
+		this->sendAll("draw", obj);
 	}
 	record_backup.clear();
 }
@@ -329,7 +335,7 @@ void ParupaintServerInstance::RecordTimerStep()
 
 			QJsonObject obj;
 			obj["count"] = 0;
-			this->Broadcast("play", obj);
+			this->sendAll("play", obj);
 
 			record_player->Reset();
 			record_timer.stop();
