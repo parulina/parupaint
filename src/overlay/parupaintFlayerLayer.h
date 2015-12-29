@@ -9,7 +9,6 @@ class QLineEdit;
 
 class ParupaintFlayerLayer : public QWidget
 {
-	int firstchildren_count;
 Q_OBJECT
 	private:
 	QRadioButton * layer_visible;

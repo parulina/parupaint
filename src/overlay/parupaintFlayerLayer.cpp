@@ -5,8 +5,7 @@
 #include <QLineEdit>
 #include <QHBoxLayout>
 
-ParupaintFlayerLayer::ParupaintFlayerLayer(QWidget * parent) : QWidget(parent),
-	firstchildren_count(-1)
+ParupaintFlayerLayer::ParupaintFlayerLayer(QWidget * parent) : QWidget(parent)
 {
 	this->setFocusPolicy(Qt::NoFocus);
 
@@ -49,20 +48,13 @@ void ParupaintFlayerLayer::setName(const QString & name)
 void ParupaintFlayerLayer::addFrame(ParupaintFlayerFrame * frame)
 {
 	QHBoxLayout * layout = qobject_cast<QHBoxLayout*>(this->layout());
-	int stretch = 0;
-	if(firstchildren_count == -1){
-		firstchildren_count = layout->count();
-		stretch = 1;
-	} else {
-		layout->setStretch(firstchildren_count, 0);
-	}
-	layout->addWidget(frame, stretch);
+	layout->addWidget(frame, 0);
 }
 ParupaintFlayerFrame * ParupaintFlayerLayer::frameAt(int i)
 {
 	QHBoxLayout * layout = qobject_cast<QHBoxLayout*>(this->layout());
-	if(firstchildren_count == -1) return nullptr;
-	QLayoutItem * item = layout->itemAt(i + firstchildren_count);
+
+	QLayoutItem * item = layout->itemAt(i + 2);
 	if(!item) return nullptr;
 
 	return qobject_cast<ParupaintFlayerFrame*>(item->widget());

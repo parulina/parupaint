@@ -129,6 +129,7 @@ void ParupaintFlayer::setHighlightLayerFrame(int l, int f)
 			frame->setChecked(true);
 		}
 	}
+	this->ensureWidgetVisible(layer, 0, 0);
 }
 
 void ParupaintFlayer::mouseMoveEvent(QMouseEvent * event)
