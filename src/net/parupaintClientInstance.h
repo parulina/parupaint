@@ -41,7 +41,7 @@ Q_OBJECT
 	bool readOnly();
 	bool isJoined();
 
-	void doJoin();
+	void doJoin(const QString & password = QString());
 	void doLeave();
 	void doName();
 	void doReloadCanvas();

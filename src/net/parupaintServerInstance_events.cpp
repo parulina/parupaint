@@ -34,7 +34,6 @@ void ParupaintServerInstance::ServerJoin(ParupaintConnection * c, bool propagate
 
 	if(!propagate) return;
 
-
 	QJsonObject obj_me = this->MarshalConnection(c);
 	obj_me["disconnect"] = false;
 	this->sendAll("peer", obj_me, c);
@@ -220,17 +219,42 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 			}
 			c->send("canvas", this->canvasObj());
 
+			if(c->socket()->host() == "localhost"){
+				c->send("join");
+			}
+
 		// disconnect is handled lower down
 		// } else if(id == "disconnect"){
 			// connect and disconnect is for stuff that
 			// should always happen to joining people
 
 		} else if(id == "join"){
-			qreal ver = obj["version"].toString("0.00").toDouble();
+			bool ok;
+			QJsonObject msgobj;
+			qreal ver = obj["version"].toString("0.00").toDouble(&ok);
+
+			if(!ok) return;
 			if(ver < 0.92) return; // 0.91 and previous autojoins
 
+			if(c->socket()->host() != "localhost"){
+				if(!server_password.isEmpty()){
+					if(!obj["password"].isString()){
+						msgobj["message"] = "Server requires a password.";
+						c->send("chat", msgobj);
+						return;
+					}
+
+					QString pw = obj["password"].toString();
+					if(pw != server_password){
+						msgobj["message"] = "Incorrect password.";
+						c->send("chat", msgobj);
+						return;
+					}
+				}
+			}
+
 			// let the connection know we accepted them
-			c->send("join", "");
+			c->send("join");
 
 			c->setId(connectid++);
 			this->ServerJoin(c, true);

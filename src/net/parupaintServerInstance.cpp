@@ -1,5 +1,6 @@
 #include "parupaintServerInstance.h"
 
+#include <QSettings>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -19,6 +20,9 @@ ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent)
 	canvas(nullptr), connectid(1),
 	record_player(nullptr), record_manager(nullptr)
 {
+	QSettings server_cfg("server.ini", QSettings::IniFormat, this);
+	this->server_password = server_cfg.value("password").toString();
+
 	canvas = new ParupaintPanvas(this, QSize(540, 540), 1, 1);
 	this->ServerFill(0, 0, "#FFF");
 

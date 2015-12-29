@@ -19,7 +19,9 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 
 	if(id == "connect"){
 		emit onConnect();
-		emit onJoinedChange((client_joined = false));
+		if(this->url().host() != "localhost"){
+			emit onJoinedChange((client_joined = false));
+		}
 
 		this->doName();
 

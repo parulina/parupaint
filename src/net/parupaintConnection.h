@@ -13,7 +13,7 @@ class ParupaintConnection
 	public:
 	ParupaintConnection(QWsSocket * s);
 	qint64 send(const QString id, const QJsonObject &obj);
-	qint64 send(const QString id, const QString msg);
+	qint64 send(const QString id, const QString msg = QString());
 
 	void setId(int id);
 	int id() const;

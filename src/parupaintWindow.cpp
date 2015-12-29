@@ -119,7 +119,9 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	connect(client, &ParupaintClientInstance::onDisconnect, this, &ParupaintWindow::OnNetworkDisconnect);
 	connect(client, &ParupaintClientInstance::onConnect, this, &ParupaintWindow::OnNetworkConnect);
 	connect(client, &ParupaintClientInstance::onJoinedChange, [&](bool j){
-		if(!j && client->connected()) this->addChatMessage("You are currently spectating.");
+		if(!j && client->connected()){
+			this->addChatMessage("You are currently spectating.");
+		}
 	});
 
 
@@ -714,7 +716,7 @@ void ParupaintWindow::doCommand(const QString & cmd, const QString & params)
 {
 	this->addChatMessage(cmd + " " + params);
 	if(cmd == "join"){
-		return client->doJoin();
+		return client->doJoin(params);
 	}
 	if(cmd == "leave"){
 		return client->doLeave();

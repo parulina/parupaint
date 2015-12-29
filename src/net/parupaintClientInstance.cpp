@@ -59,10 +59,13 @@ bool ParupaintClientInstance::isJoined()
 
 
 
-void ParupaintClientInstance::doJoin()
+void ParupaintClientInstance::doJoin(const QString & password)
 {
 	QJsonObject obj;
 	obj["version"] = PARUPAINT_VERSION;
+	if(!password.isEmpty()){
+		obj["password"] = password;
+	}
 	this->send("join", obj);
 }
 

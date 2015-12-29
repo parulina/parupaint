@@ -24,6 +24,7 @@ Q_OBJECT
 	ParupaintPanvas * canvas;
 	QHash<ParupaintConnection*, ParupaintBrush*> brushes;
 	int connectid;
+	QString server_password;
 
 	protected:
 	// Record related things (parupaintServerInstance.rec.cpp)
