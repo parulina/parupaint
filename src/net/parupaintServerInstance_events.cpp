@@ -101,7 +101,7 @@ void ParupaintServerInstance::ServerLfc(int l, int f, int lc, int fc, bool e, bo
 			changed = true;
 		} else if(lc > 0){
 			for(int i = 0; i < lc; i++){
-				canvas->insertLayer(l);
+				canvas->insertLayer(l, 1);
 			}
 			changed = true;
 		}

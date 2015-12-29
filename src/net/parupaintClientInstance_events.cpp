@@ -146,17 +146,20 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		canvas->clearCanvas();
 		canvas->resize(QSize(w, h));
 
-		auto ll = 0;
-		foreach(auto l, layers){
+		for(int i = 0; i < layers.size(); i++){
 			canvas->insertLayer(0, 0);
-			auto *canvas_layer = canvas->layerAt(ll);
+		}
+
+		int ll = 0;
+		foreach(QJsonValue l, layers){
+			ParupaintLayer *canvas_layer = canvas->layerAt(ll);
 			if(!canvas_layer) continue;
 
-			auto ff = 0;
-			foreach(auto f, l.toArray()){
-				auto frame = f.toObject();
-				auto extended = frame["extended"].toBool();
-				auto opacity = frame["opacity"].toDouble();
+			int ff = 0;
+			foreach(QJsonValue f, l.toArray()){
+			QJsonObject frame = f.toObject();
+				bool extended = frame["extended"].toBool();
+				qreal opacity = frame["opacity"].toDouble();
 
 				// extended can't be the first. what
 				if(extended && ff == 0) extended = false;
