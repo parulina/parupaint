@@ -213,6 +213,7 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 
 	if(c) {
 		if(id == "connect"){
+			c->setId(connectid++);
 			// send everyone and the canvas too
 			foreach(ParupaintConnection * con, brushes.keys()){
 				c->send("peer", this->MarshalConnection(con));
@@ -252,7 +253,6 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 			// let the connection know we accepted them
 			c->send("join");
 
-			c->setId(connectid++);
 			this->ServerJoin(c, true);
 
 		// happens even if client doesn't send leave message

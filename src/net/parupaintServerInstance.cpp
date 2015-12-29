@@ -71,7 +71,7 @@ QJsonObject ParupaintServerInstance::MarshalConnection(ParupaintConnection* conn
 	QJsonObject obj;
 	obj["id"] = connection->id();
 
-	obj["name"] = brushes[connection]->name();
+	obj["name"] = connection->name();
 	obj["x"] = brushes[connection]->x();
 	obj["y"] = brushes[connection]->y();
 	obj["w"] = brushes[connection]->size();

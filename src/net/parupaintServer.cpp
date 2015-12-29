@@ -49,8 +49,11 @@ void ParupaintServer::onConnection()
 		}
 	}
 
-	connections << new ParupaintConnection(socket);
-	message(connections.first(), "connect");
+	ParupaintConnection * con = new ParupaintConnection(socket);
+
+	connections << con;
+	message(con, "connect");
+
 }
 
 void ParupaintServer::onDisconnection()
@@ -71,6 +74,7 @@ void ParupaintServer::textReceived(QString text)
 {
 	QWsSocket * socket = qobject_cast<QWsSocket* >(sender());
 	if(!socket) return;
+
 
 	if(text.isEmpty()) return;
 
