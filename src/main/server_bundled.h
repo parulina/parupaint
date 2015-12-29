@@ -7,6 +7,10 @@ class ParupaintBundledServer : public ParupaintServerInstance
 {
 	protected:
 	virtual void message(ParupaintConnection * con, const QString & id, const QByteArray & array);
+	private slots:
+	void onPlayerJoin(ParupaintConnection *);
+	void onPlayerLeave(ParupaintConnection *);
+
 	public:
 	ParupaintBundledServer(quint16 port, QObject * = nullptr);
 };

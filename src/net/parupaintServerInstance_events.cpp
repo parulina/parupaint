@@ -252,13 +252,15 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 
 			// let the connection know we accepted them
 			c->send("join");
+			emit onJoin(c);
 
 			this->ServerJoin(c, true);
 
 		// happens even if client doesn't send leave message
 		} else if(id == "leave" || id == "disconnect") {
 			if(id == "leave"){
-				c->send("leave", "");
+				c->send("leave");
+				emit onLeave(c);
 			}
 			ParupaintBrush * brush = brushes.value(c);
 			if(brush){

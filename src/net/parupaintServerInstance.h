@@ -76,6 +76,8 @@ Q_OBJECT
 
 	signals:
 	void OnMessage(const QString & id, const QJsonObject &obj);
+	void onJoin(ParupaintConnection *);
+	void onLeave(ParupaintConnection *);
 };
 
 #endif
