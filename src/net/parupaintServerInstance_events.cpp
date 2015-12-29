@@ -428,7 +428,7 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 			// TODO clean this up
 			QSettings cfg;
 			QString name = obj["filename"].toString();
-			QString load_dir = cfg.value("canvas/directory").toString();
+			QString load_dir = cfg.value("canvas/directory", ".").toString();
 
 			if(!name.isEmpty()){
 				QString err, fname(load_dir + "/" + name);
@@ -446,7 +446,7 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 			if(brushes.find(c) == brushes.end()) return;
 
 			QSettings cfg;
-			QString load_dir = cfg.value("server/directory").toString();
+			QString load_dir = cfg.value("server/directory", ".").toString();
 
 			// TODO clean this up
 			if(obj["file"].isString() && obj["filename"].isString()){
