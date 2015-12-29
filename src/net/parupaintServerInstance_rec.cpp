@@ -177,7 +177,7 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 			if(!recovery){
 				QJsonObject obj;
 				obj["id"] = b;
-				obj["w"] = size;
+				obj["s"] = size;
 				this->sendAll("draw", obj);
 			} else {
 				if(record_manager) record_manager->Width(b, size);
@@ -289,7 +289,7 @@ void ParupaintServerInstance::RestoreRecordBrushes()
 			record_backup.erase(backup_it);
 		}
 		QJsonObject obj;
-		obj["w"] = b->size();
+		obj["s"] = b->size();
 		obj["t"] = b->tool();
 		obj["c"] = b->colorString();
 

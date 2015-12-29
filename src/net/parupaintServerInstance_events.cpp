@@ -315,7 +315,7 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 					if(record_manager) record_manager->Color(c->id(), obj["c"].toString());
 				}
 				if(obj["s"].isDouble()) {
-					brush->setSize(obj["w"].toDouble());
+					brush->setSize(obj["s"].toDouble());
 					if(record_manager) record_manager->Width(c->id(), brush->size());
 				}
 				if(obj["t"].isDouble()) {

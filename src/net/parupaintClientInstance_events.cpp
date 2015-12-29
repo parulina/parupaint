@@ -44,7 +44,7 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		QString n(object["name"].toString("???"));
 		qreal 	x(object["x"].toDouble(0)),
 			y(object["y"].toDouble(0));
-		qreal 	w(object["w"].toDouble(1));
+		qreal 	w(object["s"].toDouble(1));
 		int 	t(object["t"].toInt(0));
 		int 	l(object["l"].toInt(0)),
 			f(object["f"].toInt(0));
@@ -85,7 +85,7 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 
 			if(object["c"].isString())	brush->setColor(ParupaintSnippets::toColor(object["c"].toString("#000")));
 			if(object["d"].isBool())	brush->setDrawing(object["d"].toBool(false));
-			if(object["w"].isDouble())	brush->setSize(object["w"].toDouble(1));
+			if(object["s"].isDouble())	brush->setSize(object["s"].toDouble(1));
 			if(object["p"].isDouble())	brush->setPressure(object["p"].toDouble(0.0));
 			if(object["t"].isDouble())	brush->setTool(object["t"].toInt(0));
 			if(object["l"].isDouble())	brush->setLayer(object["l"].toInt(0));
