@@ -24,6 +24,9 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		}
 
 		this->doName();
+		if(this->url().host() == "localhost"){
+			this->doJoin();
+		}
 
 	} else if(id == "disconnect"){
 		emit onDisconnect(bytes);

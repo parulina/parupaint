@@ -219,10 +219,6 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 			}
 			c->send("canvas", this->canvasObj());
 
-			if(c->socket()->host() == "localhost"){
-				c->send("join");
-			}
-
 		// disconnect is handled lower down
 		// } else if(id == "disconnect"){
 			// connect and disconnect is for stuff that

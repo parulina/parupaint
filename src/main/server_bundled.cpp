@@ -16,6 +16,11 @@ void ParupaintBundledServer::message(ParupaintConnection * con, const QString & 
 			QJsonObject obj;
 			obj["message"] = con->name() + " joined.";
 			this->sendAll("chat", obj);
+
+			if(!this->password().isEmpty()){
+				obj["message"] = "Participating is passworded, use /join <password> to join";
+				con->send("chat", obj);
+			}
 		}
 	}
 	if(id == "leave"){
