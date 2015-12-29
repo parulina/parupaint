@@ -237,7 +237,7 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 			if(ver < 0.92) return; // 0.91 and previous autojoins
 
 			if(c->socket()->host() != "localhost"){
-				if(!server_password.isEmpty()){
+				if(!this->password().isEmpty()){
 					if(!obj["password"].isString()){
 						msgobj["message"] = "Server requires a password.";
 						c->send("chat", msgobj);
@@ -245,7 +245,7 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 					}
 
 					QString pw = obj["password"].toString();
-					if(pw != server_password){
+					if(pw != this->password()){
 						msgobj["message"] = "Incorrect password.";
 						c->send("chat", msgobj);
 						return;

@@ -16,6 +16,8 @@
 #include "parupaintVersion.h"
 #include "parupaintVersionCheck.h"
 
+#include "main/server_bundled.h"
+
 ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 {
 	setOrganizationName("paru");
@@ -81,7 +83,7 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 	}
 
 	if(server_str.isEmpty()){
-		ParupaintServerInstance* server = new ParupaintServerInstance(server_port, this);
+		ParupaintBundledServer* server = new ParupaintBundledServer(server_port, this);
 		server->setProtective(true);
 
 		server_str = QString("localhost:%1").arg(server_port);

@@ -40,7 +40,8 @@ HEADERS +=		$$files(src/core/*.h) \
 			$$files(src/widget/*.h) \
 			$$files(src/bundled/*.h) \
 			$$files(src/bundled/karchive/*.h) \
-			$$files(src/*.h)
+			$$files(src/*.h) \
+			src/main/server_bundled.h
 
 SOURCES += 		$$files(src/core/*.cpp) \
 			$$files(src/net/*.cpp) \
@@ -50,7 +51,8 @@ SOURCES += 		$$files(src/core/*.cpp) \
 			$$files(src/widget/*.cpp) \
 			$$files(src/bundled/*.cpp) \
 			$$files(src/bundled/karchive/*.cpp) \
-			$$files(src/*.cpp)
+			$$files(src/*.cpp) \
+			src/main/server_bundled.cpp
 
 INCLUDEPATH +=		src/bundled/ffmpeg
 

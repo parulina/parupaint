@@ -52,6 +52,16 @@ ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent)
 	*/
 }
 
+void ParupaintServerInstance::setPassword(const QString & password)
+{
+	this->server_password = password;
+}
+
+const QString & ParupaintServerInstance::password()
+{
+	return this->server_password;
+}
+
 ParupaintPanvas * ParupaintServerInstance::GetCanvas()
 {
 	return canvas;

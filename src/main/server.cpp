@@ -1,23 +1,17 @@
 #include <QCoreApplication>
 #include <QJsonObject>
 #include <QDebug>
-#include "../net/parupaintServerInstance.h"
+
+#include "server_bundled.h"
 
 class ParupaintSingleServer: public QCoreApplication
 {
-	ParupaintServerInstance * instance;
-	private:
-	void Message(const QString & id, const QJsonObject &obj)
-	{
-		//qDebug() << id << obj;
-		if(id == "join") qDebug() << obj["name"] << "connected";
-		else if(id == "disconnect") qDebug() << obj["name"] << "disconnected";
-	};
+	// bundled server includes join/leave messages
+	ParupaintBundledServer * instance;
 	public:
 	ParupaintSingleServer(int & argc, char ** argv) : QCoreApplication(argc, argv)
 	{
-		instance = new ParupaintServerInstance(1108);
-		connect(instance, &ParupaintServerInstance::OnMessage, this, &ParupaintSingleServer::Message);
+		instance = new ParupaintBundledServer(1108, this);
 	}
 };
 

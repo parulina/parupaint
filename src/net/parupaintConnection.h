@@ -22,6 +22,7 @@ class ParupaintConnection
 	QString name();
 
 	QWsSocket * socket();
+	bool isLocal();
 };
 
 #endif

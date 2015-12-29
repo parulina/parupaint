@@ -47,6 +47,10 @@ Q_OBJECT
 	public:
 	~ParupaintServerInstance();
 	ParupaintServerInstance(quint16 , QObject * = nullptr);
+
+	void setPassword(const QString & password);
+	const QString & password();
+
 	virtual void message(ParupaintConnection *, const QString &, const QByteArray & = QByteArray());
 
 	void ServerJoin(ParupaintConnection *, bool=true);

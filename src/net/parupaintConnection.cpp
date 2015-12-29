@@ -43,3 +43,8 @@ QWsSocket * ParupaintConnection::socket()
 {
 	return this->connection_socket;
 }
+
+bool ParupaintConnection::isLocal()
+{
+	return (this->socket()->host() == "localhost");
+}
