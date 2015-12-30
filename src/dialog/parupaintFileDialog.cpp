@@ -19,13 +19,13 @@ ParupaintFileDialog::ParupaintFileDialog(ParupaintFileDialogType type, QWidget *
 	if(type == dialogTypeOpen){
 		this->setWindowTitle("open...");
 		this->setFileMode(QFileDialog::ExistingFile);
-		this->setNameFilter("supported files (*.png *.ora *.ppa)");
+		this->setNameFilter("supported files (*.jpg *.png *.ora *.ppa)");
 		config_key = "lastopen";
 	}
 	if(type == dialogTypeSaveAs){
 		this->setWindowTitle("save as...");
 		this->setFileMode(QFileDialog::AnyFile);
-		this->setNameFilter("*.png *.ppa");
+		this->setNameFilter("*.jpg *.png *.ppa");
 		config_key = "lastsaveas";
 	}
 	// set sidebar url
