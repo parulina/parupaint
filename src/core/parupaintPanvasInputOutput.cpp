@@ -4,6 +4,12 @@
 #include <QDir>
 #include <QPainter>
 #include <QBuffer>
+
+// PPA
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+
 #ifdef QT_XML_LIB
 #include <QDomDocument>
 #endif
@@ -80,37 +86,51 @@ bool ParupaintPanvasInputOutput::savePPA(ParupaintPanvas * panvas, const QString
 	if(!tar.open(QIODevice::WriteOnly))
 		return (errorStr = "Failed open PPA for writing").isEmpty();
 
-	QSize dim = panvas->dimensions();
 
-	// TODO use a json thing
-	const QString str_info = QString("%1x%2").arg(dim.width()).arg(dim.height());
-	tar.writeFile("pp3info.txt", str_info.toUtf8());
-
+	QJsonObject layers;
 	for(int l = 0; l < panvas->layerCount(); l++){
+
 		ParupaintLayer * layer = panvas->layerAt(l);
 
+		QJsonObject frames_info;
 		for(int f = 0; f < layer->frameCount(); f++){
-			if(!layer->isFrameReal(f)) continue;
+			if(!layer->isFrameReal(f))
+				continue;
 
 			ParupaintFrame * frame = layer->frameAt(f);
 
 			QImage image = frame->image();
+
+			// write temp buffer for png
 			QByteArray byte_array(image.byteCount(), 0);
 			QBuffer buf(&byte_array);
 			buf.open(QIODevice::WriteOnly);
 			image.save(&buf, "png");
 			buf.close();
 
-			QString temp_name = QString("%1/%2").arg(l).arg(f);
-			if(layer->isFrameExtended(f)){
-				temp_name.append(layer->frameLabel(f));
-
-			}
-			temp_name += ".png";
-
-			tar.writeFile(temp_name, byte_array);
+			QString frame_name = QString("%1/%2.png").arg(l).arg(layer->frameLabel(f));
+			frames_info.insert(layer->frameLabel(f), QJsonObject{
+				{"opacity", frame->opacity()}
+			});
+			tar.writeFile(frame_name, byte_array);
 		}
+		layers.insert(QString::number(l), frames_info);
+		layers["visible"] = layer->visible();
+		// TODO layername
 	}
+
+	QJsonObject ppa_info = {
+		{"canvasWidth", panvas->dimensions().width()},
+		{"canvasHeight", panvas->dimensions().height()},
+		{"frameRate", panvas->frameRate()},
+		{"projectName", panvas->projectName()},
+		{"layers", layers}
+	};
+
+	QByteArray json = QJsonDocument(ppa_info).toJson(QJsonDocument::Indented);
+	qDebug("%s", qPrintable(json));
+	tar.writeFile("pp3.json", json);
+
 	tar.close();
 
 	return true;

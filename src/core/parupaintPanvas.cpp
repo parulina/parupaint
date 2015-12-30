@@ -5,7 +5,8 @@
 
 #define qtMax(x, y) (x > y ? x : y)
 
-ParupaintPanvasInfo::ParupaintPanvasInfo()
+ParupaintPanvasInfo::ParupaintPanvasInfo() :
+	framerate(12)
 {
 }
 

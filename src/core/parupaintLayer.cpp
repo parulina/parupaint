@@ -194,22 +194,18 @@ QString ParupaintLayer::frameLabel(ParupaintFrame* f)
 QString ParupaintLayer::frameLabel(int i)
 {
 	if(i >= 0 && i < frames.length()) {
-		QString str = "-0";
+
+		QString str = QString::number(i);
 		if(this->frameExtendedDirection(i) == FRAME_EXTENDED_LEFT){
-			int end = i;
-			// originally != FRAME_EXTENDED_RIGHT
-			while(this->frameExtendedDirection(end) == FRAME_EXTENDED_LEFT){
+			int end = i + 1;
+			while(this->frameExtendedDirection(end) != FRAME_EXTENDED_RIGHT){
 				end++;
 			}
-			str = QString("-%2").arg(end-i);
-		}
-		qreal opacity = this->frameAt(i)->opacity();
-		if(opacity != 1.0) {
-			str = QString("%1-%2").arg(str).arg(int(opacity*255));
+			str.append(QString("-%2").arg(end-i));
 		}
 		return str;
 	}
-	return QString("0-0");
+	return QString("null");
 }
 
 int ParupaintLayer::frameIndex(ParupaintFrame* f)

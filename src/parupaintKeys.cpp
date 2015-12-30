@@ -67,11 +67,13 @@ Qt::KeyboardModifiers ParupaintKeys::GetModifiers(QString name) {
 QString ParupaintKeys::Match(int k, Qt::KeyboardModifiers m)
 {
 	// match direct key
+	QString bk;
 	for(auto i = keys.constBegin(); i != keys.constEnd(); ++i){
 		ParupaintKey key = *i;
+		if(key.key == k && key.mod == Qt::NoModifier) bk = i.key();
 		if(key.key == k && key.mod == m) return i.key();
 	}
-	return "";
+	return bk;
 }
 
 void ParupaintKeys::Save() {

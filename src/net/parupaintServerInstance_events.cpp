@@ -107,7 +107,7 @@ void ParupaintServerInstance::ServerLfc(int l, int f, int lc, int fc, bool e, bo
 		}
 	}
 	if(fc != 0){
-		auto * ff = canvas->layerAt(l);
+		ParupaintLayer * ff = canvas->layerAt(l);
 		if(ff) {
 			if(fc < 0 && ff->frameCount() > 1){
 				if(e){
