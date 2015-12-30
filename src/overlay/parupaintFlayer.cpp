@@ -20,7 +20,7 @@ ParupaintFlayerList::ParupaintFlayerList(QWidget * parent) : QFrame(parent)
 
 	QVBoxLayout * layout = new QVBoxLayout;
 		layout->setAlignment(Qt::AlignTop);
-		layout->setSpacing(1);
+		layout->setSpacing(0);
 		layout->setMargin(0);
 		layout->setContentsMargins(0, 0, 0, 0);
 		layout->setSizeConstraint(QLayout::SetFixedSize);
@@ -107,6 +107,8 @@ void ParupaintFlayer::updateFromCanvas(ParupaintPanvas* panvas)
 			ParupaintFlayerFrame * frame = new ParupaintFlayerFrame;
 			frame->layer = l; frame->frame = f;
 
+			if(panvas->layerAt(l)) frame->setProperty("extended", panvas->layerAt(l)->isFrameExtended(f));
+
 			connect(frame, &ParupaintFlayerFrame::clicked, this, &ParupaintFlayer::frame_click);
 			flayer_layer->addFrame(frame);
 		}
@@ -153,6 +155,12 @@ void ParupaintFlayer::mouseMoveEvent(QMouseEvent * event)
 
 bool ParupaintFlayer::event(QEvent * event)
 {
+	if(event->type() == QEvent::MouseButtonRelease){
+		QMouseEvent * mouse_event = dynamic_cast<QMouseEvent*>(event);
+		if(mouse_event && mouse_event->button() == Qt::MiddleButton){
+			old_pos = QPoint();
+		}
+	}
 	if(event->type() == QEvent::LayoutRequest){
 
 		int height = layers->height() + 1;

@@ -145,14 +145,19 @@ ParupaintFlayerLayer #FlayerLayerLabel:focus {
 	color:white;
 	background:rgba(0, 0, 0, 0.2);
 }
+
 ParupaintFlayerFrame {
-	background:#CCC;
+	background:#DDD;
 	border:none;
+	border-right:2px solid transparent;
 }
-ParupaintFlayerFrame:checked,
-#FlayerFrameExtended:checked{
-	background:#EEE;
-	border-bottom:2px solid #444;
+ParupaintFlayerFrame[extended=true] {
+	background:#99a9cc;
+	border-right:2px solid #99a9cc;
+}
+ParupaintFlayerFrame:checked {
+	border:2px solid #222;
+	border-bottom-width:4px;
 }
 
 
