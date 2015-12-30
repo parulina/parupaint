@@ -67,7 +67,7 @@ void ParupaintInfoBarStatus::updateTitle()
 	this->setHtml(QString(
 		"<p class=\"titletext\">"
 			"<a href=\"#f1_notice\">(help: F1)</a>  "
-			"connected to: <a href=\"#connected\">" + connected_to + "</a>  "
+			"connected to <a href=\"#connected\">" + (connected_to == "localhost" ? "yourself" : connected_to) + "</a>  "
 			"<a href=\"#dimensions\">&lt;" + dimensions + "&gt;</a>  "
 			"<span href=\"#layerframe\">{" + layerframe + "}</span>"
 		"</p>"
