@@ -61,6 +61,7 @@ bool ParupaintPanvasInputOutput::saveImage(ParupaintPanvas * panvas, const QStri
 		return (errorStr = "Enter a filename to save to.").isEmpty();
 
 	QImage img(panvas->dimensions(), QImage::Format_ARGB32);
+	img.fill(0);
 	for(int l = 0; l < panvas->layerCount(); l++){
 		ParupaintLayer * layer = panvas->layerAt(l);
 
