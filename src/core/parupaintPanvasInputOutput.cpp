@@ -6,6 +6,7 @@
 #include <QBuffer>
 
 // PPA
+#include <QJsonParseError>
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
@@ -114,8 +115,8 @@ bool ParupaintPanvasInputOutput::savePPA(ParupaintPanvas * panvas, const QString
 			});
 			tar.writeFile(frame_name, byte_array);
 		}
+		frames_info["visible"] = layer->visible();
 		layers.insert(QString::number(l), frames_info);
-		layers["visible"] = layer->visible();
 		// TODO layername
 	}
 
@@ -297,138 +298,68 @@ bool ParupaintPanvasInputOutput::loadPPA(ParupaintPanvas * panvas, const QString
 	if(!tar.open(QIODevice::ReadOnly))
 		return (errorStr = "Couldn't read PPA").isEmpty();
 
+	const QString pp3("pp3.json");
+	const KArchiveDirectory * topdir = tar.directory();
 
-	struct frameLoad {
-		QByteArray bytes;
-		int extended;
-		int ff;
-		frameLoad(){};
-		frameLoad(const QByteArray &ba, int e, int f) : frameLoad() {
-			bytes = ba; extended = e; ff = f;
-		};
-	};
+	// be sure it has the files
+	if(!topdir->entry(pp3))
+		return (errorStr = "File is not PPA.").isEmpty();
 
-	const KArchiveDirectory * d = tar.directory();
-	QMap<int, QList<frameLoad>> real_frames;
-	int width = 0, height = 0;
+	const KArchiveFile * json_file = dynamic_cast<const KArchiveFile*>(topdir->entry(pp3));
+	if(!json_file)
+		return (errorStr = "Couldn't read info file in PPA.").isEmpty();
 
-	if(d->entry("info2.ini")){
-		// set -> layer -> frame
-		QMap<int, QMap<int, QMap<int, frameLoad>>> frames;
+	QJsonParseError err;
+	QJsonDocument info_doc = QJsonDocument::fromJson(json_file->data(), &err);
+	if(err.error != QJsonParseError::NoError)
+		return (errorStr = "Couldn't read json info: " + err.errorString()).isEmpty();
 
-		foreach(auto file, d->entries()){
-			const KArchiveEntry * entry = d->entry(file);
-			if(entry->isDirectory()){
-				auto * set = dynamic_cast<const KArchiveDirectory*>(entry);
-				foreach(auto l, set->entries()){
-					if(!set->entry(l)->isDirectory()) continue;
-					auto * layer = dynamic_cast<const KArchiveDirectory*>(set->entry(l));
+	QJsonObject main_obj = info_doc.object();
+	if(!main_obj.contains("canvasWidth") || !main_obj.contains("canvasHeight"))
+		return (errorStr = "Width/height not specified.").isEmpty();
 
-					foreach(auto f, layer->entries()){
-						if(!layer->entry(f)->isFile()) continue;
-						auto * frame = dynamic_cast<const KArchiveFile*>(layer->entry(f));
-
-						int ss = file.toInt();
-						int ll = l.toInt();
-
-						QString name = f.split(".")[0];
-						int ff = name.split("-")[0].toInt();
-
-						int e = 0;
-						if(name.indexOf("-") != -1){
-							e = name.split("-")[1].toInt();
-						}
-
-						frames[ss][ll][ff] = frameLoad(frame->data(), e, ff);
-					}
-
-
-				}
-			} else if(entry->isFile()) {
-				auto * f = dynamic_cast<const KArchiveFile*>(entry);
-				if(file == "info2.ini") {
-					const QByteArray fbytes = f->data();
-
-					QRegExp exp("CanvasWidth=(\\d+)");
-					if(exp.indexIn(fbytes) != -1) { width = exp.cap(1).toInt(); }
-					exp.setPattern("CanvasHeight=(\\d+)");
-					if(exp.indexIn(fbytes) != -1) { height = exp.cap(1).toInt(); }
-				}
-			}
-		}
-		if(!width || !height) {
-			return (errorStr = "Invalid width/height").isEmpty();
-		}
-
-		for(auto s = frames.constBegin(); s != frames.constEnd(); ++s){
-			for(auto l = s.value().constBegin(); l != s.value().constEnd(); ++l){
-				real_frames.insert(real_frames.size(), l.value().values());
-			}
-		}
-	} else {
-		auto * f = dynamic_cast<const KArchiveFile*>(d->entry("pp3info.txt"));
-		if(f){
-			const QByteArray data = f->data();
-			QRegExp exp("(\\d+)x(\\d+)");
-			if(exp.indexIn(data) != -1) {
-				width = exp.cap(1).toInt();
-				height = exp.cap(2).toInt();
-				qDebug() << width << "x" << height;
-			}
-		}
-
-		// pre alloc layer slots
-		foreach(auto l, d->entries()){
-			if(d->entry(l)->isDirectory()) real_frames.insert(real_frames.size(), {});
-		}
-		
-		foreach(auto l, d->entries()){
-			if(!d->entry(l)->isDirectory()) continue;
-			auto * layer = dynamic_cast<const KArchiveDirectory*>(d->entry(l));
-
-			foreach(auto f, layer->entries()){
-				if(!layer->entry(f)->isFile()) continue;
-				auto * frame = dynamic_cast<const KArchiveFile*>(layer->entry(f));
-
-				int ll = l.toInt();
-				QString name = f.section(".", 0, 0);
-				int ff = name.split("-")[0].toInt();
-
-				int e = 0;
-				if(name.indexOf("-") != -1){ e = name.split("-")[1].toInt(); }
-
-				real_frames[ll].append(frameLoad(frame->data(), e, ff));
-			}
-		}
-	}
-
-	// now to modify the panvas
+	// load the canvas settings
 	panvas->clearCanvas();
-	panvas->resize(QSize(width, height));
-	for(int i = 0; i < real_frames.size(); i++){
-		panvas->insertLayer(new ParupaintLayer(panvas));
-	}
-	for(auto l = real_frames.begin(); l != real_frames.end(); ++l){
-		ParupaintLayer * layer = panvas->layerAt(l.key());
-		for(int i = 0; i < l.value().length(); i++){
-			layer->insertFrame(new ParupaintFrame(panvas->dimensions()));
-		}
-		
-		for(auto it = l.value().begin(); it != l.value().end(); ++it){
-			auto f = *it;
+	panvas->resize(QSize(main_obj.value("canvasWidth").toInt(180), main_obj.value("canvasHeight").toInt(180)));
+	panvas->setFrameRate(main_obj.value("frameRate").toDouble(12));
+	panvas->setProjectName(main_obj.value("projectName").toString());
 
-			QImage img;
-			img.loadFromData(f.bytes);
+	QJsonObject layers = main_obj.value("layers").toObject();
+	foreach(const QString & lk, layers.keys()) {
 
-			ParupaintFrame * frame = layer->frameAt(f.ff);
-			frame->replaceImage(img);
-			if(f.extended){
-				for(int i = 0; i < f.extended; i++){
-					layer->extendFrame(f.ff);
-				}
+		const QJsonObject & lo = layers.value(lk).toObject();
+		ParupaintLayer * layer = new ParupaintLayer;
+		layer->setVisible(lo.value("visible").toBool(true));
+
+		foreach(const QString & fk, lo.keys()){
+			if(!lo.value(fk).isObject()) continue;
+
+			const QJsonObject & fo = lo.value(fk).toObject();
+
+			int extended = 0;
+			if(fk.contains('-')){
+				extended = fk.section('-', 1, 1).toInt();
+			}
+
+			const QString fname(QString("%1/%2.png").arg(lk, fk));
+			const KArchiveFile * img_file = dynamic_cast<const KArchiveFile*>(topdir->entry(fname));
+			if(!img_file) continue;
+
+			// load the image
+			QImage img(panvas->dimensions(), QImage::Format_ARGB32);
+			img.loadFromData(img_file->data());
+
+			// create a new frame with the image
+			ParupaintFrame * frame = new ParupaintFrame(img);
+			frame->setOpacity(fo.value("opacity").toDouble(1.0));
+
+			layer->insertFrame(frame, layer->frameCount());
+			// extend the frame as far as it wants (TODO: Put limit?)
+			for(; extended > 0; extended--){
+				layer->extendFrame(frame);
 			}
 		}
-		
+		panvas->insertLayer(layer, panvas->layerCount());
 	}
 	return true;
 }
