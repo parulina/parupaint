@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QPainter>
 #include <QBuffer>
+#include <QMovie>
 
 // PPA
 #include <QJsonParseError>
@@ -185,6 +186,8 @@ bool ParupaintPanvasInputOutput::loadPanvas(ParupaintPanvas * panvas, const QStr
 	const QString filepath = file.filePath();
 	if(filepath.endsWith(".png") || filepath.endsWith(".jpg")){
 		return ParupaintPanvasInputOutput::loadImage(panvas, filepath, errorStr);
+	} else if(filepath.endsWith(".gif")){
+		return ParupaintPanvasInputOutput::loadGIF(panvas, filepath, errorStr);
 	} else if(filepath.endsWith(".ora")){
 		return ParupaintPanvasInputOutput::loadORA(panvas, filepath, errorStr);
 	} else if(filepath.endsWith(".ppa")){
@@ -204,6 +207,30 @@ bool ParupaintPanvasInputOutput::loadImage(ParupaintPanvas * panvas, const QStri
 	panvas->resize(img.size());
 	panvas->newCanvas(1, 1);
 	panvas->layerAt(0)->frameAt(0)->replaceImage(img.convertToFormat(QImage::Format_ARGB32));
+	return true;
+}
+bool ParupaintPanvasInputOutput::loadGIF(ParupaintPanvas * panvas, const QString & filename, QString & errorStr)
+{
+	Q_ASSERT(panvas);
+
+	QMovie gif(filename);
+	if(!gif.isValid())
+		return (errorStr = "Couldn't load GIF.").isEmpty();
+	gif.jumpToFrame(0);
+
+	panvas->clearCanvas();
+	panvas->resize(gif.frameRect().size());
+	panvas->newCanvas(1, 0);
+
+	do {
+		const QImage & gif_image = gif.currentImage().convertToFormat(QImage::Format_ARGB32);
+		ParupaintFrame * gif_frame = new ParupaintFrame(gif_image);
+		panvas->layerAt(0)->appendFrame(gif_frame);
+
+		gif.jumpToNextFrame();
+
+	} while(gif.currentFrameNumber() != 0);
+
 	return true;
 }
 bool ParupaintPanvasInputOutput::loadORA(ParupaintPanvas * panvas, const QString & filename, QString & errorStr)

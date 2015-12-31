@@ -68,6 +68,10 @@ void ParupaintLayer::insertFrame(ParupaintFrame* f, int i)
 		qDebug() << "insertFrame(i)" << i << "is out of range";
 	}
 }
+void ParupaintLayer::appendFrame(ParupaintFrame* f)
+{
+	this->insertFrame(f, this->frameCount());
+}
 
 void ParupaintLayer::removeFrame(ParupaintFrame* f)
 {

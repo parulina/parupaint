@@ -42,7 +42,9 @@ Q_OBJECT
 	void insertFrame(const QSize &, int i);
 	void insertFrame(ParupaintFrame* f, ParupaintFrame* at);
 	void insertFrame(ParupaintFrame* f, int i = -1);
-	void removeFrame(ParupaintFrame * f);
+	void appendFrame(ParupaintFrame* f);
+
+	void removeFrame(ParupaintFrame* f);
 	void removeFrame(int i);
 	void extendFrame(ParupaintFrame* f);
 	void extendFrame(int i);

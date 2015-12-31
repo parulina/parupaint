@@ -14,6 +14,7 @@ class ParupaintPanvasInputOutput
 
 	static bool loadPanvas(ParupaintPanvas * panvas, const QString & filename, QString & errorStr);
 	static bool loadImage(ParupaintPanvas * panvas, const QString & filename, QString & errorStr);
+	static bool loadGIF(ParupaintPanvas * panvas, const QString & filename, QString & errorStr);
 	static bool loadORA(ParupaintPanvas * panvas, const QString & filename, QString & errorStr);
 	static bool loadPPA(ParupaintPanvas * panvas, const QString & filename, QString & errorStr);
 };

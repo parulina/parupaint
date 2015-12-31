@@ -54,7 +54,7 @@ void ParupaintPanvas::newCanvas(int l, int f)
 	qDebug() << "Creating" << l << "layers with" << f << "frames.";
 	this->clearCanvas();
 	QList<ParupaintLayer*> list;
-	for(int i = 0; i < f; i++){
+	for(int i = 0; i < l; i++){
 		list.append(new ParupaintLayer(this, this->dimensions(), f));
 	}
 	this->newCanvas(list);
@@ -97,6 +97,10 @@ void ParupaintPanvas::insertLayer(ParupaintLayer* l, int i)
 	} else {
 		qDebug() << "insertLayer(i)" << i << "is out of range";
 	}
+}
+void ParupaintPanvas::appendLayer(ParupaintLayer* l)
+{
+	this->insertLayer(l, this->layerCount());
 }
 
 void ParupaintPanvas::removeLayer(ParupaintLayer* l)
