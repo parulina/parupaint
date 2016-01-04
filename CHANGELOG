@@ -1,3 +1,12 @@
+0.92
++ Spectate mode by default, need to write /join.
++ Sessions are now passworded by default with a randomly generated key.
++ Removed default white filled canvas.
++ Fixed layer/frame creation.
++ Added GIF load support.
++ Fixed PPA load, loads and saves correctly in a more organized way now.
++ Fixed a bug in exporting images, would create junk pixels at the top.
+
 0.91
 ! Almost-full cleanup of code!
 + Updated interface: as a result of cleanup, the interface was cleaned and upgraded as well.
