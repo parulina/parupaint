@@ -88,6 +88,12 @@ void ParupaintVisualCanvas::redraw(QRect area)
 	painter.drawTiledPixmap(area, checker_pixmap, ppp);
 
 	if(!flash_timeout->isActive()){
+		if(this->isPreview()){
+			// if preview mode, draw a white background (TODO panvas bg color)
+			painter.setOpacity(1.0);
+			painter.fillRect(area, Qt::white);
+		}
+
 		// normal view - draw all layer's current_frame
 		// if preview, draw with less opacity
 		for(int i = 0; i < this->layerCount(); i++){
@@ -104,11 +110,6 @@ void ParupaintVisualCanvas::redraw(QRect area)
 	}
 	// now draw the focused frame
 	if(!this->isPreview() || flash_timeout->isActive()){
-		if(!flash_timeout->isActive()){
-			painter.setOpacity(1.0);
-			painter.fillRect(area, Qt::white);
-		}
-
 		// always draw current frame with max op
 		ParupaintLayer * layer = this->layerAt(current_layer);
 		if(layer != nullptr){
