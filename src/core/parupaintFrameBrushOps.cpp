@@ -7,6 +7,17 @@
 
 #include <QtMath>
 #include <QDebug>
+#include <QBitmap>
+
+
+// Lifted from:
+// src/gui/painting/qbrush.cpp
+static uchar patterns[][8] = {
+	{0xaa, 0x44, 0xaa, 0x11, 0xaa, 0x44, 0xaa, 0x11}, // Dense5Pattern
+	{0x00, 0x11, 0x00, 0x44, 0x00, 0x11, 0x00, 0x44}, // Dense6Pattern (modified to interweave Dense5Pattern)
+	{0x81, 0x42, 0x24, 0x18, 0x18, 0x24, 0x42, 0x81}  // DiagCrossPattern
+};
+
 
 QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * brush, const QPointF & pos, const QPointF & old_pos)
 {
@@ -45,15 +56,19 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * 
 
 	switch(brush->tool()){
 		case ParupaintBrushToolTypes::BrushToolDotShadingPattern: {
-			pen.setBrush(QBrush(color, Qt::Dense5Pattern)); break;
+			pen.setBrush(QBrush(color, QBitmap::fromData(QSize(8, 8), patterns[0], QImage::Format_MonoLSB)));
+			break;
 		}
 		case ParupaintBrushToolTypes::BrushToolDotHighlightPattern: {
-			pen.setBrush(QBrush(color, Qt::Dense6Pattern)); break;
+			pen.setBrush(QBrush(color, QBitmap::fromData(QSize(8, 8), patterns[1], QImage::Format_MonoLSB)));
+			break;
 		}
 		case ParupaintBrushToolTypes::BrushToolCrossPattern: {
-			pen.setBrush(QBrush(color, Qt::DiagCrossPattern)); break;
+			pen.setBrush(QBrush(color, QBitmap::fromData(QSize(8, 8), patterns[2], QImage::Format_MonoLSB)));
+			break;
 		}
 	}
+
 	switch(brush->tool()){
 		case ParupaintBrushToolTypes::BrushToolFloodFill: {
 			urect = frame->drawFill(np, color);
