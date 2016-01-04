@@ -571,7 +571,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 						ParupaintFrame * frame = layer->frameAt(brush->frame());
 						if(frame){
 							const QImage & img = frame->image();
-							col = img.pixel(pos.x(), pos.y());
+							col = QColor::fromRgba(img.pixel(pos.x(), pos.y()));
 						}
 					}
 				}
