@@ -36,7 +36,7 @@ Q_OBJECT
 	QImage renderedImage();
 
 	QRect drawLine (const QLineF & line, const qreal w, const QColor);
-	QRect drawLine (const QLineF & line, const QPen &);
+	QRect drawLine (const QLineF & line, QPen);
 	QRect drawImage(const QPointF & pos, const QImage &);
 	QRect drawFill (const QPointF & pos, QColor to_color, QColor from_color = QColor());
 };

@@ -79,17 +79,23 @@ QRect ParupaintFrame::drawLine(const QLineF & line, const qreal w, const QColor 
 	pen.setCapStyle(Qt::RoundCap);
 	return this->drawLine(line, pen);
 }
-QRect ParupaintFrame::drawLine(const QLineF & line, const QPen & pen)
+QRect ParupaintFrame::drawLine(const QLineF & line, QPen pen)
 {
 	qreal ps = pen.widthF();
 	QLine pixel_line(QPoint(qFloor(line.x1()), qFloor(line.y1())), QPoint(qFloor(line.x2()), qFloor(line.y2())));
 
 	QPainter painter(&frame);
 
-	if(pen.color().alpha() == 0) painter.setCompositionMode(QPainter::CompositionMode_Clear);
+	QBrush new_brush = pen.brush();
+
+	if(pen.color().alpha() == 0){
+		painter.setCompositionMode(QPainter::CompositionMode_DestinationOut);
+		new_brush.setColor(Qt::white);
+	}
+
 	if(line.length() == 0){
 		painter.setPen(Qt::NoPen);
-		painter.setBrush(pen.brush());
+		painter.setBrush(new_brush);
 		if(pen.width() == 1){
 			painter.drawPoint(pixel_line.p2());
 		} else {
@@ -97,6 +103,7 @@ QRect ParupaintFrame::drawLine(const QLineF & line, const QPen & pen)
 		}
 
 	} else {
+		pen.setBrush(new_brush);
 		painter.setPen(pen);
 		painter.drawLine(pixel_line);
 	}
