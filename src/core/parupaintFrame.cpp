@@ -89,9 +89,9 @@ QRect ParupaintFrame::drawLine(const QLineF & line, const QPen & pen)
 	if(pen.color().alpha() == 0) painter.setCompositionMode(QPainter::CompositionMode_Clear);
 	if(line.length() == 0){
 		painter.setPen(Qt::NoPen);
-		painter.setBrush(QBrush(pen.color(), pen.brush().style()));
+		painter.setBrush(pen.brush());
 		if(pen.width() == 1){
-			frame.setPixel(pixel_line.p2(), pen.color().rgba());
+			painter.drawPoint(pixel_line.p2());
 		} else {
 			painter.drawEllipse(QRectF(line.p2() + QPointF(-ps/2, -ps/2), QSizeF(ps, ps)));
 		}
