@@ -53,6 +53,7 @@ Q_OBJECT
 	int totalFrameCount();
 	int layerCount();
 	QList<QImage> mergedImageFrames(bool rendered = false);
+	QImage mergedImage(bool rendered = false);
 
 	void setProjectName(const QString &);
 	void setFrameRate(qreal = 24);

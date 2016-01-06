@@ -171,6 +171,18 @@ QList<QImage> ParupaintPanvas::mergedImageFrames(bool rendered)
 	}
 	return images;
 }
+QImage ParupaintPanvas::mergedImage(bool rendered)
+{
+	QImage image(this->dimensions(), QImage::Format_ARGB32);
+	image.fill(0);
+
+	QPainter painter(&image);
+	foreach(const QImage &img, this->mergedImageFrames(rendered)){
+		painter.drawImage(image.rect(), img, img.rect());
+	}
+
+	return image;
+}
 
 void ParupaintPanvas::setProjectName(const QString & name)
 {

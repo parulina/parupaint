@@ -1,4 +1,5 @@
 0.92
++ Changed PPA format to ZIP. (checkout tag "ppa-zip-convert" to load your old PPA and resave them for future support)
 + Spectate mode by default, need to write /join.
 + Sessions are now passworded by default with a randomly generated key.
 + Removed default white filled canvas.
