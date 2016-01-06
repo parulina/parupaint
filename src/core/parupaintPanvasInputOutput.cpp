@@ -27,8 +27,15 @@
 #include "parupaintAVWriter.h"
 #endif
 
-// todo return new filename instead of bool?
-// todo use mimetype instead of endsWidth()?
+const QByteArray imageToByteArray(const QImage & image)
+{
+	QByteArray byte_array(image.byteCount(), 0);
+		QBuffer buf(&byte_array);
+		buf.open(QIODevice::WriteOnly);
+			image.save(&buf, "png");
+		buf.close();
+	return byte_array;
+}
 
 bool ParupaintPanvasInputOutput::savePanvas(ParupaintPanvas * panvas, QString & filename, QString & errorStr)
 {
@@ -79,17 +86,24 @@ bool ParupaintPanvasInputOutput::saveImage(ParupaintPanvas * panvas, const QStri
 		return (errorStr = "Image save failed.").isEmpty();
 	return true;
 }
+
 bool ParupaintPanvasInputOutput::savePPA(ParupaintPanvas * panvas, const QString & filename, QString & errorStr)
 {
 	Q_ASSERT(panvas);
 	if(filename.isEmpty())
 		return (errorStr = "Enter a filename to save to.").isEmpty();
 
-	KTar tar(filename);
-	if(!tar.open(QIODevice::WriteOnly))
+	KZip archive(filename);
+	if(!archive.open(QIODevice::WriteOnly))
 		return (errorStr = "Failed open PPA for writing").isEmpty();
 
+	archive.writeFile("mimetype", "image/parupaint");
 
+	QImage mergedImage = panvas->mergedImage(true);
+	archive.writeFile("Thumbnails/thumbnail.png", imageToByteArray(mergedImage.scaled(256, 256, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+	archive.writeFile("mergedimage.png", imageToByteArray(mergedImage));
+
+	// write layers
 	QJsonObject layers;
 	for(int l = 0; l < panvas->layerCount(); l++){
 
@@ -105,17 +119,13 @@ bool ParupaintPanvasInputOutput::savePPA(ParupaintPanvas * panvas, const QString
 			QImage image = frame->image();
 
 			// write temp buffer for png
-			QByteArray byte_array(image.byteCount(), 0);
-			QBuffer buf(&byte_array);
-			buf.open(QIODevice::WriteOnly);
-			image.save(&buf, "png");
-			buf.close();
+			QByteArray byte_array = imageToByteArray(image);
 
 			QString frame_name = QString("%1/%2.png").arg(l).arg(layer->frameLabel(f));
 			frames_info.insert(layer->frameLabel(f), QJsonObject{
 				{"opacity", frame->opacity()}
 			});
-			tar.writeFile(frame_name, byte_array);
+			archive.writeFile(frame_name, byte_array);
 		}
 		frames_info["visible"] = layer->visible();
 		layers.insert(QString::number(l), frames_info);
@@ -132,9 +142,9 @@ bool ParupaintPanvasInputOutput::savePPA(ParupaintPanvas * panvas, const QString
 
 	QByteArray json = QJsonDocument(ppa_info).toJson(QJsonDocument::Indented);
 	qDebug("%s", qPrintable(json));
-	tar.writeFile("pp3.json", json);
+	archive.writeFile("pp3.json", json);
 
-	tar.close();
+	archive.close();
 
 	return true;
 }
@@ -322,12 +332,12 @@ bool ParupaintPanvasInputOutput::loadPPA(ParupaintPanvas * panvas, const QString
 {
 	Q_ASSERT(panvas);
 
-	KTar tar(filename);
-	if(!tar.open(QIODevice::ReadOnly))
+	KTar archive(filename);
+	if(!archive.open(QIODevice::ReadOnly))
 		return (errorStr = "Couldn't read PPA").isEmpty();
 
 	const QString pp3("pp3.json");
-	const KArchiveDirectory * topdir = tar.directory();
+	const KArchiveDirectory * topdir = archive.directory();
 
 	// be sure it has the files
 	if(!topdir->entry(pp3))
