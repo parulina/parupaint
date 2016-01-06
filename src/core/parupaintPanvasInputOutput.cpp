@@ -311,7 +311,7 @@ bool ParupaintPanvasInputOutput::loadORA(ParupaintPanvas * panvas, const QString
 
 		ParupaintLayer * layer = new ParupaintLayer(panvas);
 		layer->insertFrame(new ParupaintFrame(pic, layer));
-		panvas->insertLayer(layer);
+		panvas->insertLayer(layer, 0);
 
 	}
 	if(true) return true;
