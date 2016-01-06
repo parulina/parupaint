@@ -4,6 +4,87 @@
 #include <QCoreApplication>
 #include <QSettings>
 #include <QFileInfo>
+#include <QGridLayout>
+#include <QMimeDatabase>
+#include <QPixmapCache>
+#include <QStandardPaths>
+#include <QCryptographicHash>
+
+#include "../bundled/karchive/KZip"
+
+ParupaintFileDialogPreview::ParupaintFileDialogPreview(QWidget * parent) :
+	QLabel(parent)
+{
+	this->setAlignment(Qt::AlignCenter);
+}
+
+void ParupaintFileDialogPreview::setFilePreview(const QString & file)
+{
+	QPixmap pm;
+	QPixmapCache::find(file, &pm);
+
+	if(pm.isNull()){
+		// okay, its not in cache, find it in
+		// thumbnail dirs
+		const QString thumb_dir = QStandardPaths::standardLocations(QStandardPaths::GenericCacheLocation).first();
+		if(!thumb_dir.isEmpty()){
+
+			QUrl uri = QUrl::fromLocalFile(file);
+			const QByteArray thumb_name = QCryptographicHash::hash(uri.toString().toUtf8(), QCryptographicHash::Md5).toHex();
+			QString thumb_path = "thumbnails/normal/" + QString(thumb_name) + ".png";
+			QString path = QStandardPaths::locate(QStandardPaths::GenericCacheLocation, thumb_path);
+
+			// at least this works on linux...
+			if(!path.isEmpty()){
+				pm = QPixmap(thumb_name);
+			}
+		}
+	}
+	if(pm.isNull()){
+		QMimeDatabase db;
+		QString mime = db.mimeTypeForFile(file).name();
+
+		QStringList direct_loadable = {"image/jpeg", "image/png", "image/gif"};
+		QStringList zip_thumbnail = {"image/openraster", "application/zip"};
+
+		if(direct_loadable.contains(mime)){
+			pm = QPixmap(file);
+
+		} else if(zip_thumbnail.contains(mime)){
+			KZip zip(file);
+			if(zip.open(QIODevice::ReadOnly)){
+				const KArchiveDirectory * dir = zip.directory();
+				if(dir){
+					const KArchiveEntry * thumb_entry = dir->entry("Thumbnails/thumbnail.png");
+					if(thumb_entry){
+						const KArchiveFile * thumb_file = static_cast<const KArchiveFile*>(thumb_entry);
+						pm.loadFromData(thumb_file->data(), "png");
+					}
+				}
+			}
+		}
+
+		if(!pm.isNull()){
+			int w = sizeHint().width(), h = sizeHint().height();
+			if(pm.width() > w || pm.height() > h){
+				pm = pm.scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+			}
+		}
+		QPixmapCache::insert(file, pm);
+	}
+
+	this->setPixmap(pm);
+}
+
+QSize ParupaintFileDialogPreview::minimumSizeHint() const
+{
+	return this->sizeHint();
+}
+QSize ParupaintFileDialogPreview::sizeHint() const
+{
+	return QSize(256, 256);
+}
+
 
 ParupaintFileDialog::ParupaintFileDialog(ParupaintFileDialogType type, QWidget * parent) : 
 	QFileDialog(parent, "browse...")
@@ -46,6 +127,15 @@ ParupaintFileDialog::ParupaintFileDialog(ParupaintFileDialogType type, QWidget *
 		cfg.setValue("client/" + config_key, file);
 		cfg.setValue("window/" + config_key, this->saveState());
 	});
+
+	ParupaintFileDialogPreview * preview = new ParupaintFileDialogPreview(this);
+	connect(this, &ParupaintFileDialog::currentChanged, preview, &ParupaintFileDialogPreview::setFilePreview);
+
+	QGridLayout * layout = qobject_cast<QGridLayout*>(this->layout());
+	if(layout){
+		layout->setColumnMinimumWidth(1, 500);
+		layout->addWidget(preview, 1, 3, 3, 1);
+	}
 
 	this->show();
 }
