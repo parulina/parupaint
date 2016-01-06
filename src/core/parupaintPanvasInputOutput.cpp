@@ -20,7 +20,6 @@
 #include "parupaintLayer.h"
 #include "parupaintFrame.h"
 
-#include "../bundled/karchive/KTar"
 #include "../bundled/karchive/KZip"
 
 #ifndef PARUPAINT_NOFFMPEG
@@ -332,7 +331,7 @@ bool ParupaintPanvasInputOutput::loadPPA(ParupaintPanvas * panvas, const QString
 {
 	Q_ASSERT(panvas);
 
-	KTar archive(filename);
+	KZip archive(filename);
 	if(!archive.open(QIODevice::ReadOnly))
 		return (errorStr = "Couldn't read PPA").isEmpty();
 
