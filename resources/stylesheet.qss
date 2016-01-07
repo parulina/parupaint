@@ -25,6 +25,15 @@ QPushButton {
 	background:#8a2f1d;
 	font-family:"parufont";
 }
+QPushButton:flat {
+	background:transparent;
+	color:#333;
+	text-decoration:underline;
+	padding:2px;
+}
+QPushButton:flat:hover {
+	color:#666;
+}
 QCheckBox {
 	background:transparent;
 	font-family:"parufont";
