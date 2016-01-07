@@ -140,6 +140,18 @@ void ParupaintClientInstance::doBrushUpdate(ParupaintBrush * brush)
 	brush->copyTo(shadow_brush);
 }
 
+void ParupaintClientInstance::doLayerFrameAttribute(int l, int f, const QString & attr, const QJsonValue & val)
+{
+	if(this->readOnly()) return;
+
+	QJsonObject obj;
+	obj["l"] = l;
+	obj["f"] = f;
+	obj["attr"] = QJsonArray{
+		QJsonObject{{attr, val}}
+	};
+	this->send("lfa", obj);
+}
 void ParupaintClientInstance::doLayerFrameChange(int l, int f, int lc, int fc, bool ext)
 {
 	if(this->readOnly()) return;
@@ -226,6 +238,7 @@ void ParupaintClientInstance::doSave(const QString & filename)
 	obj["filename"] = filename;
 	this->send("save", obj);
 }
+
 /*
 void ParupaintClientInstance::PlayRecord(QString filename, bool as_script)
 {

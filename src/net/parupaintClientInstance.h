@@ -48,6 +48,8 @@ Q_OBJECT
 	void doReloadImage(int l = -1, int f = -1);
 	void doChat(const QString & str = QString());
 	void doBrushUpdate(ParupaintBrush * brush);
+
+	void doLayerFrameAttribute(int l, int f, const QString & attr, const QJsonValue & val);
 	void doLayerFrameChange(int l, int f, int lc, int fc, bool ext = false);
 	void doPasteImage(int l, int f, int x, int y, const QImage &);
 	void doFill(int l, int f, const QString &);

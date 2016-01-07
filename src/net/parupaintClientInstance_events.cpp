@@ -205,6 +205,35 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		// todo do this after receiving all images only?
 		pool->canvas()->redraw();
 
+	} else if(id == "lfa") {
+		if(!object["l"].isDouble()) return;
+		if(!object["f"].isDouble()) return;
+		if(!object["attr"].isArray()) return;
+
+		int l = object["l"].toInt(), f = object["f"].toInt();
+
+		ParupaintLayer * layer = pool->canvas()->layerAt(l);
+		if(!layer) return;
+		ParupaintFrame * frame = layer->frameAt(f);
+		if(!frame) return;
+
+		foreach(const QJsonValue & val, object["attr"].toArray()){
+			if(!val.isObject()) continue;
+
+			const QJsonObject & obj = val.toObject();
+
+			const QString key = obj.keys().first();
+			if(key.isEmpty()) continue;
+			if(obj[key].isUndefined()) continue;
+			const QVariant & keyval = obj[key].toVariant();
+
+			if(key == "frame-opacity"){
+				qDebug() << keyval;
+				frame->setOpacity(keyval.toDouble());
+				pool->canvas()->redraw();
+			}
+		}
+
 	} else if(id == "chat") {
 		const QString name = object["name"].toString(),
 		              message = object["message"].toString();

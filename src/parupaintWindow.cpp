@@ -75,6 +75,9 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 		"prev_layer=D",
 		"next_layer=F",
 
+		"frame_opacityinc=P",
+		"frame_opacitydec=O",
+
 		"copy=Ctrl+C",
 		"paste=Ctrl+V",
 
@@ -579,6 +582,13 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			picker->show();
 			brush->setColor(col);
 			scene->updateMainCursor(brush);
+
+		} else if(shortcut_name.endsWith("_opacityinc") || shortcut_name.endsWith("_opacitydec")){
+			ParupaintFrame * frame = scene->canvas()->currentCanvasFrame();
+			if(frame){
+				qreal op = frame->opacity() + (shortcut_name.endsWith("_opacityinc") ? 0.1 : -0.1);
+				client->doLayerFrameAttribute(scene->canvas()->currentLayer(), scene->canvas()->currentFrame(), "frame-opacity", op);
+			}
 		}
 
 	}

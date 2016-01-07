@@ -103,6 +103,12 @@ void ParupaintRecordManager::Resize(int width, int height, bool clear)
 		this->Write({"resize", QString::number(width), QString::number(height), QString::number(clear)});
 	}
 }
+void ParupaintRecordManager::Lfa(int l, int f, QString attr, QVariant val)
+{
+	if(temp_stream){
+		this->Write({"lfa", QString::number(l), QString::number(f), attr, val.toString()});
+	}
+}
 void ParupaintRecordManager::Lfc(int l, int f, int lc, int fc, bool ext)
 {
 	if(temp_stream){

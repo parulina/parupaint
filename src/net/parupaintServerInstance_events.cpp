@@ -19,6 +19,7 @@
 #include <QDir>
 #include <QSettings>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QJsonDocument>
 
 // Makes someone join the server.
@@ -89,6 +90,37 @@ void ParupaintServerInstance::ServerChat(ParupaintConnection * c, QString msg, b
 	obj["name"] = c->name();
 	obj["id"] = c->id();
 	this->sendAll("chat", obj);
+}
+void ParupaintServerInstance::ServerLfa(int l, int f, const QString & attr, const QVariant & val, bool propagate)
+{
+	QVariant temp_val = val;
+
+	ParupaintLayer * layer = canvas->layerAt(l);
+	if(!layer) return;
+
+	ParupaintFrame * frame = layer->frameAt(f);
+	if(!frame) return;
+
+	if(attr == "frame-opacity"){
+		qreal v = val.toDouble();
+		if(v > 1.0) v = 1.0;
+		if(v < 0.0) v = 0.0;
+		frame->setOpacity(v);
+		temp_val = v;
+	}
+
+	if(record_manager) record_manager->Lfa(l, f, attr, val);
+
+	if(!propagate) return;
+
+	QJsonObject obj;
+	obj["l"] = l;
+	obj["f"] = f;
+	obj["attr"] = QJsonArray{
+		QJsonObject{{attr, QJsonValue::fromVariant(temp_val)}}
+	};
+	qDebug() << "asd" << val << val.toJsonObject();
+	this->sendAll("lfa", obj);
 }
 void ParupaintServerInstance::ServerLfc(int l, int f, int lc, int fc, bool e, bool propagate)
 {
@@ -274,6 +306,27 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 			if(name.length() > 24) return;
 			this->ServerName(c, name, true);
 
+		} else if(id == "lfa") {
+			if(brushes.find(c) == brushes.end()) return;
+
+			if(!obj["l"].isDouble()) return;
+			if(!obj["f"].isDouble()) return;
+			if(!obj["attr"].isArray()) return;
+
+			int l = obj["l"].toInt(), f = obj["f"].toInt();
+
+			foreach(const QJsonValue & val, obj["attr"].toArray()){
+				if(!val.isObject()) continue;
+
+				const QJsonObject & obj = val.toObject();
+
+				const QString key = obj.keys().first();
+				if(key.isEmpty()) continue;
+				if(obj[key].isUndefined()) continue;
+				const QVariant & keyval = obj[key].toVariant();
+
+				this->ServerLfa(l, f, key, keyval);
+			}
 		} else if(id == "lfc") {
 			if(brushes.find(c) == brushes.end()) return;
 

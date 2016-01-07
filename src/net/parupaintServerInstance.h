@@ -59,6 +59,7 @@ Q_OBJECT
 	void ServerChat(ParupaintConnection *, QString, bool=true);
 
 	// special - uses no id
+	void ServerLfa(int l, int f, const QString & attr, const QVariant & val, bool=true);
 	void ServerLfc(int l, int f, int lc, int fc, bool e, bool=true);
 	void ServerFill(int l, int f, QString, bool=true);
 	void ServerPaste(int l, int f, int x, int y, QImage img, bool propagate=true);
