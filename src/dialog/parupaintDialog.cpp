@@ -81,6 +81,13 @@ void ParupaintDialog::mousePressEvent(QMouseEvent *event)
 	}
 	this->QDialog::mousePressEvent(event);
 }
+void ParupaintDialog::mouseReleaseEvent(QMouseEvent *event)
+{
+	if(!this->windowFlags().testFlag(Qt::FramelessWindowHint)) return this->QDialog::mouseReleaseEvent(event);
+
+	this->saveGeometry();
+	this->QDialog::mousePressEvent(event);
+}
 
 void ParupaintDialog::paintEvent(QPaintEvent * event)
 {
@@ -149,6 +156,5 @@ void ParupaintDialog::showEvent(QShowEvent * event)
 
 void ParupaintDialog::moveEvent(QMoveEvent * event)
 {
-	this->saveGeometry();
 	this->QDialog::moveEvent(event);
 }
