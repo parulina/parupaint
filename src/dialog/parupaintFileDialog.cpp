@@ -94,7 +94,6 @@ ParupaintFileDialog::ParupaintFileDialog(ParupaintFileDialogType type, QWidget *
 	this->setAttribute(Qt::WA_DeleteOnClose);
 	this->setOption(QFileDialog::DontUseNativeDialog);
 	this->setViewMode(QFileDialog::Detail);
-	this->setSidebarUrls(QList<QUrl>{});
 
 	QString config_key;
 	if(type == dialogTypeOpen){
@@ -110,11 +109,13 @@ ParupaintFileDialog::ParupaintFileDialog(ParupaintFileDialogType type, QWidget *
 		config_key = "lastsaveas";
 	}
 	// set sidebar url
-	QDir dir(cfg.value("client/directory", QCoreApplication::applicationDirPath()).toString());
 
-	this->setSidebarUrls(QList<QUrl>{
-		dir.absolutePath()
-	});
+	QList<QUrl> sidebar = {
+		QUrl::fromLocalFile(QCoreApplication::applicationDirPath())
+	};
+	if(cfg.contains("client/directory"))
+		sidebar << QUrl::fromLocalFile(cfg.value("client/directory").toString());
+	this->setSidebarUrls(sidebar);
 
 	this->restoreState(cfg.value("window/" + config_key).toByteArray());
 	QFileInfo lastfile(cfg.value("client/" + config_key, ".").toString());
