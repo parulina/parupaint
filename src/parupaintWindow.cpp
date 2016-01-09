@@ -42,7 +42,7 @@
 #include <QDebug>
 
 #define PARUPAINTKEY_TO_SHORTCUT(key, w, f) \
-	connect(new QShortcut(key_shortcuts->GetKeySequence(key), this), &QShortcut::activated, w, f)
+	connect(new QShortcut(key_shortcuts->keySequence(key), this), &QShortcut::activated, w, f)
 
 ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	overlay_state(overlayHiddenState), canvas_state(noCanvasState),
@@ -134,10 +134,11 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	infobar = new ParupaintInfoBar(this);
 
 	// chatactivity -> chatbubble
-	QString key_str = key_shortcuts->GetKeySequence("chat").toString(QKeySequence::NativeText);
-	chat->setChatInputPlaceholder(QString("press [%1] to chat.").arg(key_str).toLower());
+	chat->setChatInputPlaceholder(
+		QString("press [%1] to chat.").arg(key_shortcuts->keyString("chat")).toLower()
+	);
 	connect(chat, &ParupaintChat::onActivity, [this](){
-			this->client->doChat();
+		this->client->doChat();
 	});
 	
 	connect(flayer, &ParupaintFlayer::onHighlightChange, scene->canvas(), &ParupaintVisualCanvas::current_lf_update);
@@ -207,22 +208,23 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 
 	// load keys and connect them
 	// TODO QAction? right now it's using QShortcut
-	key_shortcuts->Load();
+	key_shortcuts->loadKeys();
 	PARUPAINTKEY_TO_SHORTCUT("action_quicksave", 	this, &ParupaintWindow::doQuickSave);
 	PARUPAINTKEY_TO_SHORTCUT("action_open", 	this, &ParupaintWindow::showOpenDialog);
 	PARUPAINTKEY_TO_SHORTCUT("action_saveas", 	this, &ParupaintWindow::showSaveAsDialog);
 	PARUPAINTKEY_TO_SHORTCUT("action_new", 		this, &ParupaintWindow::showNewDialog);
 	PARUPAINTKEY_TO_SHORTCUT("action_settings", 	this, &ParupaintWindow::showSettingsDialog);
 	PARUPAINTKEY_TO_SHORTCUT("action_connect", 	this, &ParupaintWindow::showConnectDialog);
-	new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Q), this, SLOT(close()));
-	key_shortcuts->Save();
+	PARUPAINTKEY_TO_SHORTCUT("exit", 		this, &ParupaintWindow::close);
+
+	key_shortcuts->saveKeys();
 
 
 	// update the keylist
 	QStringList keylist_html;
-	foreach(QString s,key_shortcuts->GetKeys()){
-		s.replace("=", ": ").replace("_", " ");
-		keylist_html << s;
+	foreach(QString iniKey, key_shortcuts->keyListString()){
+		iniKey.replace("=", ": ").replace("_", " ");
+		keylist_html << iniKey;
 	}
 	std::sort(keylist_html.begin(), keylist_html.end());
 	infobar->setKeyList(keylist_html);
@@ -352,7 +354,7 @@ void ParupaintWindow::keyReleaseEvent(QKeyEvent * event)
 
 void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 {
-	QString shortcut_name = key_shortcuts->Match(event->key(), event->modifiers());
+	QString shortcut_name = key_shortcuts->keyName(event->key(), event->modifiers());
 	if(!event->isAutoRepeat() && event->key()){
 		// single click keys
 		if(shortcut_name == "chat"){
@@ -739,15 +741,15 @@ void ParupaintWindow::doCommand(const QString & cmd, const QString & params)
 
 	if(cmd == "key"){
 		if(params.isEmpty()){
-			QStringList list = key_shortcuts->GetKeys();
+			QStringList list = key_shortcuts->keyListString();
 			list.sort();
 			list += "<br/>Usage: /key name=shortcut";
 			list += "Set keys. Dialog hotkeys requires restart.";
 
 			return chat->AddMessage(list.join("<br/>"));
 		}
-		key_shortcuts->AddKey(params);
-		key_shortcuts->Save();
+		key_shortcuts->setKey(params);
+		key_shortcuts->saveKeys();
 	}
 	else if(cmd == "load"){
 		if(params.isEmpty()) return chat->AddMessage("Usage: /load file<br/>Load a file on the server.");

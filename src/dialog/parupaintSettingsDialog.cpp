@@ -53,6 +53,9 @@ ParupaintSettingsDialog::ParupaintSettingsDialog(QWidget * parent):
 	QPushButton * ok_button = new QPushButton("ok", this);
 	connect(ok_button, &QPushButton::pressed, this, &QDialog::close);
 
+	QPushButton * keybind_button = new QPushButton("key bindings", this);
+	connect(keybind_button, &QPushButton::pressed, this, &ParupaintSettingsDialog::keyBindOpen);
+
 	QMessageBox * confirm_reset = new QMessageBox(QMessageBox::NoIcon, "hey buddy", "sure you wanna reset your settings?",
 			QMessageBox::NoButton, this);
 	confirm_reset->addButton("nope", QMessageBox::RejectRole);
@@ -79,6 +82,7 @@ ParupaintSettingsDialog::ParupaintSettingsDialog(QWidget * parent):
 		QHBoxLayout * hlayout = new QHBoxLayout;
 		hlayout->setAlignment(Qt::AlignBottom);
 			hlayout->addWidget(reset_button, 1, Qt::AlignLeft);
+			hlayout->addWidget(keybind_button);
 			hlayout->addWidget(ok_button);
 		layout->addLayout(hlayout);
 	this->setLayout(layout);

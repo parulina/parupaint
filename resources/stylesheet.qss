@@ -169,6 +169,17 @@ ParupaintFlayerFrame:checked {
 	border-bottom-width:4px;
 }
 
+ParupaintKeyBindButton {
+	padding:0;
+	color:green;
+}
+ParupaintKeyBindButton:hover {
+	color:black;
+	background-color:rgba(255, 255, 255, 0.4);
+}
+ParupaintKeyBindButton:checked {
+	background-color:rgba(255, 180, 180, 0.4);
+}
 
 #ColorBar::groove {
 	background:transparent;

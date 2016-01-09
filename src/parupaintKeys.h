@@ -13,30 +13,33 @@ struct ParupaintKey
 	ParupaintKey(int, Qt::KeyboardModifiers = Qt::NoModifier);
 	ParupaintKey(QString);
 
-	QKeySequence GetKeySequence();
-	QString GetString();
+	QKeySequence keySequence() const;
+	QString toString() const;
 };
 
+typedef QHash<QString,ParupaintKey> ParupaintKeyList;
 class ParupaintKeys
 {
 	// name, keys
-	QHash<QString,ParupaintKey> keys;
+	ParupaintKeyList keys;
 
 	public:
-	ParupaintKeys(QStringList);
-	void AddKey(QString);
-	QStringList GetKeys();
+	ParupaintKeys(const QStringList & list);
+	ParupaintKeyList keyList() const;
+	QStringList keyListString();
 
-	ParupaintKey 	Get(QString);
-	QKeySequence 	GetKeySequence(QString);
+	bool setKey(const QString & name, const QString & key);
+	bool setKey(const QString & inikey);
 
-	int 		GetKey(QString);
-	Qt::KeyboardModifiers GetModifiers(QString);
+	bool key(const QString & name, ParupaintKey & key);
+	bool key(const QString & name);
 
-	QString Match(int, Qt::KeyboardModifiers = Qt::NoModifier);
+	QString keyString(const QString & name);
+	QKeySequence keySequence(const QString & name);
+	QString keyName(int k, Qt::KeyboardModifiers m);
 
-	void Save();
-	void Load();
+	void saveKeys();
+	void loadKeys();
 };
 
 #endif

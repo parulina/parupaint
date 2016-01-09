@@ -12,6 +12,7 @@ Q_OBJECT
 	ParupaintSettingsDialog(QWidget * = nullptr);
 	signals:
 	void pixelgridChanged(bool);
+	void keyBindOpen();
 	void configCleared();
 };
 

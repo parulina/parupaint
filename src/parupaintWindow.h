@@ -97,6 +97,7 @@ Q_OBJECT
 	void showNewDialog();
 	void showConnectDialog();
 	void showSettingsDialog();
+	void showKeyBindDialog();
 
 	void addChatMessage(const QString & msg, const QString & usr = QString());
 

@@ -3,10 +3,13 @@
 #include <QDebug>
 #include <QSettings>
 
+#include "parupaintKeys.h"
+
 #include "dialog/parupaintConnectionDialog.h"
 #include "dialog/parupaintFileDialog.h"
 #include "dialog/parupaintNewDialog.h"
 #include "dialog/parupaintSettingsDialog.h"
+#include "dialog/parupaintKeyBindsDialog.h"
 
 void ParupaintWindow::showOpenDialog()
 {
@@ -53,7 +56,13 @@ void ParupaintWindow::showSettingsDialog()
 {
 	ParupaintSettingsDialog * dialog = new ParupaintSettingsDialog(this);
 	connect(dialog, &ParupaintSettingsDialog::pixelgridChanged, view, &ParupaintCanvasView::setPixelGrid);
+	connect(dialog, &ParupaintSettingsDialog::keyBindOpen, this, &ParupaintWindow::showKeyBindDialog);
 
 	dialog->activateWindow();
 }
 
+void ParupaintWindow::showKeyBindDialog()
+{
+	ParupaintKeyBindsDialog * dialog = new ParupaintKeyBindsDialog(key_shortcuts, this);
+	dialog->activateWindow();
+}
