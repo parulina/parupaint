@@ -131,6 +131,7 @@ ParupaintFileDialog::ParupaintFileDialog(ParupaintFileDialogType type, QWidget *
 
 	ParupaintFileDialogPreview * preview = new ParupaintFileDialogPreview(this);
 	connect(this, &ParupaintFileDialog::currentChanged, preview, &ParupaintFileDialogPreview::setFilePreview);
+	preview->setFilePreview(this->selectedFiles().first());
 
 	QGridLayout * layout = qobject_cast<QGridLayout*>(this->layout());
 	if(layout){
