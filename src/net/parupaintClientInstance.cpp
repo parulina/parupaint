@@ -106,6 +106,7 @@ void ParupaintClientInstance::doChat(const QString & str)
 
 void ParupaintClientInstance::doBrushUpdate(ParupaintBrush * brush)
 {
+	if(!this->isJoined()) return;
 	if(this->readOnly()) return;
 
 	QJsonObject obj;
