@@ -96,9 +96,9 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 			}
 
 			server->setPassword(password);
-			if(!server->password().isEmpty()){
-				main_window->addChatMessage("Your session password is: <span class=\"msg-highlight\">" + server->password() + "</span>");
-			}
+		}
+		if(!server->password().isEmpty()){
+			main_window->addChatMessage("Your session password is: <span class=\"msg-highlight\">" + server->password() + "</span>");
 		}
 
 		server_str = QString("localhost:%1").arg(server_port);
