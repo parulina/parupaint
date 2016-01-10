@@ -18,6 +18,9 @@ class ParupaintChat;
 class ParupaintFlayer;
 class ParupaintColorPicker;
 class ParupaintInfoBar;
+class ParupaintNetJoinPrompt;
+class ParupaintNetPlayerList;
+
 class ParupaintKeys;
 
 class QDropEvent;
@@ -62,6 +65,9 @@ Q_OBJECT
 	ParupaintColorPicker * 	picker;
 	ParupaintInfoBar * 	infobar;
 
+	ParupaintNetJoinPrompt*	netjoin;
+	ParupaintNetPlayerList* netlist;
+
 	ParupaintCanvasView * 	view;
 	ParupaintCanvasScene * 	scene;
 	ParupaintClientInstance * client;
@@ -91,6 +97,8 @@ Q_OBJECT
 	void doUserName(const QString & username);
 	void doConnect(const QString &);
 	void doDisconnect();
+	void doJoin();
+	void doJoinPassword(const QString & password);
 
 	void showOpenDialog();
 	void showSaveAsDialog();
@@ -98,6 +106,7 @@ Q_OBJECT
 	void showConnectDialog();
 	void showSettingsDialog();
 	void showKeyBindDialog();
+	void showPasswordDialog();
 
 	void addChatMessage(const QString & msg, const QString & usr = QString());
 

@@ -32,8 +32,10 @@
 #include "overlay/parupaintChat.h"
 #include "overlay/parupaintFlayer.h"
 #include "overlay/parupaintColorPicker.h"
-#include "overlay/parupaintUserList.h"
+#include "overlay/parupaintNetJoinPrompt.h"
+#include "overlay/parupaintNetPlayerList.h"
 #include "overlay/parupaintInfoBar.h"
+
 
 #include "core/parupaintFrameBrushOps.h"
 #include "core/parupaintSnippets.h"
@@ -121,17 +123,20 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	connect(client, &ParupaintClientInstance::onChatMessage, this, &ParupaintWindow::addChatMessage);
 	connect(client, &ParupaintClientInstance::onDisconnect, this, &ParupaintWindow::OnNetworkDisconnect);
 	connect(client, &ParupaintClientInstance::onConnect, this, &ParupaintWindow::OnNetworkConnect);
-	connect(client, &ParupaintClientInstance::onJoinedChange, [&](bool j){
-		if(!j && client->connected()){
-			this->addChatMessage("You are currently spectating.");
-		}
-	});
 
 
-	chat =	  new ParupaintChat(this);
-	picker =  new ParupaintColorPicker(this);
-	flayer =  new ParupaintFlayer(this);
-	infobar = new ParupaintInfoBar(this);
+	chat = 		new ParupaintChat(this);
+	picker = 	new ParupaintColorPicker(this);
+	flayer = 	new ParupaintFlayer(this);
+	infobar =	new ParupaintInfoBar(this);
+	netjoin =	new ParupaintNetJoinPrompt(this);
+	netlist = 	new ParupaintNetPlayerList(this);
+
+	connect(client, &ParupaintClientInstance::onConnect, netjoin, &QWidget::show);
+	connect(client, &ParupaintClientInstance::onDisconnect, netjoin, &QWidget::hide);
+	connect(client, &ParupaintClientInstance::onSpectateChange, netjoin, &QWidget::setVisible);
+
+	connect(netjoin, &ParupaintNetJoinPrompt::wantJoin, this, &ParupaintWindow::doJoin);
 
 	// chatactivity -> chatbubble
 	chat->setChatInputPlaceholder(
@@ -336,6 +341,9 @@ void ParupaintWindow::updateOverlay()
 
 	picker->move(inner_size.topLeft());
 	chat->move(inner_size.topRight() - QPoint(chat->width(), 0));
+
+	netjoin->move(QPoint(inner_size.left(), inner_size.bottom() - netjoin->height()));
+	netlist->move(inner_size.topLeft() + QPoint(0, picker->height()));
 }
 
 void ParupaintWindow::keyReleaseEvent(QKeyEvent * event)
@@ -683,6 +691,21 @@ void ParupaintWindow::doConnect(const QString & url)
 void ParupaintWindow::doDisconnect()
 {
 	client->Connect(local_server);
+}
+
+void ParupaintWindow::doJoin()
+{
+	if(!client->connected()) return;
+	if(!client->remoteHasPassword()){
+		return client->doJoin();
+	}
+	this->showPasswordDialog();
+}
+
+void ParupaintWindow::doJoinPassword(const QString & password)
+{
+	if(!client->connected()) return;
+	client->doJoin(password);
 }
 
 void ParupaintWindow::doQuickSave()

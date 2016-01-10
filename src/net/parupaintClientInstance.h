@@ -17,6 +17,7 @@ Q_OBJECT
 	QString client_name;
 	bool read_only, client_joined;
 	int me;
+	bool remote_password;
 
 	// TODO rename pool -> scene
 	ParupaintCanvasScene * pool;
@@ -25,7 +26,7 @@ Q_OBJECT
 	ParupaintBrush shadow_brush;
 
 	signals:
-	void onJoinedChange(bool);
+	void onSpectateChange(bool);
 	void onChatMessage(const QString & msg, const QString & usr);
 	void onConnect();
 	void onDisconnect(const QString & reason = "");
@@ -40,6 +41,8 @@ Q_OBJECT
 	const QString name();
 	bool readOnly();
 	bool isJoined();
+
+	bool remoteHasPassword();
 
 	void doJoin(const QString & password = QString());
 	void doLeave();

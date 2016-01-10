@@ -23,6 +23,7 @@
 ParupaintClientInstance::ParupaintClientInstance(ParupaintCanvasScene * p, QObject * parent) :
 	ParupaintClient(parent),
 	read_only(false), client_joined(false), me(-1),
+	remote_password(false),
 	pool(p)
 {
 	QSettings cfg;
@@ -55,6 +56,10 @@ bool ParupaintClientInstance::readOnly()
 bool ParupaintClientInstance::isJoined()
 {
 	return client_joined;
+}
+bool ParupaintClientInstance::remoteHasPassword()
+{
+	return remote_password;
 }
 
 

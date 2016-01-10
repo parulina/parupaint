@@ -10,6 +10,7 @@
 #include "dialog/parupaintNewDialog.h"
 #include "dialog/parupaintSettingsDialog.h"
 #include "dialog/parupaintKeyBindsDialog.h"
+#include "dialog/parupaintPasswordDialog.h"
 
 void ParupaintWindow::showOpenDialog()
 {
@@ -64,5 +65,15 @@ void ParupaintWindow::showSettingsDialog()
 void ParupaintWindow::showKeyBindDialog()
 {
 	ParupaintKeyBindsDialog * dialog = new ParupaintKeyBindsDialog(key_shortcuts, this);
+	dialog->activateWindow();
+}
+
+void ParupaintWindow::showPasswordDialog()
+{
+	ParupaintPasswordDialog * dialog = new ParupaintPasswordDialog(this);
+	connect(dialog, &ParupaintPasswordDialog::enterPassword, this, &ParupaintWindow::doJoinPassword);
+	// TODO knock knock feature?
+	//connect(dialog, &ParupaintPasswordDialog::knockKnock, client, &ParupaintClientInstance::doKnock);
+
 	dialog->activateWindow();
 }

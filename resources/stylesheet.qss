@@ -169,6 +169,23 @@ ParupaintFlayerFrame:checked {
 	border-bottom-width:4px;
 }
 
+ParupaintNetJoinPrompt {
+	background:rgba(0, 0, 0, 0.8);
+}
+ParupaintNetJoinPrompt > QLabel,
+ParupaintNetJoinPrompt > QPushButton {
+	font-size:18px;
+}
+ParupaintNetJoinPrompt > QLabel {
+	color:white;
+	padding:0 2px;
+}
+ParupaintNetJoinPrompt > QPushButton {
+	background:transparent;
+	color:orange;
+	text-decoration:underline;
+}
+
 ParupaintKeyBindButton {
 	padding:0;
 	color:green;

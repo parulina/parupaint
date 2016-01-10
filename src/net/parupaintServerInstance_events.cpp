@@ -252,6 +252,10 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 			}
 			c->send("canvas", this->canvasObj());
 
+			QJsonObject pw_obj;
+			pw_obj["password"] = !this->password().isEmpty();
+			c->send("info", pw_obj);
+
 		// disconnect is handled lower down
 		// } else if(id == "disconnect"){
 			// connect and disconnect is for stuff that

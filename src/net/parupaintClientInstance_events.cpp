@@ -20,7 +20,7 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 	if(id == "connect"){
 		emit onConnect();
 		if(this->url().host() != "localhost"){
-			emit onJoinedChange((client_joined = false));
+			emit onSpectateChange(!(client_joined = false));
 		}
 
 		this->doName();
@@ -33,9 +33,15 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 
 	// we got confirmation
 	} else if(id == "join"){
-		emit onJoinedChange((client_joined = true));
+		emit onSpectateChange(!(client_joined = true));
+
 	} else if(id == "leave"){
-		emit onJoinedChange((client_joined = false));
+		emit onSpectateChange(!(client_joined = false));
+
+	} else if(id == "info") {
+		if(object["password"].isBool()){
+			remote_password = object["password"].toBool(false);
+		}
 
 	} else if(id == "peer") {
 		int c = object["id"].toInt();
