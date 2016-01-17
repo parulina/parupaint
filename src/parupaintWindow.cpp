@@ -11,6 +11,7 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QVBoxLayout>
+#include <QMessageBox>
 
 #include "parupaintKeys.h"
 
@@ -669,8 +670,20 @@ void ParupaintWindow::dropEvent(QDropEvent *ev)
 	if(ev->mimeData()->urls().size() == 1){
 		QUrl link = ev->mimeData()->urls().first();
 		if(link.isLocalFile()){
-			QString file = link.toLocalFile();
-			client->doLoadLocal(file);
+			QFileInfo file(link.toLocalFile());
+			if(file.size() > (1000 * 1000 * 20)){
+				chat->AddMessage("File is too big.");
+				return;
+			}
+
+			QMessageBox box(this);
+			box.setIcon(QMessageBox::NoIcon);
+			box.setWindowTitle("Confirm load");
+			box.setText(QString("Are you sure you want to load '%1'?").arg(file.fileName()));
+			box.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+			if(box.exec() == QMessageBox::Yes){
+				client->doLoadLocal(file.filePath());
+			}
 		}
 	}
 }
