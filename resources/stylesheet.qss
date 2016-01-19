@@ -74,17 +74,15 @@ ParupaintColorPicker { border-left:none; }
 
 
 ParupaintInfoBar ParupaintInfoBarText,
-ParupaintInfoBar ParupaintInfoBarKeys,
+ParupaintInfoBar ParupaintInfoBarTutorial,
 ParupaintInfoBar ParupaintInfoBarStatus {
 	background:transparent;
 	border:none;
 }
 
-ParupaintInfoBar ParupaintInfoBarText {
+ParupaintInfoBar ParupaintInfoBarText,
+ParupaintInfoBar ParupaintInfoBarTutorial {
 	color:#B1A087;
-}
-ParupaintInfoBar ParupaintInfoBarKeys {
-	color:#AAA;
 }
 ParupaintInfoBar ParupaintInfoBarStatus {
 }

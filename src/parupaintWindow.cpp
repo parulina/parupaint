@@ -226,16 +226,6 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 
 	key_shortcuts->saveKeys();
 
-
-	// update the keylist
-	QStringList keylist_html;
-	foreach(QString iniKey, key_shortcuts->keyListString()){
-		iniKey.replace("=", ": ").replace("_", " ");
-		keylist_html << iniKey;
-	}
-	std::sort(keylist_html.begin(), keylist_html.end());
-	infobar->setKeyList(keylist_html);
-
 	// restore window pos
 	QSettings cfg;
 	if(cfg.value("window/restore", true).toBool()){
@@ -404,7 +394,11 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 		// ui stuff
 		if(shortcut_name.startsWith("overlay_")){
 			if(shortcut_name.endsWith("showfull")){
-				this->showOverlay(overlayExpandedState);
+				if(overlay_state == overlayHiddenState){
+					this->showOverlay(overlayExpandedState);
+				} else {
+					this->hideOverlay();
+				}
 			}
 		// canvas stuff
 		} else if(shortcut_name == "reload_canvas"){

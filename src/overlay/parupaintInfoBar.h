@@ -14,11 +14,11 @@ Q_OBJECT
 	QSize minimumSizeHint() const;
 };
 
-class ParupaintInfoBarKeys : public QLabel
+class ParupaintInfoBarTutorial : public QTextBrowser
 {
 Q_OBJECT
 	public:
-	ParupaintInfoBarKeys(QWidget * = nullptr);
+	ParupaintInfoBarTutorial(QWidget * = nullptr);
 	QSize minimumSizeHint() const;
 };
 class ParupaintInfoBarStatus : public QTextBrowser
@@ -46,7 +46,7 @@ Q_OBJECT
 
 	ParupaintInfoBarText * info_text;
 	ParupaintInfoBarStatus * info_status;
-	ParupaintInfoBarKeys * info_keys;
+	ParupaintInfoBarTutorial * info_tutorial;
 	
 	void ReloadTitle();
 

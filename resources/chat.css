@@ -1,6 +1,9 @@
 a {
 	color:#BBE;
 }
+h3 {
+	margin:0;
+}
 
 .chat-entry {
 	font-size:15px;
@@ -22,9 +25,21 @@ a {
 	background-color:transparent;
 }
 
-.about .alpha-notice {
+.about > a, .mini-tutorial > a {
+	margin:0;
+	height:10px;
+}
+.about, .mini-tutorial {
+	font-size:16px;
+	color:#DCA
+}
+span.notice {
 	color:white;
 }
+.mini-tutorial {
+	text-align:right;
+}
+
 
 .titletext {
 	vertical-align:bottom;

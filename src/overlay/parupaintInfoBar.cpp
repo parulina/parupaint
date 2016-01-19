@@ -24,29 +24,44 @@ ParupaintInfoBarText::ParupaintInfoBarText(QWidget * parent) : QTextBrowser(pare
 	this->setHorizontalScrollBar(new ParupaintScrollBar(Qt::Horizontal, this));
 	this->setHtml(QStringLiteral(
 	 "<p class=\"about\">"
-		 "<a href=\"http://parupaint.sqnya.se\">official homepage</a>&nbsp;&nbsp;&nbsp;<a href=\"http://github.com/parulina/parupaint\">github</a><br/>"
-		 "Welcome to my painting program, parupaint. The program is designed to be quick and light, while still being a nice drawing application.<br/>"
-		 "You can read a summary of what this program does on the homepage. Thank you for downloading and using this!<br/>"
-		 "<span class=\"alpha-notice\">Please note that this program is currently in alpha and is constantly adding/removing features.</span>"
+		"<h3>PARUPAINT</h3>"
+		"<a href=\"http://parupaint.sqnya.se\">official homepage</a>&nbsp;&nbsp;&nbsp;<a href=\"http://github.com/parulina/parupaint\">github</a><br/>"
+		"Welcome to my painting program, parupaint. The program is designed to be quick and light, while still being a nice drawing application. You can read a summary of what this program does on the homepage. Thank you for downloading and using this!<br/>"
+		"<span class=\"notice\">Please note that this program is currently in alpha and is constantly adding/removing features.</span>"
 	 "</p>"
 	));
 }
 QSize ParupaintInfoBarText::minimumSizeHint() const
 {
-	return QSize(300, 0);
+	return QSize(600, 0);
 }
 
-ParupaintInfoBarKeys::ParupaintInfoBarKeys(QWidget * parent) : QLabel(parent)
+ParupaintInfoBarTutorial::ParupaintInfoBarTutorial(QWidget * parent) : QTextBrowser(parent)
 {
-	this->setStyleSheet(stylesheet);
+	this->setAutoFillBackground(false);
+	this->document()->setDocumentMargin(2);
+	this->document()->setDefaultStyleSheet(stylesheet);
 	this->setFocusPolicy(Qt::ClickFocus);
-	this->setWordWrap(false);
-	this->setTextFormat(Qt::RichText);
-	this->setTextInteractionFlags(Qt::TextSelectableByMouse);
+	this->setOpenLinks(true);
+	this->setOpenExternalLinks(true);
+	this->setTextInteractionFlags(Qt::LinksAccessibleByMouse | Qt::TextSelectableByMouse);
+	this->setVerticalScrollBar(new ParupaintScrollBar(Qt::Vertical, this));
+	this->setHorizontalScrollBar(new ParupaintScrollBar(Qt::Horizontal, this));
+	this->setFixedWidth(400);
+	this->setHtml(QStringLiteral(
+	 "<p class=\"mini-tutorial\">"
+		 "<h3>QUICK START (DEFAULT KEYS)</h3>"
+		 "<a href=\"http://parupaint.sqnya.se/tutorial.html\">full tutorial</a><br/>"
+		 "Press Ctrl+K to quicksave, and Ctrl+M for settings.<br/>"
+		 "<span class=\"notice\">The settings has a full key reference.</span><br/>"
+		 "Hold Space to move canvas, and Ctrl+Space to zoom. Hold Shift+Space to change brush size. Press W for halftones, Q for fill tool, T to test fill.<br/>"
+		 "<u>Press Shift+Tab to hide this!</u>"
+	 "</p>"
+	));
 }
-QSize ParupaintInfoBarKeys::minimumSizeHint() const
+QSize ParupaintInfoBarTutorial::minimumSizeHint() const
 {
-	return QSize(600, 0);
+	return QSize(400, 0);
 }
 
 ParupaintInfoBarStatus::ParupaintInfoBarStatus(QWidget * parent) : QTextBrowser(parent)
@@ -116,9 +131,11 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 
 
 		top->addWidget((info_text = new ParupaintInfoBarText(this)));
-		top->addWidget((info_keys = new ParupaintInfoBarKeys(this)));
+		top->addWidget((info_tutorial = new ParupaintInfoBarTutorial(this)));
 		bot->addWidget((info_status = new ParupaintInfoBarStatus(this)));
 
+		connect(info_text, &QTextBrowser::anchorClicked, this, &ParupaintInfoBar::onStatusClick);
+		connect(info_tutorial, &QTextBrowser::anchorClicked, this, &ParupaintInfoBar::onStatusClick);
 		connect(info_status, &QTextBrowser::anchorClicked, this, &ParupaintInfoBar::onStatusClick);
 
 	box->addLayout(top, 0);
@@ -131,22 +148,4 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
 ParupaintInfoBarStatus * ParupaintInfoBar::status()
 {
 	return info_status;
-}
-
-void ParupaintInfoBar::setKeyList(const QStringList & list)
-{
-	// split up in to columns
-	QStringList copy(list);
-	int a = 0;
-	for(auto i = copy.begin(); i != copy.end(); ++i){
-		(*i).append("<br/>");
-		if(a && a % 9 == 0){
-			i = copy.insert(i, "</td><td>");
-		}
-		a++;
-	}
-	copy.prepend("<table id=\"keytable\" cellpadding=5 cellspacing=3><tr valign=\"top\"><td>");
-	copy.append("</td></tr></table>");
-
-	info_keys->setText(copy.join("").prepend("<html>").append("</html>"));
 }
