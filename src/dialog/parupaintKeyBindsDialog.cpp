@@ -29,16 +29,20 @@ ParupaintKeyBindsDialog::ParupaintKeyBindsDialog(ParupaintKeys *keys, QWidget * 
 	connect(ok_button, &QPushButton::pressed, this, &QDialog::close);
 
 
-	QFormLayout * form_layout = new QFormLayout;
-	form_layout->setSizeConstraint(QLayout::SetFixedSize);
+	const ParupaintKeyList list = keys->keyList();
+	QStringList keylist = list.keys(); keylist.sort();
 
-		const ParupaintKeyList list = keys->keyList();
+	QHBoxLayout * h_layout = new QHBoxLayout;
+	h_layout->setSizeConstraint(QLayout::SetFixedSize);
 
-		QStringList keylist = list.keys();
-		keylist.sort();
-
+		QFormLayout * form_layout = nullptr;
+		int i = 0;
 		foreach(const QString & k, keylist){
 			const ParupaintKey & key = list[k];
+			if(!form_layout){
+				form_layout = new QFormLayout;
+				form_layout->setSizeConstraint(QLayout::SetFixedSize);
+			}
 
 			ParupaintKeyBindButton * keybutton = new ParupaintKeyBindButton(key.toString());
 			keybutton->setProperty("label", k);
@@ -47,10 +51,19 @@ ParupaintKeyBindsDialog::ParupaintKeyBindsDialog(ParupaintKeys *keys, QWidget * 
 				this, &ParupaintKeyBindsDialog::focusKeyButton);
 
 			form_layout->addRow(k, keybutton);
+			if((i++) > 10){
+				i = 0;
+				h_layout->addLayout(form_layout);
+				form_layout = nullptr;
+			}
 		}
-		form_layout->addRow(ok_button);
 
-	this->setLayout(form_layout);
+	QVBoxLayout * v_layout = new QVBoxLayout;
+	v_layout->setSizeConstraint(QLayout::SetFixedSize);
+		v_layout->addLayout(h_layout);
+		v_layout->addWidget(ok_button);
+
+	this->setLayout(v_layout);
 }
 
 void ParupaintKeyBindsDialog::keyPressEvent(QKeyEvent * event)
