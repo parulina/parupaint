@@ -7,7 +7,8 @@
 
 ParupaintVisualCanvas::ParupaintVisualCanvas(QGraphicsItem * parent) :
 	QGraphicsItem(parent),
-	current_layer(0), current_frame(0), canvas_preview(false),
+	current_layer(0), current_frame(0),
+	canvas_preview(true),
 	checker_pixmap(":/resources/checker.png")
 {
 	this->resize(QSize(500, 500));
