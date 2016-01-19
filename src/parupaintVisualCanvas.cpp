@@ -64,6 +64,9 @@ void ParupaintVisualCanvas::setPreviewLine(const QLine & line, qreal width, cons
 		rect |= lineToRect(line_preview).adjusted(-line_thickness/2, -line_thickness/2, line_thickness/2, line_thickness/2);
 	}
 	rect = this->matrix().mapRect(rect);
+	if(rect.x() < 0) rect.adjust(-rect.x(), 0, -rect.x(), 0);
+	if(rect.y() < 0) rect.adjust(0, -rect.y(), 0, -rect.y());
+
 	this->line_preview = line;
 	this->line_thickness = width;
 	this->line_color = color;
