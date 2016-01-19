@@ -49,7 +49,8 @@
 
 ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	overlay_state(overlayHiddenState), canvas_state(noCanvasState),
-	overlay_button(false)
+	overlay_button(false),
+	tablet_pen_switch(false)
 {
 	// default keys
 	key_shortcuts = new ParupaintKeys(QStringList{

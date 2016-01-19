@@ -69,3 +69,7 @@ int ParupaintBrushGlass::brushNum()
 {
 	return current_brush;
 }
+bool ParupaintBrushGlass::isToggling()
+{
+	return (swapped_brush != -1);
+}

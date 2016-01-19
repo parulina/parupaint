@@ -143,12 +143,17 @@ void ParupaintWindow::OnPenPointer(const penInfo& info)
 {
 	if(info.pointer == QTabletEvent::Eraser ||
 	   info.pointer == QTabletEvent::Pen) {
-		qDebug() << "fix tablet pointer switch";
-		return;
+
 		if(info.pointer == QTabletEvent::Eraser) {
-			brushes->setBrush(1);
+			if(brushes->brushNum() != 1){
+				brushes->toggleBrush(1);
+				tablet_pen_switch = true;
+			}
 		} else if(info.pointer == QTabletEvent::Pen) {
-			brushes->setBrush(0);
+			if(brushes->brushNum() == 1 && tablet_pen_switch){
+				brushes->toggleBrush(1);
+				tablet_pen_switch = false;
+			}
 		}
 		scene->updateMainCursor(brushes->brush());
 	}

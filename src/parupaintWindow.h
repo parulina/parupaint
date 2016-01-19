@@ -56,6 +56,8 @@ Q_OBJECT
 	qreal 		origin_zoom;
 	QString 	local_server;
 
+	bool 		tablet_pen_switch;
+
 	// important stuff
 	ParupaintBrushGlass *	brushes;
 	ParupaintKeys *		key_shortcuts;
