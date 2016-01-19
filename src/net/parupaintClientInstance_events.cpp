@@ -144,12 +144,16 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		pool->canvas()->redraw();
 
 	} else if (id == "canvas") {
+		if(!object["w"].isDouble()) return;
+		if(!object["h"].isDouble()) return;
+
 		int w = object["w"].toInt();
 		int h = object["h"].toInt();
 		QJsonArray layers = object["layers"].toArray();
 
 		ParupaintVisualCanvas* canvas = pool->canvas();
 		canvas->clearCanvas();
+		canvas->setBackgroundColor(ParupaintSnippets::toColor(object["bgc"].toString("#00000000")));
 		canvas->resize(QSize(w, h));
 
 		for(int i = 0; i < layers.size(); i++){

@@ -10,6 +10,7 @@
 #include "../core/parupaintLayer.h"
 #include "../core/parupaintFrame.h"
 #include "../core/parupaintBrush.h"
+#include "../core/parupaintSnippets.h"
 
 ParupaintServerInstance::~ParupaintServerInstance()
 {
@@ -97,6 +98,7 @@ QJsonObject ParupaintServerInstance::canvasObj()
 {
 	QJsonObject obj;
 
+	obj["bgc"] = ParupaintSnippets::toHex(canvas->backgroundColor());
 	obj["w"] = canvas->dimensions().width();
 	obj["h"] = canvas->dimensions().height();
 

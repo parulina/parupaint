@@ -16,6 +16,7 @@
 #include <QDomDocument>
 #endif
 
+#include "parupaintSnippets.h"
 #include "parupaintPanvas.h"
 #include "parupaintLayer.h"
 #include "parupaintFrame.h"
@@ -67,20 +68,7 @@ bool ParupaintPanvasInputOutput::saveImage(ParupaintPanvas * panvas, const QStri
 	if(filename.isEmpty())
 		return (errorStr = "Enter a filename to save to.").isEmpty();
 
-	QImage img(panvas->dimensions(), QImage::Format_ARGB32);
-	img.fill(0);
-	for(int l = 0; l < panvas->layerCount(); l++){
-		ParupaintLayer * layer = panvas->layerAt(l);
-
-		// just skip if there isn't, there's no point
-		if(!layer->frameCount()) continue;
-		
-		ParupaintFrame * frame = layer->frameAt(0);
-		if(frame){
-			QPainter paint(&img);
-			paint.drawImage(QPointF(0, 0), frame->renderedImage());
-		}
-	}
+	QImage img = panvas->mergedImageFrames(true).first();
 	if(!img.save(filename))
 		return (errorStr = "Image save failed.").isEmpty();
 	return true;
@@ -134,6 +122,7 @@ bool ParupaintPanvasInputOutput::savePPA(ParupaintPanvas * panvas, const QString
 	QJsonObject ppa_info = {
 		{"canvasWidth", panvas->dimensions().width()},
 		{"canvasHeight", panvas->dimensions().height()},
+		{"backgroundColor", ParupaintSnippets::toHex(panvas->backgroundColor())},
 		{"frameRate", panvas->frameRate()},
 		{"projectName", panvas->projectName()},
 		{"layers", layers}
@@ -161,19 +150,8 @@ bool ParupaintPanvasInputOutput::exportAV(ParupaintPanvas * panvas, const QStrin
 		return (errorStr = writer.errorStr()).isEmpty();
 
 	// FIXME canvas mergedFrames clip to canvas rect?
-	for(int f = 0; f < panvas->totalFrameCount(); f++){
-		QImage img(dim, QImage::Format_ARGB32);
-		for(int l = 0; l < panvas->layerCount(); l++){
-			ParupaintLayer * layer = panvas->layerAt(l);
-			if(!layer) continue;
-
-			ParupaintFrame * frame = layer->frameAt(f);
-			if(!frame) continue;
-
-			const QImage & fimg = frame->renderedImage();
-			QPainter paint(&img);
-			paint.drawImage(img.rect(), fimg, fimg.rect());
-		}
+	// ???
+	foreach(const QImage & img, panvas->mergedImageFrames(true)){
 		writer.addFrame(img);
 	}
 	if(writer.hasError())
@@ -212,6 +190,8 @@ bool ParupaintPanvasInputOutput::loadImage(ParupaintPanvas * panvas, const QStri
 	if(img.isNull())
 		return (errorStr = "Couldn't load image.").isEmpty();
 
+	panvas->setBackgroundColor(Qt::transparent);
+
 	panvas->clearCanvas();
 	panvas->resize(img.size());
 	panvas->newCanvas(1, 1);
@@ -226,6 +206,8 @@ bool ParupaintPanvasInputOutput::loadGIF(ParupaintPanvas * panvas, const QString
 	if(!gif.isValid())
 		return (errorStr = "Couldn't load GIF.").isEmpty();
 	gif.jumpToFrame(0);
+
+	panvas->setBackgroundColor(Qt::transparent);
 
 	panvas->clearCanvas();
 	panvas->resize(gif.frameRect().size());
@@ -284,6 +266,7 @@ bool ParupaintPanvasInputOutput::loadORA(ParupaintPanvas * panvas, const QString
 	
 	// Oras can't be animation so we don't need
 	// a special filtering thing
+	panvas->setBackgroundColor(Qt::transparent);
 	panvas->clearCanvas();
 	panvas->resize(imagesize);
 
@@ -360,6 +343,7 @@ bool ParupaintPanvasInputOutput::loadPPA(ParupaintPanvas * panvas, const QString
 	panvas->resize(QSize(main_obj.value("canvasWidth").toInt(180), main_obj.value("canvasHeight").toInt(180)));
 	panvas->setFrameRate(main_obj.value("frameRate").toDouble(12));
 	panvas->setProjectName(main_obj.value("projectName").toString());
+	panvas->setBackgroundColor(ParupaintSnippets::toColor(main_obj.value("backgroundColor").toString()));
 
 	QJsonObject layers = main_obj.value("layers").toObject();
 	foreach(const QString & lk, layers.keys()) {

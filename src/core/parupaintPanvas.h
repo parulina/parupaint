@@ -13,6 +13,7 @@ struct ParupaintPanvasInfo {
 	QString 	name;
 	qreal 		framerate;
 	QSize		dimensions;
+	QColor		background_color;
 
 	ParupaintPanvasInfo();
 };
@@ -57,8 +58,11 @@ Q_OBJECT
 
 	void setProjectName(const QString &);
 	void setFrameRate(qreal = 24);
+	void setBackgroundColor(const QColor);
+
 	const QString & projectName();
 	qreal frameRate();
+	QColor backgroundColor();
 	const QSize & dimensions() const;
 };
 

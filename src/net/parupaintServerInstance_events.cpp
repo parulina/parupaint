@@ -228,6 +228,7 @@ void ParupaintServerInstance::ServerResize(int w, int h, bool r, bool propagate)
 {
 	if(!r){
 		canvas->clearCanvas();
+		canvas->setBackgroundColor(Qt::white);
 		canvas->insertLayer(0, 1);
 	}
 	// because resizing only one frame is the quickest.

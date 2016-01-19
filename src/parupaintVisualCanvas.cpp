@@ -90,9 +90,8 @@ void ParupaintVisualCanvas::redraw(QRect area)
 
 	if(!flash_timeout->isActive()){
 		if(this->isPreview()){
-			// if preview mode, draw a white background (TODO panvas bg color)
 			painter.setOpacity(1.0);
-			painter.fillRect(area, Qt::white);
+			painter.fillRect(area, this->backgroundColor());
 		}
 
 		// normal view - draw all layer's current_frame

@@ -6,7 +6,8 @@
 #define qtMax(x, y) (x > y ? x : y)
 
 ParupaintPanvasInfo::ParupaintPanvasInfo() :
-	framerate(12)
+	framerate(12),
+	background_color(Qt::white)
 {
 }
 
@@ -155,7 +156,7 @@ QList<QImage> ParupaintPanvas::mergedImageFrames(bool rendered)
 	QList<QImage> images;
 	for(auto f = 0; f < this->totalFrameCount(); f++){
 		QImage img(this->dimensions(), QImage::Format_ARGB32);
-		img.fill(0);
+		img.fill(this->info.background_color.rgba());
 		images.append(img);
 	}
 
@@ -173,10 +174,13 @@ QList<QImage> ParupaintPanvas::mergedImageFrames(bool rendered)
 }
 QImage ParupaintPanvas::mergedImage(bool rendered)
 {
+	qDebug() << "mergedImage... all frames will be merged.";
 	QImage image(this->dimensions(), QImage::Format_ARGB32);
-	image.fill(0);
+	image.fill(this->backgroundColor().rgba());
 
 	QPainter painter(&image);
+	// why the fuck did i write this code???
+	// why would i want to merge ALL of the frames? 0_o
 	foreach(const QImage &img, this->mergedImageFrames(rendered)){
 		painter.drawImage(image.rect(), img, img.rect());
 	}
@@ -195,6 +199,11 @@ void ParupaintPanvas::setFrameRate(qreal framerate)
 	emit onCanvasChange();
 }
 
+void ParupaintPanvas::setBackgroundColor(const QColor color)
+{
+	this->info.background_color = color;
+}
+
 const QString & ParupaintPanvas::projectName()
 {
 	return this->info.name;
@@ -202,6 +211,10 @@ const QString & ParupaintPanvas::projectName()
 qreal ParupaintPanvas::frameRate()
 {
 	return this->info.framerate;
+}
+QColor ParupaintPanvas::backgroundColor()
+{
+	return this->info.background_color;
 }
 
 const QSize & ParupaintPanvas::dimensions() const

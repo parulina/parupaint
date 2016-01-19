@@ -19,6 +19,14 @@ QColor ParupaintSnippets::toColor(const QString & hex)
 	}
 	return color;
 }
+QString ParupaintSnippets::toHex(const QColor & col)
+{
+	return ("#"+ 
+		("0" + QString::number(col.red(), 16)).right(2) +
+		("0" + QString::number(col.green(), 16)).right(2) +
+		("0" + QString::number(col.blue() , 16)).right(2) +
+		("0" + QString::number(col.alpha(), 16)).right(2)).toUpper();
+}
 QImage ParupaintSnippets::Base64GzipToImage(const QString & base64_image)
 {
 	QRegularExpression exp("^data:image/(png|jpg|jpeg|bmp);base64,");
