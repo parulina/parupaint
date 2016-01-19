@@ -53,13 +53,10 @@ span.notice {
 
 .titletext a[href="#connected"] {
 	text-decoration:underline;
-	outline:none;
 }
 .titletext a[href="#dimensions"] {
-	font-size:13px;
-	color:rgb(80, 200, 80);
+	color:#50C850;
 }
 .titletext span[href="#layerframe"] {
-	font-size:12px;
-	color:rgb(200, 200, 200);
+	color:#C8C8C8;
 }
