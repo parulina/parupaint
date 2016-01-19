@@ -198,19 +198,25 @@ ParupaintKeyBindButton:checked {
 	background-color:rgba(255, 180, 180, 0.4);
 }
 
-#ColorBar::groove {
+
+ParupaintColorBar::groove {
 	background:transparent;
 }
-#ColorBar::handle {
-	border:2px solid white;
-	border-bottom:none;
-	border-right:none;
+ParupaintColorBar::handle {
+	border-width:2px;
+	border-style:solid;
+	border-color:transparent;
+
 	background:black;
 }
-#ColorBar::handle:vertical {
-	border-left:none;
+ParupaintColorBar::handle:vertical {
+	border-left:none; border-right:none;
+	border-top-color:black;
+	border-bottom-color:white;
 }
 
-#ColorBar::handle:horizontal {
-	border-top:none;
+ParupaintColorBar::handle:horizontal {
+	border-top:none; border-bottom:none;
+	border-left-color:white;
+	border-right-color:black;
 }
