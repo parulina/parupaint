@@ -100,12 +100,15 @@ ParupaintFileDialog::ParupaintFileDialog(ParupaintFileDialogType type, QWidget *
 		this->setWindowTitle("open...");
 		this->setFileMode(QFileDialog::ExistingFile);
 		this->setNameFilter("supported files (*.jpg *.png *.gif *.ora *.ppa)");
+		this->setAcceptMode(QFileDialog::AcceptOpen);
 		config_key = "lastopen";
 	}
 	if(type == dialogTypeSaveAs){
 		this->setWindowTitle("save as...");
 		this->setFileMode(QFileDialog::AnyFile);
 		this->setNameFilter("*.jpg *.png *.ppa");
+		this->setAcceptMode(QFileDialog::AcceptSave);
+		this->setDefaultSuffix(".png");
 		config_key = "lastsaveas";
 	}
 	// set sidebar url
@@ -118,8 +121,11 @@ ParupaintFileDialog::ParupaintFileDialog(ParupaintFileDialogType type, QWidget *
 	this->setSidebarUrls(sidebar);
 
 	this->restoreState(cfg.value("window/" + config_key).toByteArray());
+
 	QFileInfo lastfile(cfg.value("client/" + config_key, ".").toString());
-	this->selectFile(lastfile.absoluteFilePath());
+	if(!lastfile.isFile()) lastfile.setFile(".png");
+	this->setDirectory(lastfile.absoluteDir());
+	this->selectFile(lastfile.fileName());
 
 	connect(this, &QFileDialog::fileSelected, this,
 	[this, config_key](const QString & file){
