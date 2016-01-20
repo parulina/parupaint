@@ -35,6 +35,7 @@ Q_OBJECT
 	ParupaintBrush * setBrush(int newbrush);
 	int brushNum();
 	bool isToggling();
+	void clearToggle();
 };
 
 #endif

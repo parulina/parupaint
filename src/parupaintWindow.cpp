@@ -87,6 +87,7 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 
 
 		"brush_eraser=E",
+		"brush_pencil=B",
 		"brush_fillpreview=T",
 
 		"pick_layer_color=R",
@@ -473,7 +474,13 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			}
 
 		} else if(shortcut_name.startsWith("brush_")){
-			if(shortcut_name.endsWith("eraser")){
+			if(shortcut_name.endsWith("pencil")){
+				brushes->clearToggle();
+				brushes->setBrush(0);
+				scene->updateMainCursor(brushes->brush());
+				view->showToast(brushes->brush()->name(), 600);
+
+			} else if(shortcut_name.endsWith("eraser")){
 				brushes->toggleBrush(1);
 				scene->updateMainCursor(brushes->brush());
 
@@ -610,10 +617,16 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 		}
 		tool += 2;
 
-		ParupaintBrush * brush = brushes->toggleBrush(tool);
+		ParupaintBrush * brush = brushes->setBrush(tool);
 		if(brush){
+			brushes->clearToggle();
+
 			scene->updateMainCursor(brush);
-			view->showToast(brush->name(), 600);
+
+			QString toaststr = brush->name();
+			if(brushes->brushNum() == tool)
+				toaststr = QString("custom brush %1: %2").arg(tool).arg(brush->name());
+			view->showToast(toaststr, 600);
 		}
 	}
 	if(event->key() == Qt::Key_Backtab && !event->isAutoRepeat()){

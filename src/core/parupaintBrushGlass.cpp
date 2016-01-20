@@ -46,7 +46,8 @@ ParupaintBrush * ParupaintBrushGlass::toggleBrush(int newbrush)
 	if(swapped_brush == -1){
 		swapped_brush = current_brush;
 	} else {
-		newbrush = swapped_brush;
+		if(current_brush == newbrush)
+			newbrush = swapped_brush;
 		swapped_brush = -1;
 	}
 	return this->setBrush(newbrush);
@@ -72,4 +73,8 @@ int ParupaintBrushGlass::brushNum()
 bool ParupaintBrushGlass::isToggling()
 {
 	return (swapped_brush != -1);
+}
+void ParupaintBrushGlass::clearToggle()
+{
+	swapped_brush = -1;
 }
