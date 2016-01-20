@@ -170,7 +170,8 @@ void ParupaintServerInstance::ServerLfc(int l, int f, int lc, int fc, bool e, bo
 	// TODO and make sure they update their values too
 
 	if((lc != 0 || fc != 0) && changed){
-		this->sendAll("canvas", this->canvasObj());
+		QJsonObject obj;
+		this->sendAll("lfc", obj);
 	}
 
 }

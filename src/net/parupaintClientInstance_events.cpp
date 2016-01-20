@@ -215,6 +215,9 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		// todo do this after receiving all images only?
 		pool->canvas()->redraw();
 
+	} else if(id == "lfc") {
+		this->send("canvas");
+
 	} else if(id == "lfa") {
 		if(!object["l"].isDouble()) return;
 		if(!object["f"].isDouble()) return;
