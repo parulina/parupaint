@@ -106,6 +106,8 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	});
 	// create brushglass
 	brushes = new ParupaintBrushGlass(this);
+	brushes->loadBrushes();
+	brushes->saveBrushes();
 
 	// create view and scene
 	view = new ParupaintCanvasView(this);
@@ -664,6 +666,8 @@ void ParupaintWindow::closeEvent(QCloseEvent *)
 		cfg.setValue("window/maingeometry", saveGeometry());
 		cfg.setValue("window/mainstate", saveState());
 	}
+
+	brushes->saveBrushes();
 }
 
 

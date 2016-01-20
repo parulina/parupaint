@@ -4,7 +4,9 @@
 // like in real life
 
 #include <QDebug>
+#include <QSettings>
 
+#include "parupaintSnippets.h"
 #include "parupaintBrush.h"
 
 ParupaintBrushGlass::ParupaintBrushGlass(QObject * parent) : QObject(parent),
@@ -78,3 +80,53 @@ void ParupaintBrushGlass::clearToggle()
 {
 	swapped_brush = -1;
 }
+
+void ParupaintBrushGlass::saveBrushes()
+{
+	QSettings cfg;
+	cfg.beginGroup("brushes");
+	cfg.remove("");
+
+	int i = 0;
+	foreach(ParupaintBrush * b, brushes){
+		QString key = QString("%1_%2").
+			arg(i, 3, 10, QChar('0')).arg(b->name());
+
+		cfg.setValue(key, QStringList{
+			b->colorString(),
+			QString::number(b->size()),
+			QString::number(b->tool())
+		});
+		i++;
+	}
+}
+
+void ParupaintBrushGlass::loadBrushes()
+{
+	QSettings cfg;
+	cfg.beginGroup("brushes");
+
+	if(cfg.childKeys().isEmpty()) return;
+
+	qDeleteAll(brushes);
+	brushes.clear();
+
+	foreach(const QString & key, cfg.childKeys()){
+		if(!key.contains('_')) continue;
+
+		int num = key.section('_', 0, 0).toInt();
+		QString name = key.section('_', 1);
+
+		QStringList val = cfg.value(key).toStringList();
+		if(val.size() != 3) continue;
+
+		QColor col = ParupaintSnippets::toColor(val[0]);
+		qreal size = val[1].toDouble();
+		int tool = val[2].toInt();
+
+		// color, size, tool
+		this->addBrush(new ParupaintBrush(this, size, col, name, tool));
+
+	}
+}
+

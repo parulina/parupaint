@@ -36,6 +36,9 @@ Q_OBJECT
 	int brushNum();
 	bool isToggling();
 	void clearToggle();
+
+	void saveBrushes();
+	void loadBrushes();
 };
 
 #endif
