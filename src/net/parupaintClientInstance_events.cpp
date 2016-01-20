@@ -244,6 +244,18 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 			}
 		}
 
+	} else if(id == "name") {
+		if(!object["name"].isString()) return;
+
+		int c = object["id"].toInt();
+		if(c == this->me) return;
+		if(brushes.find(c) == brushes.end()) return;
+
+		ParupaintVisualCursor * brush = brushes.value(c);
+		if(brush) {
+			brush->setCursorName(object["name"].toString("Unnamed"));
+		}
+
 	} else if(id == "chat") {
 		const QString name = object["name"].toString(),
 		              message = object["message"].toString();
