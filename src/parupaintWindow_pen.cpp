@@ -132,6 +132,7 @@ void ParupaintWindow::OnPenRelease(const penInfo& info)
 		current_brush->blockSignals(signals_blocked);
 		client->doBrushUpdate(current_brush);
 	}
+	current_brush->setPressure(0.0);
 	current_brush->setDrawing(false);
 
 	client->doBrushUpdate(current_brush);
