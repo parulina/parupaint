@@ -68,17 +68,21 @@ Q_OBJECT
 
 	QJsonObject canvasObj();
 	void sendAll(const QString &, const QJsonObject &, ParupaintConnection * = nullptr);
+	void sendChat(const QString &, ParupaintConnection * = nullptr);
 
-	void BroadcastChat(QString);
+	int numSpectators() const;
+	int numPainters() const;
+	int numConnections() const;
 	
 	QJsonObject MarshalConnection(ParupaintConnection*);
 	ParupaintPanvas * GetCanvas();
-	int GetNumConnections();
 
 	signals:
 	void OnMessage(const QString & id, const QJsonObject &obj);
 	void onJoin(ParupaintConnection *);
 	void onLeave(ParupaintConnection *);
+	void onConnect(ParupaintConnection *);
+	void onDisconnect(ParupaintConnection *);
 };
 
 #endif

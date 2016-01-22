@@ -63,8 +63,8 @@ void ParupaintServer::onDisconnection()
 
 	ParupaintConnection * con = this->ppConnection(socket);
 	if(con){
-		message(con, "disconnect");
 		connections.removeOne(con);
+		message(con, "disconnect");
 		delete con;
 	}
 	socket->deleteLater();
@@ -97,4 +97,9 @@ ParupaintConnection * ParupaintServer::ppConnection(QWsSocket* s)
 QList<ParupaintConnection*> ParupaintServer::ppConnections()
 {
 	return connections;
+}
+
+int ParupaintServer::ppNumConnections() const
+{
+	return connections.size();
 }

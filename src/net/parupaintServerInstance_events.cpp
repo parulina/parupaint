@@ -258,6 +258,8 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 			pw_obj["password"] = !this->password().isEmpty();
 			c->send("info", pw_obj);
 
+			emit onConnect(c);
+
 		// disconnect is handled lower down
 		// } else if(id == "disconnect"){
 			// connect and disconnect is for stuff that
@@ -296,13 +298,16 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 
 		// happens even if client doesn't send leave message
 		} else if(id == "leave" || id == "disconnect") {
-			if(id == "leave"){
-				c->send("leave");
-				emit onLeave(c);
-			}
 			ParupaintBrush * brush = brushes.value(c);
 			if(brush){
 				this->ServerLeave(c, true);
+			}
+
+			if(id == "leave"){
+				c->send("leave");
+				emit onLeave(c);
+			} else if(id == "disconnect"){
+				emit onDisconnect(c);
 			}
 
 		} else if(id == "name") {
@@ -496,10 +501,10 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 				bool ret = false;
 				if((ret = ParupaintPanvasInputOutput::savePanvas(canvas, fname, err))){
 					QString msg = QString("Server saved canvas successfully at: \"%1\"").arg(name);
-					this->BroadcastChat(msg);
+					this->sendChat(msg);
 				} else {
 					QString msg("Failed saving canvas: " + err);
-					this->BroadcastChat(msg);
+					this->sendChat(msg);
 				}
 			}
 
@@ -538,11 +543,11 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 				QString err, fname(load_dir + "/" + name);
 				bool ret = false;
 				if((ret = ParupaintPanvasInputOutput::loadPanvas(canvas, fname, err))){
-					this->BroadcastChat("Server loaded file successfully!");
+					this->sendChat("Server loaded file successfully!");
 					this->sendAll("canvas", this->canvasObj());
 				} else {
 					QString msg("Failed loading canvas: " + err);
-					this->BroadcastChat(msg);
+					this->sendChat(msg);
 				}
 			}
 		} else if(id == "play") {

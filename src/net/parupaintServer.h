@@ -28,12 +28,15 @@ Q_OBJECT
 	ParupaintServer(quint16 port, QObject * = nullptr);
 	~ParupaintServer();
 
-	ParupaintConnection * ppConnection(QWsSocket*);
-	QList<ParupaintConnection*> ppConnections();
 	virtual void message(ParupaintConnection *, const QString &, const QByteArray & = QByteArray()) {};
 
 	void setProtective(bool);
 	bool isProtective();
+
+	// clean this filth up
+	ParupaintConnection * ppConnection(QWsSocket*);
+	QList<ParupaintConnection*> ppConnections();
+	int ppNumConnections() const;
 };
 
 

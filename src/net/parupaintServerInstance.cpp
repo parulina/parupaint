@@ -83,17 +83,6 @@ QJsonObject ParupaintServerInstance::MarshalConnection(ParupaintConnection* conn
 	return obj;
 }
 
-int ParupaintServerInstance::GetNumConnections()
-{
-	return brushes.size();
-}
-void ParupaintServerInstance::BroadcastChat(QString str)
-{
-	QJsonObject obj;
-	obj["message"] = str;
-	this->sendAll("chat", obj);
-}
-
 QJsonObject ParupaintServerInstance::canvasObj()
 {
 	QJsonObject obj;
@@ -130,4 +119,24 @@ void ParupaintServerInstance::sendAll(const QString & id, const QJsonObject & ob
 		c->send(id, obj);
 	}
 }
+void ParupaintServerInstance::sendChat(const QString & str, ParupaintConnection * con)
+{
+	QJsonObject obj;
+	obj["message"] = str;
+	this->sendAll("chat", obj, con);
+}
 
+int ParupaintServerInstance::numSpectators() const
+{
+	return (this->numConnections() - this->numPainters());
+}
+
+int ParupaintServerInstance::numPainters() const
+{
+	return brushes.size();
+}
+
+int ParupaintServerInstance::numConnections() const
+{
+	return this->ppNumConnections();
+}
