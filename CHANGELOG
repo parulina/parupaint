@@ -1,12 +1,20 @@
 0.92
++ Keys can be rebound in a dialog now.
++ Replaced hotkey list in infobar with a quickstart guide.
 + Changed PPA format to ZIP. (checkout tag "ppa-zip-convert" to load your old PPA and resave them for future support)
-+ Spectate mode by default, need to write /join.
-+ Sessions are now passworded by default with a randomly generated key.
-+ Removed default white filled canvas.
++ Spectate mode by default on connection.
++ Bundled server sessions are now passworded by default with a randomly generated key.
++ Replaced default white filled canvas with settable canvas background color.
++ Tablet pen correctly toggles eraser.
++ Correct join/leave/connect/disconnect messages.
++ Brushes are now persistent.
 + Fixed layer/frame creation.
 + Added GIF load support.
 + Fixed PPA load, loads and saves correctly in a more organized way now.
 + Fixed a bug in exporting images, would create junk pixels at the top.
++ Able to change frame opacity.
++ Fixed parupaint dialogs lagging.
+
 
 0.91
 ! Almost-full cleanup of code!
