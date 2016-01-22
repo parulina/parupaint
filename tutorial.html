@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="theme-color" content="#CCBC80" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<link href="style.css" rel="stylesheet"></link>
+		<link rel="icon" type="image/png" href="parupaint.png" />
+		<title>PARUPAINT manual</title>
+	</head>
+	<body>
+		<h1>PARUPAINT TUTORIAL</h1>
+		<a href="#main">go straight to the main guide</a>
+
+		<h2>Installation and setup</h2>
+		<p>First off, you should download the program at either github or from sqnya.se. Anywhere else and i can't gurantee that it's not malicious. Next...</p>
+		<ul>
+			<li>For Mac: open the dmg file, and drag the parupaint.app in to the Applications folder.
+			<li>For Windows: open the zip file, and drag the parupaint.exe somewhere on your computer.
+			<li>For Linux: same as windows.
+		</ul>
+		<p><b>Start up the program.</b> You should see an empty white square canvas in front of you. Your OS might ask you to permit parupaint to use your network, in which case you should say yes if you want to draw collaboratively.</p>
+		<p>Parupaint was designed to make use of having the keyboard placed in front of your tablet. For a right handed person, this would mean placing the tablet to the right, and using the keyboard with the left hand. The keys are all customizable if you wish to change any of them.</p>
+		<h2>Parupaint concepts</h2>
+		<p>Parupaint is a bit different from usual painting programs. The most obvious one is the (very) unusual interface compared to regular painting programs: no toolbars, no menus. At first this is very confusing, but that's normal. <b>The program is almost entirely controlled by keys</b>, so learn them by checking out the keyboard reference on the homepage. You might also assume that there exists an undo action, which, at the moment, doesn't exist!</p>
+		<p>When saving as a project, parupaint uses its own project format: ppa (think .sai or .psd). <b>Be aware that you quicksave as png</b>, so you have to explicitly save as ppa.</p>
+		<p><b>Parupaint works with layers and frames</b>. There can be many layers, and in each layer there can be many frames. These compose the final animation when rendered. Frames can be extended and redacted, meaning that the frame is "stretched out", useful for things like static backgrounds. You can ignore the frame stuff if you don't care about animation.</p>
+		<h2 id="main">Main guide</h2>
+		<a class="side-link" href="tutorial_interface.png" target="_blank"><img class="example" src="tutorial_interface.png"></img></a>
+		<p>The overlay is basically the main interface - where you change color, see layer/frame information, and chat. It can be shown with <kbd>Tab</kbd> and hidden with <kbd>Shift+Tab</kbd>. The overlay will hide automatically after some time, unless you hover over one of the controls.</p>
+		<ul>
+			<li class="b">Press <kbd>Tab</kbd> to show the overlay. Hold it to "sticky" the overlay.
+			<li class="b">Press <kbd>Shift+Tab</kbd> to hide the overlay.
+			<li>Press <kbd>Enter</kbd> to show/write in the chat.
+			<li class="b">Hold <kbd>Space</kbd> to move the canvas, and <kbd>Ctrl+Space</kbd> to zoom.
+			<li>Press <kbd>H</kbd> to flip the canvas horizontally, and <kbd>Shift+H</kbd> to flip vertically.
+			<li>Press <kbd>G</kbd> to toggle preview mode. Preview mode is useful if you want to preview how the exported canvas looks like, with all of its layers rendered.
+			<li>Press <kbd>Ctrl+G</kbd> to reset the view.
+		</ul>
+		<p>Brushes work differently than how normal painting programs does. Each brush is customizable (color, size, tool) and keeps the settings through program restart. Even the eraser is a brush by itself. The eraser can be toggled globally with <kbd>E</kbd> from any brush, and then toggled back to the previous brush. The main brush is at <kbd>B</kbd>. If the color alpha is 0.0, the brush is treated like an eraser (destination-out) and is shown with a dashed outline.</p>
+		<ul>
+			<li class="b">Hold <kbd>Shift+Space</kbd> to change brush size.
+			<li class="b">Press <kbd>E</kbd> to toggle the eraser.
+			<li class="b">Press <kbd>B</kbd> to switch to the main brush.
+			<li>Press any key from <kbd>1</kbd> to <kbd>5</kbd> for custom brushes. These are useful if you don't want to keep changing the main brush all the time.
+			<li class="b">Press <kbd>R</kbd> to pick color from the current layer (including transparency), and <kbd>Shift+R</kbd> to sample color from what you actually see.
+			<li>Press <kbd>W</kbd> for 3 different dither patterns. (tip: they can be combined!)
+			<li>Press <kbd>Q</kbd> for fill tool. You can also test-fill with <kbd>T</kbd> - this shows you a preview of the area that would be filled.
+			<li>Press <kbd>Shift+Q</kbd> for opacity drawing. The opacity of the brush is then determined by the pressure.
+			<li>Press <kbd>Shift+W</kbd> for line tool.
+		</ul>
+		<p>Navigating layers and frames is done entirely with keys, so it can be a bit disorienting sometimes. Check the bottom part of the overlay to see which layer/frame you are on.</p>
+		<ul>
+			<li>Press <kbd>A</kbd>, <kbd>S</kbd> for previous, next frame.
+			<li>Press <kbd>D</kbd>, <kbd>F</kbd> for previous, next layer.
+			<li>Add <kbd>Tab</kbd> in either of those keys to create and remove, respectively.<br/>Example: press <kbd>Tab+F</kbd> to add a layer, or <kbd>Tab+A</kbd> to remove the current frame.
+			<li>Add <kbd>Shift</kbd> to insert rather than add.<br/>Example: press <kbd>Shift+Tab+S</kbd> to insert a frame before the current frame.
+			<li>For frames: add <kbd>Ctrl</kbd> to <kbd>Tab+A</kbd>/<kbd>Tab+S</kbd> to redact, extend, respectively.
+		</ul>
+		<p>Other helpful keys:</p>
+		<ul>
+			<li>Press <kbd>Ctrl+N</kbd> to resize or create a new canvas. <kbd>Ctrl+Backspace</kbd> clears the current frame to the brush color.
+			<li>Press <kbd>Ctrl+M</kbd> to open settings, where you can set your name and see a list of all keys.
+			<li>Press <kbd>Ctrl+K</kbd> to quicksave as .png, <kbd>Ctrl+O</kbd> to open a file, and <kbd>Ctrl+L</kbd> to save as.
+			<li>Press <kbd>Ctrl+I</kbd> to connect to a server.
+		</ul>
+		<h2>Drawing with others</h2>
+		<p>A prominent feature in parupaint is the ability to draw collaboratively! This is made possible by designing the program around a server/client model. This means that when you're drawing alone, you're actually just drawing in your own server. (like what the statusbar says: "connected to yourself"). For security, your session is passworded by default, and anyone wishing to join you has to enter it. The password can be disabled in the settings.</p>
+		<p>To have someone join in with you, first, <a href="http://icanhazip.com" target="_blank">find out your ip</a>. Then make sure you have the default port open (1108). If you are behind a router, you probably have to port forward (TCP 1108) before others can join you. If everything is set up, ask them to open up connection dialog (<kbd>Ctrl+I</kbd>) and enter your IP in to the host line entry. Once they connect, they can join in, and congrats, you both are now drawing together!</p>
+		<p>Feel free to check out the public server (the "sqnya.se" button) as well! But be respectful to your fellow artists.</p>
+		<h2>Additional info</h2>
+		<p>The program can make use of the ffmpeg libraries to export to a lot of other formats, including videos. I'll write a tutorial for this some other day...</p>
+		<br/>
+		<p>Thanks for trying out my program! </p>
+	</body>
+</html>
