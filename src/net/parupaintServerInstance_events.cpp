@@ -37,9 +37,9 @@ void ParupaintServerInstance::ServerJoin(ParupaintConnection * c, bool propagate
 
 	if(!propagate) return;
 
-	QJsonObject obj_me = this->MarshalConnection(c);
-	obj_me["disconnect"] = false;
-	this->sendAll("peer", obj_me, c);
+	QJsonObject obj = this->connectionObj(c);
+	obj["exists"] = true;
+	this->sendAll("brush", obj, c);
 }
 
 void ParupaintServerInstance::ServerLeave(ParupaintConnection * c, bool propagate)
@@ -53,10 +53,9 @@ void ParupaintServerInstance::ServerLeave(ParupaintConnection * c, bool propagat
 
 	if(!propagate) return;
 
-	QJsonObject obj;
-	obj["disconnect"] = true;
-	obj["id"] = c->id();
-	this->sendAll("peer", obj, c);
+	QJsonObject obj = this->connectionObj(c);
+	obj["exists"] = false;
+	this->sendAll("brush", obj, c);
 }
 // set the name!
 void ParupaintServerInstance::ServerName(ParupaintConnection * c, QString name, bool propagate)
@@ -76,9 +75,9 @@ void ParupaintServerInstance::ServerName(ParupaintConnection * c, QString name, 
 
 	if(brush){
 		QJsonObject obj;
-		obj["name"] = name;
+		obj["n"] = name;
 		obj["id"] = c->id();
-		this->sendAll("name", obj, c);
+		this->sendAll("brush", obj, c);
 	}
 }
 void ParupaintServerInstance::ServerChat(ParupaintConnection * c, QString msg, bool propagate)
@@ -251,7 +250,9 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 			c->setId(connectid++);
 			// send everyone and the canvas too
 			foreach(ParupaintConnection * con, brushes.keys()){
-				c->send("peer", this->MarshalConnection(con));
+				QJsonObject obj = this->connectionObj(con);
+				obj["exists"] = true;
+				c->send("brush", obj);
 			}
 			c->send("canvas", this->canvasObj());
 
@@ -365,7 +366,7 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 
 			this->ServerFill(l, f, c);
 
-		} else if(id == "draw"){
+		} else if(id == "brush"){
 			ParupaintBrush * brush = brushes.value(c);
 			if(brush) {
 				double old_x = brush->x(),

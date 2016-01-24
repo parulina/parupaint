@@ -68,7 +68,8 @@ Q_OBJECT
 	void ServerPaste(int l, int f, int x, int y, QString base64_img, bool propagate=true);
 	void ServerResize(int, int, bool, bool=true);
 
-	QJsonObject canvasObj();
+	QJsonObject connectionObj(ParupaintConnection * con) const;
+	QJsonObject canvasObj() const;
 
 	void sendAll(const QString &, const QJsonObject &, ParupaintConnection * = nullptr);
 	void sendChat(const QString &, ParupaintConnection * = nullptr);
@@ -77,7 +78,6 @@ Q_OBJECT
 	int numPainters() const;
 	int numConnections() const;
 	
-	QJsonObject MarshalConnection(ParupaintConnection*);
 	ParupaintPanvas * GetCanvas();
 
 	signals:

@@ -170,7 +170,6 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 		} else if(id == "name") {
 			this->ServerName(con, str.takeFirst(), !recovery);
 
-		// these are written at "draw" usually.
 		} else if(id == "width" && ct == 1) {
 			qreal size = str.takeFirst().toDouble();
 			brushes[con]->setSize(size);
@@ -178,7 +177,7 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 				QJsonObject obj;
 				obj["id"] = b;
 				obj["s"] = size;
-				this->sendAll("draw", obj);
+				this->sendAll("brush", obj);
 			} else {
 				if(record_manager) record_manager->Width(b, size);
 			}
@@ -195,7 +194,7 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 				QJsonObject obj;
 				obj["id"] = b;
 				obj["c"] = col;
-				this->sendAll("draw", obj);
+				this->sendAll("brush", obj);
 			} else {
 				if(record_manager) record_manager->Color(b, col);
 			}
@@ -207,7 +206,7 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 				QJsonObject obj;
 				obj["id"] = b;
 				obj["t"] = tool;
-				this->sendAll("draw", obj);
+				this->sendAll("brush", obj);
 			} else {
 				if(record_manager) record_manager->Tool(b, tool);
 			}
@@ -221,7 +220,7 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 				obj["id"] = b;
 				obj["l"] = l;
 				obj["f"] = f;
-				this->sendAll("draw", obj);
+				this->sendAll("brush", obj);
 			} else {
 				if(record_manager) record_manager->Lf(b, l, f);
 			}
@@ -250,7 +249,7 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 				obj["y"] = y;
 				obj["p"] = p;
 				obj["d"] = d;
-				this->sendAll("draw", obj);
+				this->sendAll("brush", obj);
 			} else {
 				if(record_manager) record_manager->Pos(b, x, y, p, d);
 			}
@@ -277,7 +276,7 @@ void ParupaintServerInstance::SaveRecordBrushes()
 void ParupaintServerInstance::RestoreRecordBrushes()
 {
 	if(record_backup.isEmpty()) return;
-	qDebug() << "Restoring brushes.";
+	qDebug() << "Restoring brushes. (NEEDS FIXING)";
 	for(auto i = brushes.begin(); i != brushes.end(); ++i){
 		ParupaintConnection * c = i.key();
 		ParupaintBrush * b = i.value();
@@ -288,16 +287,9 @@ void ParupaintServerInstance::RestoreRecordBrushes()
 			backup_it.value()->copyTo(*b);
 			record_backup.erase(backup_it);
 		}
-		QJsonObject obj;
-		obj["s"] = b->size();
-		obj["t"] = b->tool();
-		obj["c"] = b->colorString();
-
-		obj["id"] = c->id();
-		obj["d"] = false;
-		obj["l"] = b->layer();
-		obj["f"] = b->frame();
-		this->sendAll("draw", obj);
+		// FIXME clear every brush and re-send them??
+		QJsonObject obj = this->connectionObj(c);
+		this->sendAll("brush", obj);
 	}
 	record_backup.clear();
 }

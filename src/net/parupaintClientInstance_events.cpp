@@ -43,52 +43,33 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 			remote_password = object["password"].toBool(false);
 		}
 
-	} else if(id == "peer") {
+	} else if(id == "brush"){
 		int c = object["id"].toInt();
-		bool d = object["disconnect"].toBool();
-
-		QString n(object["name"].toString("???"));
-		qreal 	x(object["x"].toDouble(0)),
-			y(object["y"].toDouble(0));
-		qreal 	w(object["s"].toDouble(1));
-		int 	t(object["t"].toInt(0));
-		int 	l(object["l"].toInt(0)),
-			f(object["f"].toInt(0));
-
-		if(c > 0){
-			if(!d) {
-				brushes[c] = new ParupaintVisualCursor();
-				brushes[c]->setName(n);
-				brushes[c]->setSize(w);
-				brushes[c]->setPosition(QPointF(x, y));
-				brushes[c]->setTool(t);
-				brushes[c]->setLayerFrame(l, f);
-
-				brushes[c]->setCursorName(n);
-
-				pool->addCursor(brushes[c]); // addCursor is needed here
-			} else {
-				if(brushes.find(c) != brushes.end()){
-					ParupaintVisualCursor * cursor = brushes.take(c);
-					pool->removeCursor(cursor);
-					delete cursor;
-				}
-			}
-
-		} else {
-			me = -c;
-		}
-	} else if(id == "draw"){
-		auto c = object["id"].toInt();
 		if(c == this->me) return;
-		if(brushes.find(c) == brushes.end()) return;
 
-		ParupaintVisualCursor * brush = brushes.value(c);
+		// default: nullptr
+		ParupaintVisualCursor * brush = brushes[c];
+
+		// create or destroy brush as they join/leave the server
+		if(object["exists"].isBool()){
+			bool exists = object["exists"].toBool();
+			if(exists){
+				brush = new ParupaintVisualCursor;
+				pool->addCursor(brush);
+				brushes[c] = brush;
+			} else if(brush) {
+				brush = brushes.take(c);
+				pool->removeCursor(brush);
+				delete brush;
+				brush = nullptr;
+			}
+		}
 		if(brush) {
 			const qreal 	old_x = brush->ParupaintBrush::x(),
 			      		old_y = brush->ParupaintBrush::y();
 			double 		x = old_x, y = old_y;
 
+			if(object["n"].isString())	brush->setCursorName(object["n"].toString("Unnamed"));
 			if(object["c"].isString())	brush->setColor(ParupaintSnippets::toColor(object["c"].toString("#000")));
 			if(object["d"].isBool())	brush->setDrawing(object["d"].toBool(false));
 			if(object["s"].isDouble())	brush->setSize(object["s"].toDouble(1));
@@ -239,17 +220,6 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 				frame->setOpacity(val.toDouble());
 				pool->canvas()->redraw();
 			}
-		}
-	} else if(id == "name") {
-		if(!object["name"].isString()) return;
-
-		int c = object["id"].toInt();
-		if(c == this->me) return;
-		if(brushes.find(c) == brushes.end()) return;
-
-		ParupaintVisualCursor * brush = brushes.value(c);
-		if(brush) {
-			brush->setCursorName(object["name"].toString("Unnamed"));
 		}
 
 	} else if(id == "chat") {

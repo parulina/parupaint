@@ -81,6 +81,7 @@ void ParupaintClientInstance::doLeave()
 
 void ParupaintClientInstance::doName()
 {
+	// server works with a separate name packet.
 	QJsonObject obj;
 	obj["name"] = this->name();
 	this->send("name", obj);
@@ -141,7 +142,7 @@ void ParupaintClientInstance::doBrushUpdate(ParupaintBrush * brush)
 		obj["t"] = brush->tool();
 
 	if(obj.length()){
-		this->send("draw", obj);
+		this->send("brush", obj);
 	}
 	brush->copyTo(shadow_brush);
 }

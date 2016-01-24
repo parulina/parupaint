@@ -27,29 +27,6 @@ ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent)
 	canvas = new ParupaintPanvas(this, QSize(540, 540), 1, 1);
 
 	this->StartRecordSystems();
-	// Start record systems before doing ANYTHING
-
-	/*
-	auto * con = new ParupaintConnection(nullptr);
-	con->setId(connectid++);
-	this->ServerJoin(con, "test");
-	QTimer *timer = new QTimer(this);
-	connect(timer, &QTimer::timeout, [=](){
-		auto * b = this->brushes[con];
-		QPointF add(4, 4);
-		if(b->GetPosition().x() > 500 && b->GetPosition().y() > 500){
-			add = QPointF(-500, -500);
-		}
-		b->SetPosition(b->GetPosition() + add);
-		QJsonObject obj;
-		obj["id"] = con->getId();
-		obj["x"] = rand() % 255;
-		obj["y"] = rand() % 255;
-		obj["t"] = 1;
-		this->Broadcast("draw", obj);
-	});
-	timer->start(800);
-	*/
 }
 
 void ParupaintServerInstance::joinConnection(ParupaintConnection * con)
@@ -75,23 +52,27 @@ ParupaintPanvas * ParupaintServerInstance::GetCanvas()
 	return canvas;
 }
 
-QJsonObject ParupaintServerInstance::MarshalConnection(ParupaintConnection* connection)
+QJsonObject ParupaintServerInstance::connectionObj(ParupaintConnection * con) const
 {
-	QJsonObject obj;
-	obj["id"] = connection->id();
+	QJsonObject obj = {
+		{"id", con->id()},
+		{"n", con->name()}
+	};
 
-	obj["name"] = connection->name();
-	obj["x"] = brushes[connection]->x();
-	obj["y"] = brushes[connection]->y();
-	obj["s"] = brushes[connection]->size();
-	obj["t"] = brushes[connection]->tool();
-	obj["l"] = brushes[connection]->layer();
-	obj["f"] = brushes[connection]->frame();
+	ParupaintBrush * brush = this->brushes.value(con);
+	if(brush){
+		obj["x"] = brush->x();
+		obj["y"] = brush->y();
+		obj["s"] = brush->size();
+		obj["t"] = brush->tool();
+		obj["l"] = brush->layer();
+		obj["f"] = brush->frame();
+	}
 
 	return obj;
 }
 
-QJsonObject ParupaintServerInstance::canvasObj()
+QJsonObject ParupaintServerInstance::canvasObj() const
 {
 	QJsonObject obj;
 
