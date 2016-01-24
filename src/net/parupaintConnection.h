@@ -9,6 +9,7 @@ class ParupaintConnection
 	QWsSocket * connection_socket;
 	int connection_id;
 	QString connection_name;
+	bool autojoin_flag;
 
 	public:
 	ParupaintConnection(QWsSocket * s);
@@ -20,6 +21,9 @@ class ParupaintConnection
 
 	void setName(const QString &);
 	QString name();
+
+	void setAutoJoinFlag(bool f);
+	bool autoJoinFlag() const;
 
 	QWsSocket * socket();
 	bool isLocal();

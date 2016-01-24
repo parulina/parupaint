@@ -48,6 +48,8 @@ Q_OBJECT
 	~ParupaintServerInstance();
 	ParupaintServerInstance(quint16 , QObject * = nullptr);
 
+	void joinConnection(ParupaintConnection * con);
+
 	void setPassword(const QString & password);
 	const QString & password();
 
@@ -67,6 +69,7 @@ Q_OBJECT
 	void ServerResize(int, int, bool, bool=true);
 
 	QJsonObject canvasObj();
+
 	void sendAll(const QString &, const QJsonObject &, ParupaintConnection * = nullptr);
 	void sendChat(const QString &, ParupaintConnection * = nullptr);
 

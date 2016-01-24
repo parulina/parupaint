@@ -261,11 +261,10 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 
 			emit onConnect(c);
 
-		// disconnect is handled lower down
-		// } else if(id == "disconnect"){
-			// connect and disconnect is for stuff that
-			// should always happen to joining people
-
+			QSettings cfg("server.ini", QSettings::IniFormat, this);
+			if(cfg.value("autojoin", false).toBool()){
+				c->setAutoJoinFlag(true);
+			}
 		} else if(id == "join"){
 			bool ok;
 			QJsonObject msgobj;
@@ -293,12 +292,7 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 					}
 				}
 			}
-
-			// let the connection know we accepted them
-			c->send("join");
-			emit onJoin(c);
-
-			this->ServerJoin(c, true);
+			this->joinConnection(c);
 
 		// happens even if client doesn't send leave message
 		} else if(id == "leave" || id == "disconnect") {
@@ -317,12 +311,18 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 		} else if(id == "name") {
 			if(!obj["name"].isString()) return;
 			QString name = obj["name"].toString();
+			bool new_name = (!name.isEmpty() && c->name().isEmpty());
 
 			// name is its own packet because a connection
 			// can have a name even without a brush
 			// so it wouldn't go in the brush packet
 			if(name.length() > 24) return;
 			this->ServerName(c, name, true);
+
+			if(new_name && c->autoJoinFlag()){
+				c->setAutoJoinFlag(false);
+				this->joinConnection(c);
+			}
 
 		} else if(id == "lfa") {
 			if(brushes.find(c) == brushes.end()) return;

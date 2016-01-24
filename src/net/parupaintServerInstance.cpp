@@ -52,6 +52,14 @@ ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent)
 	*/
 }
 
+void ParupaintServerInstance::joinConnection(ParupaintConnection * con)
+{
+	con->send("join");
+	emit onJoin(con);
+
+	this->ServerJoin(con, true);
+}
+
 void ParupaintServerInstance::setPassword(const QString & password)
 {
 	this->server_password = password;

@@ -6,7 +6,8 @@
 
 ParupaintConnection::ParupaintConnection(QWsSocket * s) :
 	connection_socket(s),
-	connection_id(0)
+	connection_id(0),
+	autojoin_flag(false)
 {
 }
 
@@ -37,6 +38,15 @@ void ParupaintConnection::setName(const QString & name)
 QString ParupaintConnection::name()
 {
 	return this->connection_name;
+}
+
+void ParupaintConnection::setAutoJoinFlag(bool f)
+{
+	autojoin_flag = f;
+}
+bool ParupaintConnection::autoJoinFlag() const
+{
+	return autojoin_flag;
 }
 
 QWsSocket * ParupaintConnection::socket()
