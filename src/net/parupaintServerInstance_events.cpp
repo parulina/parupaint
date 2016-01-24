@@ -12,6 +12,8 @@
 #include "../core/parupaintFrameBrushOps.h"
 #include "../core/parupaintPanvasInputOutput.h"
 
+#include "../parupaintVersion.h"
+
 // toColor(hex)
 #include "../core/parupaintSnippets.h"
 #include "../bundled/qcompressor.h"
@@ -272,6 +274,9 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 
 			if(!ok) return;
 			if(ver < 0.92) return; // 0.91 and previous autojoins
+
+			// parupaint will probably update a lot before the official release.
+			if(ver < 1.00 && ver != QString(PARUPAINT_VERSION).toDouble()) return;
 
 			if(c->socket()->host() != "localhost"){
 				if(!this->password().isEmpty()){
