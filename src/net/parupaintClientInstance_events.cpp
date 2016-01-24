@@ -221,32 +221,25 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 	} else if(id == "lfa") {
 		if(!object["l"].isDouble()) return;
 		if(!object["f"].isDouble()) return;
-		if(!object["attr"].isArray()) return;
+		if(!object["attr"].isObject()) return;
 
 		int l = object["l"].toInt(), f = object["f"].toInt();
+		QJsonObject attr = object["attr"].toObject();
 
 		ParupaintLayer * layer = pool->canvas()->layerAt(l);
 		if(!layer) return;
 		ParupaintFrame * frame = layer->frameAt(f);
 		if(!frame) return;
 
-		foreach(const QJsonValue & val, object["attr"].toArray()){
-			if(!val.isObject()) continue;
-
-			const QJsonObject & obj = val.toObject();
-
-			const QString key = obj.keys().first();
-			if(key.isEmpty()) continue;
-			if(obj[key].isUndefined()) continue;
-			const QVariant & keyval = obj[key].toVariant();
+		if(!attr.length()) return;
+		foreach(const QString & key, attr.keys()){
+			const QVariant & val = attr[key].toVariant();
 
 			if(key == "frame-opacity"){
-				qDebug() << keyval;
-				frame->setOpacity(keyval.toDouble());
+				frame->setOpacity(val.toDouble());
 				pool->canvas()->redraw();
 			}
 		}
-
 	} else if(id == "name") {
 		if(!object["name"].isString()) return;
 

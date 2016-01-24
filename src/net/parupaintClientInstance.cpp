@@ -153,8 +153,8 @@ void ParupaintClientInstance::doLayerFrameAttribute(int l, int f, const QString 
 	QJsonObject obj;
 	obj["l"] = l;
 	obj["f"] = f;
-	obj["attr"] = QJsonArray{
-		QJsonObject{{attr, val}}
+	obj["attr"] = QJsonObject{
+		{attr, val}
 	};
 	this->send("lfa", obj);
 }

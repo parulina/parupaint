@@ -118,10 +118,9 @@ void ParupaintServerInstance::ServerLfa(int l, int f, const QString & attr, cons
 	QJsonObject obj;
 	obj["l"] = l;
 	obj["f"] = f;
-	obj["attr"] = QJsonArray{
-		QJsonObject{{attr, QJsonValue::fromVariant(temp_val)}}
+	obj["attr"] = QJsonObject{
+		{attr, QJsonValue::fromVariant(temp_val)}
 	};
-	qDebug() << "asd" << val << val.toJsonObject();
 	this->sendAll("lfa", obj);
 }
 void ParupaintServerInstance::ServerLfc(int l, int f, int lc, int fc, bool e, bool propagate)
@@ -319,6 +318,9 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 			if(!obj["name"].isString()) return;
 			QString name = obj["name"].toString();
 
+			// name is its own packet because a connection
+			// can have a name even without a brush
+			// so it wouldn't go in the brush packet
 			if(name.length() > 24) return;
 			this->ServerName(c, name, true);
 
@@ -327,21 +329,17 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 
 			if(!obj["l"].isDouble()) return;
 			if(!obj["f"].isDouble()) return;
-			if(!obj["attr"].isArray()) return;
+			if(!obj["attr"].isObject()) return;
 
 			int l = obj["l"].toInt(), f = obj["f"].toInt();
+			QJsonObject attr = obj["attr"].toObject();
 
-			foreach(const QJsonValue & val, obj["attr"].toArray()){
-				if(!val.isObject()) continue;
+			if(!attr.length()) return;
+			// eh, it's not worth it to make it work only with one key
+			foreach(const QString & key, attr.keys()){
+				const QVariant & val = attr[key].toVariant();
 
-				const QJsonObject & obj = val.toObject();
-
-				const QString key = obj.keys().first();
-				if(key.isEmpty()) continue;
-				if(obj[key].isUndefined()) continue;
-				const QVariant & keyval = obj[key].toVariant();
-
-				this->ServerLfa(l, f, key, keyval);
+				this->ServerLfa(l, f, key, val);
 			}
 		} else if(id == "lfc") {
 			if(brushes.find(c) == brushes.end()) return;
