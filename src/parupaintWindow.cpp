@@ -850,8 +850,17 @@ void ParupaintWindow::doCommand(const QString & cmd, const QString & params)
 	}
 }
 
+void ParupaintWindow::doSessionPassword(const QString & sessionpw)
+{
+	if(sessionpw.length() > 64) return;
+
+	client->doInfo("sessionpassword", sessionpw);
+}
+
 void ParupaintWindow::doUserName(const QString & username)
 {
+	if(username.length() > 24) return;
+
 	client->setName(username);
 	if(client->connected()){
 		client->doName();

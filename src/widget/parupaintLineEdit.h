@@ -5,6 +5,7 @@
 
 class ParupaintLineEdit : public QLineEdit
 {
+Q_OBJECT
 	public:
 	ParupaintLineEdit(QWidget * = nullptr, const QString placeholder = "");
 };

@@ -57,6 +57,7 @@ Q_OBJECT
 	void doPasteImage(int l, int f, int x, int y, const QImage &);
 	void doFill(int l, int f, const QString &);
 	void doNew(int w, int h, bool resize = false);
+	void doInfo(const QString & attr, const QVariant & val);
 
 	void doLoadLocal(const QString & filename);
 	void doLoad(const QString & filename);

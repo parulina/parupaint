@@ -96,6 +96,7 @@ Q_OBJECT
 	void doNew(int w, int h, bool resize = false);
 	void doChat(const QString & msg);
 	void doCommand(const QString & cmd, const QString & params);
+	void doSessionPassword(const QString & sessionpw);
 	void doUserName(const QString & username);
 	void doConnect(const QString &);
 	void doDisconnect();
@@ -116,6 +117,8 @@ Q_OBJECT
 	QDir saveDir() const;
 	void setLocalServer(const QString &);
 
+	signals:
+	void doLocalSessionPassword(const QString &);
 
 	private slots:
 	void OnPenPress(const penInfo &);

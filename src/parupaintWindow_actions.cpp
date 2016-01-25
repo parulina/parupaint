@@ -59,6 +59,11 @@ void ParupaintWindow::showSettingsDialog()
 	connect(dialog, &ParupaintSettingsDialog::pixelgridChanged, view, &ParupaintCanvasView::setPixelGrid);
 	connect(dialog, &ParupaintSettingsDialog::keyBindOpen, this, &ParupaintWindow::showKeyBindDialog);
 
+	// BTW, this does not set the session password on the remote server.
+	// only the local one.
+	connect(dialog, &ParupaintSettingsDialog::sessionPasswordChanged, this, &ParupaintWindow::doLocalSessionPassword);
+	connect(dialog, &ParupaintSettingsDialog::nameChanged, this, &ParupaintWindow::doUserName);
+
 	dialog->activateWindow();
 }
 

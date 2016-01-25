@@ -87,6 +87,8 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 		ParupaintBundledServer* server = new ParupaintBundledServer(server_port, this);
 		server->setProtective(true);
 
+		connect(main_window, &ParupaintWindow::doLocalSessionPassword, server, &ParupaintBundledServer::setPassword);
+
 		QString password;
 		password = cfg.value("client/sessionpassword", password).toString();
 		if(password != "none"){

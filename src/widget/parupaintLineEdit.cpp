@@ -1,5 +1,6 @@
-
 #include "parupaintLineEdit.h"
+
+#include <QDebug>
 
 ParupaintLineEdit::ParupaintLineEdit(QWidget * parent, const QString placeholder) : QLineEdit(parent)
 {

@@ -10,8 +10,11 @@ Q_OBJECT
 	void confirmConfigClear();
 	public:
 	ParupaintSettingsDialog(QWidget * = nullptr);
+
 	signals:
 	void pixelgridChanged(bool);
+	void nameChanged(const QString &);
+	void sessionPasswordChanged(const QString &);
 	void keyBindOpen();
 	void configCleared();
 };

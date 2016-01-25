@@ -211,6 +211,16 @@ void ParupaintClientInstance::doNew(int w, int h, bool resize)
 	this->send("new", obj);
 }
 
+void ParupaintClientInstance::doInfo(const QString & attr, const QVariant & val)
+{
+	if(this->readOnly()) return;
+
+	QJsonObject obj = {
+		{attr, QJsonValue::fromVariant(val)}
+	};
+	this->send("info", obj);
+}
+
 void ParupaintClientInstance::doLoadLocal(const QString & filename)
 {
 	if(this->readOnly()) return;

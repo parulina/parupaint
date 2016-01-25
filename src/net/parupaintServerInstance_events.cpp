@@ -554,6 +554,16 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 					this->sendChat(msg);
 				}
 			}
+		} else if(id == "info") {
+			if(brushes.find(c) == brushes.end()) return;
+			if(true) return; // disable this for the time being
+
+			foreach(const QString & key, obj.keys()){
+				const QVariant val = obj[key].toVariant();
+				if(key == "sessionpw"){
+					this->setPassword(val.toString());
+				}
+			}
 		} else if(id == "play") {
 			if(brushes.find(c) == brushes.end()) return;
 

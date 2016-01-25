@@ -16,24 +16,33 @@ ParupaintSettingsDialog::ParupaintSettingsDialog(QWidget * parent):
 	this->loadGeometry("settingsDialog");
 	this->setFixedWidth(480);
 
-	ParupaintLineEdit * line_username = new ParupaintLineEdit(this, "username");
+	ParupaintLineEdit * line_username = new ParupaintLineEdit(this, "Username");
 	line_username->setMaxLength(24);
-	line_username->setToolTip("set the username other painters will see.");
+	line_username->setToolTip("Set the username other painters will see.");
+	connect(line_username, &QLineEdit::textEdited, this, &ParupaintSettingsDialog::nameChanged);
 	connect(line_username, &QLineEdit::textEdited, [](const QString & str){
 		QSettings cfg;
 		cfg.setValue("client/username", str);
 	});
 
-	ParupaintLineEdit * line_savedir = new ParupaintLineEdit(this, "save directory");
-	line_savedir->setMaxLength(24);
-	line_savedir->setToolTip("set the save directory for quicksave, file browser, etc.");
+	ParupaintLineEdit * line_sessionpw = new ParupaintLineEdit(this, "Random password (enter \"none\" to disable password)");
+	line_sessionpw->setToolTip("Set the session password. (Note: requires restart)");
+	line_sessionpw->setMaxLength(64);
+	connect(line_sessionpw, &QLineEdit::textEdited, this, &ParupaintSettingsDialog::sessionPasswordChanged);
+	connect(line_sessionpw, &QLineEdit::textEdited, [](const QString & str){
+		QSettings cfg;
+		cfg.setValue("client/sessionpassword", str);
+	});
+
+	ParupaintLineEdit * line_savedir = new ParupaintLineEdit(this, "Save directory");
+	line_savedir->setToolTip("Set the save directory for quicksave, file browser, etc.");
 	connect(line_savedir, &QLineEdit::textEdited, [](const QString & str){
 		QSettings cfg;
 		cfg.setValue("client/directory", str);
 	});
 
-	QCheckBox * check_frameless = new QCheckBox("use in-app dialogs", this);
-	check_frameless->setToolTip("toggle the modal window style.");
+	QCheckBox * check_frameless = new QCheckBox("Use in-app dialogs", this);
+	check_frameless->setToolTip("Toggle the modal window style.");
 	connect(check_frameless, &QCheckBox::stateChanged, [=](int){
 		QSettings cfg;
 		cfg.setValue("client/frameless", check_frameless->isChecked());
@@ -41,8 +50,8 @@ ParupaintSettingsDialog::ParupaintSettingsDialog(QWidget * parent):
 		this->setFrameless(check_frameless->isChecked());
 	});
 
-	QCheckBox * check_pixelgrid = new QCheckBox("use pixelgrid", this);
-	check_pixelgrid->setToolTip("toggle the pixel grid.");
+	QCheckBox * check_pixelgrid = new QCheckBox("Use pixelgrid", this);
+	check_pixelgrid->setToolTip("Toggle the pixel grid.");
 	connect(check_pixelgrid, &QCheckBox::stateChanged, [=](int){
 		QSettings cfg;
 		cfg.setValue("client/pixelgrid", check_pixelgrid->isChecked());
@@ -50,20 +59,20 @@ ParupaintSettingsDialog::ParupaintSettingsDialog(QWidget * parent):
 		emit pixelgridChanged(check_pixelgrid->isChecked());
 	});
 
-	QPushButton * ok_button = new QPushButton("ok", this);
+	QPushButton * ok_button = new QPushButton("Done", this);
 	connect(ok_button, &QPushButton::pressed, this, &QDialog::close);
 
-	QPushButton * keybind_button = new QPushButton("key bindings", this);
+	QPushButton * keybind_button = new QPushButton("Hotkeys", this);
 	connect(keybind_button, &QPushButton::pressed, this, &ParupaintSettingsDialog::keyBindOpen);
 
-	QMessageBox * confirm_reset = new QMessageBox(QMessageBox::NoIcon, "hey buddy", "sure you wanna reset your settings?",
+	QMessageBox * confirm_reset = new QMessageBox(QMessageBox::NoIcon, "Hey buddy", "Sure you wanna reset your settings?",
 			QMessageBox::NoButton, this);
-	confirm_reset->addButton("nope", QMessageBox::RejectRole);
-	confirm_reset->addButton("okay", QMessageBox::AcceptRole);
+	confirm_reset->addButton("Nope", QMessageBox::RejectRole);
+	confirm_reset->addButton("Okay", QMessageBox::AcceptRole);
 	connect(confirm_reset, &QMessageBox::accepted, this, &ParupaintSettingsDialog::confirmConfigClear);
 
-	QPushButton * reset_button = new QPushButton("reset", this);
-	reset_button->setToolTip("reset the configuation file!");
+	QPushButton * reset_button = new QPushButton("Reset", this);
+	reset_button->setToolTip("Reset the configuation file!");
 	reset_button->setFlat(true);
 	connect(reset_button, &QPushButton::pressed, confirm_reset, &QMessageBox::show);
 
@@ -73,8 +82,9 @@ ParupaintSettingsDialog::ParupaintSettingsDialog(QWidget * parent):
 		form_layout->setLabelAlignment(Qt::AlignLeft | Qt::AlignTop);
 		form_layout->setFormAlignment(Qt::AlignCenter);
 
-			form_layout->addRow("username:", line_username);
-			form_layout->addRow("save directory:", line_savedir);
+			form_layout->addRow("Username:", line_username);
+			form_layout->addRow("Your session password:", line_sessionpw);
+			form_layout->addRow("Save directory:", line_savedir);
 			form_layout->addRow(check_frameless);
 			form_layout->addRow(check_pixelgrid);
 
@@ -90,6 +100,7 @@ ParupaintSettingsDialog::ParupaintSettingsDialog(QWidget * parent):
 
 	QSettings cfg;
 	line_username->setText(cfg.value("client/username").toString());
+	line_sessionpw->setText(cfg.value("client/sessionpassword").toString());
 	line_savedir->setText(cfg.value("client/directory").toString());
 	check_frameless->setChecked(cfg.value("client/frameless").toBool());
 	check_pixelgrid->setChecked(cfg.value("client/pixelgrid").toBool());
