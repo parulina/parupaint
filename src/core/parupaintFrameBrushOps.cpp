@@ -18,6 +18,22 @@ static uchar patterns[][8] = {
 	{0x81, 0x42, 0x24, 0x18, 0x18, 0x24, 0x42, 0x81}  // DiagCrossPattern
 };
 
+// QBitmap (inherits QPixmap) does not work on non-gui builds.
+// Qt segfaults (???) if you attempt to do it anyways...
+// so we end up using QImage instead as a brush texture.
+inline QImage customPatternToImage(int pattern, const QColor & col = QColor(Qt::black))
+{
+	QImage img(QSize(8, 8), QImage::Format_MonoLSB);
+	img.setColor(0, QColor(Qt::transparent).rgba());
+	img.setColor(1, QColor(Qt::white).rgba());
+	if(col.alpha() != 0) img.setColor(1, col.rgba());
+
+	for(int y = 0; y < 8; ++y){
+		memcpy(img.scanLine(y), patterns[pattern] + y, 1);
+	}
+	return img;
+}
+
 
 QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * brush, const QPointF & pos, const QPointF & old_pos)
 {
@@ -50,24 +66,26 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * 
 	QRect urect(op.toPoint() + QPoint(-size/2, -size/2), QSize(size, size));
 	urect |= QRect(np.toPoint() + QPoint(-size/2, -size/2), QSize(size, size));
 
-	QPen pen(color);
+	QPen pen;
+	QBrush pen_brush(color);
 	pen.setCapStyle(Qt::RoundCap);
 	pen.setWidthF(size);
 
 	switch(brush->tool()){
 		case ParupaintBrushToolTypes::BrushToolDotShadingPattern: {
-			pen.setBrush(QBrush(color, QBitmap::fromData(QSize(8, 8), patterns[0], QImage::Format_MonoLSB)));
+			pen_brush.setTextureImage(customPatternToImage(0, color));
 			break;
 		}
 		case ParupaintBrushToolTypes::BrushToolDotHighlightPattern: {
-			pen.setBrush(QBrush(color, QBitmap::fromData(QSize(8, 8), patterns[1], QImage::Format_MonoLSB)));
+			pen_brush.setTextureImage(customPatternToImage(1, color));
 			break;
 		}
 		case ParupaintBrushToolTypes::BrushToolCrossPattern: {
-			pen.setBrush(QBrush(color, QBitmap::fromData(QSize(8, 8), patterns[2], QImage::Format_MonoLSB)));
+			pen_brush.setTextureImage(customPatternToImage(2, color));
 			break;
 		}
 	}
+	pen.setBrush(pen_brush);
 
 	switch(brush->tool()){
 		case ParupaintBrushToolTypes::BrushToolFloodFill: {
