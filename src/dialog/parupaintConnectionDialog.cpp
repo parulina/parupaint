@@ -4,6 +4,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QDebug>
 
 #include "../widget/parupaintLineEdit.h"
 
@@ -58,12 +59,13 @@ void ParupaintConnectionDialog::connectClick()
 	QPushButton * button = qobject_cast<QPushButton*>(sender());
 	if(line_nickname->text().isEmpty()) return line_nickname->setFocus();
 	if(line_nickname->text().length() > 24) return line_nickname->setFocus();
-	if(line_ip->text().isEmpty()) return line_ip->setFocus();
 
 	QSettings cfg;
 	cfg.setValue("client/username", line_nickname->text());
 	cfg.setValue("client/lasthost", line_ip->text());
 
 	if(button->text() == "sqnya.se") line_ip->setText("sqnya.se");
+	if(line_ip->text().isEmpty()) return line_ip->setFocus();
+
 	emit onConnect(line_ip->text());
 }
