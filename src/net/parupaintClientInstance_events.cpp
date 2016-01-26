@@ -28,6 +28,15 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 			this->doJoin();
 		}
 
+		// TODO clean this up??
+		// this is to make sure that, even if you reconnect
+		// you will send fresh data to the new server
+		shadow_brush.setPressure(0);
+		shadow_brush.setColor(QColor(-1, -1, -1, -1));
+		shadow_brush.setSize(-1);
+		shadow_brush.setTool(-1);
+		shadow_brush.setDrawing(false);
+
 	} else if(id == "disconnect"){
 		emit onDisconnect(bytes);
 
