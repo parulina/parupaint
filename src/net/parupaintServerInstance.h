@@ -5,6 +5,7 @@
 
 #include <QHash>
 #include <QTimer>
+#include <QDir>
 
 #include "parupaintServer.h"
 
@@ -25,6 +26,7 @@ Q_OBJECT
 	QHash<ParupaintConnection*, ParupaintBrush*> brushes;
 	int connectid;
 	QString server_password;
+	QDir ppweb_serve;
 
 	protected:
 	// Record related things (parupaintServerInstance.rec.cpp)
@@ -44,11 +46,17 @@ Q_OBJECT
 	void PlayRecordLog(const QString & file);
 	// end record related things
 
+	private slots:
+	void browserVisit(QTcpSocket * socket, const QString & path);
+
 	public:
 	~ParupaintServerInstance();
 	ParupaintServerInstance(quint16 , QObject * = nullptr);
 
 	void joinConnection(ParupaintConnection * con);
+
+	void setParupaintWebServeDir(QDir dir);
+	const QDir & parupaintWebServeDir() const;
 
 	void setPassword(const QString & password);
 	const QString & password();

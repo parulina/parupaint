@@ -156,7 +156,10 @@ void QWsServer::dataReceived()
 	// hansake valid
 	if (!handshake.isValid())
 	{
-		showErrorAndClose(tcpSocket);
+		//showErrorAndClose(tcpSocket);
+		emit nonWebsocketData(tcpSocket, handshake.resourceName);
+		tcpSocket->flush();
+		tcpSocket->close();
 		return;
 	}
 	

@@ -69,6 +69,7 @@ public:
 
 signals:
 	void newConnection();
+	void nonWebsocketData(QTcpSocket* socket, const QString & data);
 
 protected:
 	// protected functions

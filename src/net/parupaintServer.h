@@ -9,6 +9,7 @@
 class ParupaintConnection;
 class QWsServer;
 class QWsSocket;
+class QTcpSocket;
 
 class ParupaintServer : public QObject
 {
@@ -33,10 +34,12 @@ Q_OBJECT
 	void setProtective(bool);
 	bool isProtective();
 
-	// clean this filth up
 	ParupaintConnection * ppConnection(QWsSocket*);
 	QList<ParupaintConnection*> ppConnections();
 	int ppNumConnections() const;
+
+	signals:
+	void onBrowserVisit(QTcpSocket *, const QString & url);
 };
 
 

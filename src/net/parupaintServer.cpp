@@ -3,6 +3,7 @@
 #include "ws/QWsServer.h"
 
 #include <QDebug>
+#include <QRegularExpression>
 
 ParupaintServer::ParupaintServer(quint16 port, QObject * parent) : QObject(parent), protective(false)
 {
@@ -10,6 +11,7 @@ ParupaintServer::ParupaintServer(quint16 port, QObject * parent) : QObject(paren
 	server = new QWsServer(this);
 	if(server->listen(QHostAddress::Any, port)) {
 		connect(server, &QWsServer::newConnection, this, &ParupaintServer::onConnection);
+		connect(server, &QWsServer::nonWebsocketData, this, &ParupaintServer::onBrowserVisit);
 		//connect(server, &QWsServer::closed, this, &ParupaintServer::closed);
 	}
 }
