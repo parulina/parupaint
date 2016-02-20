@@ -2,7 +2,9 @@
 
 // this provides a common set of functions for canvas and brushes
 
+#include <QDebug>
 #include "parupaintPanvas.h"
+#include "parupaintBrush.h"
 
 // resize the canvas
 bool ParupaintCommonOperations::CanvasResizeOp(ParupaintPanvas * canvas, int w, int h, bool resize)
@@ -124,4 +126,33 @@ bool ParupaintCommonOperations::LayerFrameAttributeOp(ParupaintPanvas * canvas, 
 	}
 
 	return false;
+}
+
+bool ParupaintCommonOperations::BrushOp(ParupaintBrush * brush, QLineF & line, const QVariantMap & data)
+{
+	QPointF old_pos = brush->position();
+
+	if(data["x"].type() == QVariant::Double) brush->setX(data["x"].toDouble());
+	if(data["y"].type() == QVariant::Double) brush->setY(data["y"].toDouble());
+	if(data["s"].type() == QVariant::Double) brush->setSize(data["s"].toDouble());
+	if(data["p"].type() == QVariant::Double) brush->setPressure(data["p"].toDouble());
+	if(data["c"].type() == QVariant::Color)  brush->setColor(data["c"].value<QColor>());
+	if(data["t"].type() == QVariant::Int)    brush->setTool(data["t"].toInt());
+	if(data["l"].type() == QVariant::Int)    brush->setLayer(data["l"].toInt());
+	if(data["f"].type() == QVariant::Int)    brush->setFrame(data["f"].toInt());
+
+	if(data["d"].type() == QVariant::Bool) {
+
+		bool old_d = brush->drawing(),
+		     new_d = data["d"].toBool();
+
+		// reset the old position if we have just started drawing.
+		if(new_d && !old_d){
+			old_pos = brush->position();
+		}
+		brush->setDrawing(new_d);
+	}
+
+	line = QLineF(old_pos, brush->position());
+	return true;
 }

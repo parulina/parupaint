@@ -4,6 +4,7 @@
 #include <QVariant>
 
 class ParupaintPanvas;
+class ParupaintBrush;
 
 class ParupaintCommonOperations
 {
@@ -14,6 +15,9 @@ class ParupaintCommonOperations
 	static bool LayerFrameFillOp(ParupaintPanvas * canvas, int l, int f, const QColor & color);
 	static bool LayerFrameChangeOp(ParupaintPanvas * canvas, int l, int f, int lc, int fc, bool extend);
 	static bool LayerFrameAttributeOp(ParupaintPanvas * canvas, int l, int f, const QString & attr, const QVariant & val);
+
+	// brush
+	static bool BrushOp(ParupaintBrush * brush, QLineF & line, const QVariantMap & data);
 };
 
 #endif

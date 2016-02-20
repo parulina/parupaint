@@ -29,6 +29,13 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 			this->doJoin();
 		}
 
+	} else if(id == "disconnect"){
+		emit onDisconnect(bytes);
+
+	// we got confirmation
+	} else if(id == "join"){
+		emit onSpectateChange(!(client_joined = true));
+
 		// TODO clean this up??
 		// this is to make sure that, even if you reconnect
 		// you will send fresh data to the new server
@@ -37,13 +44,6 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		shadow_brush.setSize(-1);
 		shadow_brush.setTool(-1);
 		shadow_brush.setDrawing(false);
-
-	} else if(id == "disconnect"){
-		emit onDisconnect(bytes);
-
-	// we got confirmation
-	} else if(id == "join"){
-		emit onSpectateChange(!(client_joined = true));
 
 	} else if(id == "leave"){
 		emit onSpectateChange(!(client_joined = false));
@@ -75,27 +75,28 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 			}
 		}
 		if(brush) {
-			const qreal 	old_x = brush->ParupaintBrush::x(),
-			      		old_y = brush->ParupaintBrush::y();
-			double 		x = old_x, y = old_y;
 
 			if(object["n"].isString())	brush->setCursorName(object["n"].toString("Unnamed"));
-			if(object["c"].isString())	brush->setColor(ParupaintSnippets::toColor(object["c"].toString("#000")));
-			if(object["d"].isBool())	brush->setDrawing(object["d"].toBool(false));
-			if(object["s"].isDouble())	brush->setSize(object["s"].toDouble(1));
-			if(object["p"].isDouble())	brush->setPressure(object["p"].toDouble(0.0));
-			if(object["t"].isDouble())	brush->setTool(object["t"].toInt(0));
-			if(object["l"].isDouble())	brush->setLayer(object["l"].toInt(0));
-			if(object["f"].isDouble())	brush->setFrame(object["f"].toInt(0));
 
-			if(object["x"].isDouble())	x = object["x"].toDouble();
-			if(object["y"].isDouble())	y = object["y"].toDouble();
+			QVariantMap map;
+			if(object["x"].isDouble()) map["x"] = object["x"].toDouble();
+			if(object["y"].isDouble()) map["y"] = object["y"].toDouble();
+			if(object["p"].isDouble()) map["p"] = object["p"].toDouble();
+			if(object["s"].isDouble()) map["s"] = object["s"].toDouble();
+			if(object["l"].isDouble()) map["l"] = object["l"].toInt();
+			if(object["f"].isDouble()) map["f"] = object["f"].toInt();
+			if(object["t"].isDouble()) map["t"] = object["t"].toInt();
+			if(object["d"].isBool())   map["d"] = object["d"].toBool();
+			if(object["c"].isString()) map["c"] = ParupaintSnippets::toColor(object["c"].toString());
+
+			QLineF draw_line;
+			ParupaintCommonOperations::BrushOp(brush, draw_line, map);
+			brush->QGraphicsItem::setPos(brush->position());
 
 			if(brush->drawing()){
-				QRect r = ParupaintFrameBrushOps::stroke(pool->canvas(), brush, QPointF(x, y), QPointF(old_x, old_y));
+				QRect r = ParupaintFrameBrushOps::stroke(pool->canvas(), brush, draw_line);
 				pool->canvas()->redraw(r);
 			}
-			brush->setPosition(QPointF(x, y));
 			brush->update();
 		}
 	} else if (id == "paste") {
@@ -112,6 +113,7 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		    y = object["y"].toInt();
 
 		ParupaintCommonOperations::LayerFramePasteOp(pool->canvas(), l, f, x, y, image);
+		pool->canvas()->redraw();
 
 	} else if (id == "fill") {
 		if(!object["l"].isDouble()) return;
@@ -122,6 +124,18 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		QColor c = ParupaintSnippets::toColor(object["c"].toString());
 
 		ParupaintCommonOperations::LayerFrameFillOp(pool->canvas(), l, f, c);
+		pool->canvas()->redraw();
+
+	} else if (id == "new") {
+		if(!object["w"].isDouble()) return;
+		if(!object["h"].isDouble()) return;
+		if(!object["r"].isBool()) return;
+
+		bool r = object["r"].toBool();
+		int w = object["w"].toInt(),
+		    h = object["h"].toInt();
+
+		ParupaintCommonOperations::CanvasResizeOp(pool->canvas(), w, h, r);
 		pool->canvas()->redraw();
 
 	} else if (id == "canvas") {
@@ -210,6 +224,9 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		bool ext = object["ext"].toBool();
 
 		ParupaintCommonOperations::LayerFrameChangeOp(pool->canvas(), l, f, lc, fc, ext);
+
+		pool->canvas()->setCurrentLayerFrame(pool->canvas()->currentLayer(), pool->canvas()->currentFrame());
+		pool->canvas()->redraw();
 
 	} else if(id == "lfa") {
 		if(!object["l"].isDouble()) return;

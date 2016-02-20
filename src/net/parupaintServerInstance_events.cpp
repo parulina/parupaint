@@ -172,7 +172,11 @@ void ParupaintServerInstance::ServerResize(int w, int h, bool r, bool propagate)
 	if(record_manager) record_manager->Resize(w, h, r);
 
 	if(!propagate) return;
-	this->sendAll("canvas", this->canvasObj());
+	QJsonObject obj;
+	obj["w"] = w;
+	obj["h"] = h;
+	obj["r"] = r;
+	this->sendAll("new", obj);
 }
 
 
@@ -306,59 +310,44 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 		} else if(id == "brush"){
 			ParupaintBrush * brush = brushes.value(c);
 			if(brush) {
-				double old_x = brush->x(),
-				       old_y = brush->y();
-				double x = old_x, y = old_y;
 
-				// should come before false->true drawing to move brush
-				// to correct pos
-				if(obj["x"].isDouble()) x = obj["x"].toDouble();
-				if(obj["y"].isDouble()) y = obj["y"].toDouble();
+				QLineF draw_line;
 
-				if(obj["c"].isString()) {
-					brush->setColor(ParupaintSnippets::toColor(obj["c"].toString()));
+				// convert json stuff to map
+				QVariantMap map;
+				if(obj["x"].isDouble()) map["x"] = obj["x"].toDouble();
+				if(obj["y"].isDouble()) map["y"] = obj["y"].toDouble();
+				if(obj["p"].isDouble()) map["p"] = obj["p"].toDouble();
+				if(obj["l"].isDouble()) map["l"] = obj["l"].toInt();
+				if(obj["f"].isDouble()) map["f"] = obj["f"].toInt();
+				if(obj["d"].isBool())   map["d"] = obj["d"].toBool();
+
+				if(obj["c"].isString()) { map["c"] = ParupaintSnippets::toColor(obj["c"].toString());
 					if(record_manager) record_manager->Color(c->id(), obj["c"].toString());
 				}
-				if(obj["s"].isDouble()) {
-					brush->setSize(obj["s"].toDouble());
-					if(record_manager) record_manager->Width(c->id(), brush->size());
+				if(obj["s"].isDouble()) { map["s"] = obj["s"].toDouble();
+					if(record_manager) record_manager->Width(c->id(), obj["s"].toDouble());
 				}
-				if(obj["t"].isDouble()) {
-					brush->setTool(obj["t"].toInt());
-					if(record_manager) record_manager->Tool(c->id(), brush->tool());
-				}
-				if(obj["p"].isDouble()) brush->setPressure(obj["p"].toDouble());
-				if(obj["d"].isBool())	{
-					const bool drawing = obj["d"].toBool();
-					if(drawing && !brush->drawing()){
-						if(record_manager) record_manager->Pos(c->id(), x, y, brush->pressure(), false);
-						if(brush->tool() == ParupaintBrushToolTypes::BrushToolFloodFill){
-							// ink click
-							if(record_manager) record_manager->Pos(c->id(), x, y, 1, true);
-						}
-					}
-					old_x = x; old_y = y;
-					brush->setDrawing(drawing);
+				if(obj["t"].isDouble()) { map["t"] = obj["t"].toInt();
+					if(record_manager) record_manager->Tool(c->id(), obj["t"].toInt());
 				}
 
-				if(obj["l"].isDouble()) brush->setLayer(obj["l"].toInt());
-				if(obj["f"].isDouble()) brush->setFrame(obj["f"].toInt());
-				if(obj["l"].isDouble() || obj["f"].isDouble()) {
+				// assign the stuff
+				ParupaintCommonOperations::BrushOp(brush, draw_line, map);
+				if(brush->drawing()){
+					ParupaintFrameBrushOps::stroke(canvas, brush, draw_line);
+				}
+				if(brush->tool() == ParupaintBrushToolTypes::BrushToolFloodFill) brush->setDrawing(false);
+
+
+				// if l or f was changed
+				if(obj["l"].isDouble() || obj["f"].isDouble()){
 					if(record_manager) record_manager->Lf(c->id(), brush->layer(), brush->frame());
 				}
-
-				if(obj["x"].isDouble() && obj["y"].isDouble() && brush->drawing()) {
-					if(record_manager) record_manager->Pos(c->id(), x, y, brush->pressure(), true);
+				// draw, x, y, or pressure was changed
+				if(obj["d"].isBool() == brush->drawing() || obj["x"].isDouble() || obj["y"].isDouble() || obj["p"].isDouble()) {
+					if(record_manager) record_manager->Pos(c->id(), brush->x(), brush->y(), brush->pressure(), brush->drawing());
 				}
-
-				if(brush->drawing()){
-					ParupaintFrameBrushOps::stroke(canvas, brush, QPointF(x, y), QPointF(old_x, old_y));
-					if(brush->tool() == ParupaintBrushToolTypes::BrushToolFloodFill){
-						brush->setDrawing(false);
-					}
-				}
-
-				brush->setPosition(QPointF(x, y));
 
 				obj_copy["id"] = c->id();
 				this->sendAll(id, obj_copy, c);
@@ -396,14 +385,11 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 			if(!obj["h"].isDouble()) return;
 			if(!obj["r"].isBool()) return;
 
-			int width =  obj["w"].toInt(),
-			    height = obj["h"].toInt();
-			bool resize = obj["r"].toBool();
+			bool r = obj["r"].toBool();
+			int w = obj["w"].toInt(),
+			    h = obj["h"].toInt();
 
-			if(width >= 8192 || height >= 8192) return;
-			if(width <=    0 || height <=    0) return;
-
-			this->ServerResize(width, height, resize);
+			this->ServerResize(w, h, r);
 
 		} else if(id == "paste"){
 			if(brushes.find(c) == brushes.end()) return;
