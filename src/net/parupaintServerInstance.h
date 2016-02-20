@@ -74,7 +74,7 @@ Q_OBJECT
 	void ServerFill(int l, int f, QString, bool=true);
 	void ServerPaste(int l, int f, int x, int y, QImage img, bool propagate=true);
 	void ServerPaste(int l, int f, int x, int y, QString base64_img, bool propagate=true);
-	void ServerResize(int, int, bool, bool=true);
+	void ServerResize(int l, int f, bool r, bool propagate=true);
 
 	QJsonObject connectionObj(ParupaintConnection * con) const;
 	QJsonObject canvasObj() const;

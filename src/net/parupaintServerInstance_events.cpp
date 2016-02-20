@@ -11,6 +11,7 @@
 #include "../core/parupaintFrame.h"
 #include "../core/parupaintFrameBrushOps.h"
 #include "../core/parupaintPanvasInputOutput.h"
+#include "../core/parupaintCommonOperations.h"
 
 #include "../parupaintVersion.h"
 
@@ -92,24 +93,11 @@ void ParupaintServerInstance::ServerChat(ParupaintConnection * c, QString msg, b
 	obj["id"] = c->id();
 	this->sendAll("chat", obj);
 }
+
+
 void ParupaintServerInstance::ServerLfa(int l, int f, const QString & attr, const QVariant & val, bool propagate)
 {
-	QVariant temp_val = val;
-
-	ParupaintLayer * layer = canvas->layerAt(l);
-	if(!layer) return;
-
-	ParupaintFrame * frame = layer->frameAt(f);
-	if(!frame) return;
-
-	if(attr == "frame-opacity"){
-		qreal v = val.toDouble();
-		if(v > 1.0) v = 1.0;
-		if(v < 0.0) v = 0.0;
-		frame->setOpacity(v);
-		temp_val = v;
-	}
-
+	if(!ParupaintCommonOperations::LayerFrameAttributeOp(canvas, l, f, attr, val)) return;
 	if(record_manager) record_manager->Lfa(l, f, attr, val);
 
 	if(!propagate) return;
@@ -118,50 +106,14 @@ void ParupaintServerInstance::ServerLfa(int l, int f, const QString & attr, cons
 	obj["l"] = l;
 	obj["f"] = f;
 	obj["attr"] = QJsonObject{
-		{attr, QJsonValue::fromVariant(temp_val)}
+		{attr, QJsonValue::fromVariant(val)}
 	};
 	this->sendAll("lfa", obj);
 }
 void ParupaintServerInstance::ServerLfc(int l, int f, int lc, int fc, bool e, bool propagate)
 {
 	bool changed = false;
-	if(lc != 0){
-		if(lc < 0 && canvas->layerCount() > 1){
-			for(int i = 0; i < -lc; i++){
-				canvas->removeLayer(l);
-			}
-			changed = true;
-		} else if(lc > 0){
-			for(int i = 0; i < lc; i++){
-				canvas->insertLayer(l, 1);
-			}
-			changed = true;
-		}
-	}
-	if(fc != 0){
-		ParupaintLayer * ff = canvas->layerAt(l);
-		if(ff) {
-			if(fc < 0 && ff->frameCount() > 1){
-				if(e){
-					for(int i = 0; i < -fc; i++)
-						ff->redactFrame(f);
-				} else {
-					for(int i = 0; i < -fc; i++)
-						ff->removeFrame(f);
-				}
-				changed = true;
-			} else if(fc > 0){
-				if(e){
-					for(int i = 0; i < fc; i++)
-						ff->extendFrame(f);
-				} else {
-					for(int i = 0; i < fc; i++)
-						ff->insertFrame(canvas->dimensions(), f);
-				}
-				changed = true;
-			}
-		}
-	}
+	if(!(changed = ParupaintCommonOperations::LayerFrameChangeOp(canvas, l, f, lc, fc, e))) return;
 
 	if(record_manager) record_manager->Lfc(l, f, lc, fc, e);
 
@@ -171,6 +123,11 @@ void ParupaintServerInstance::ServerLfc(int l, int f, int lc, int fc, bool e, bo
 
 	if((lc != 0 || fc != 0) && changed){
 		QJsonObject obj;
+		obj["l"] = l;
+		obj["f"] = f;
+		obj["lc"] = lc;
+		obj["fc"] = fc;
+		obj["ext"] = e;
 		this->sendAll("lfc", obj);
 	}
 
@@ -178,14 +135,7 @@ void ParupaintServerInstance::ServerLfc(int l, int f, int lc, int fc, bool e, bo
 void ParupaintServerInstance::ServerFill(int l, int f, QString fill, bool propagate)
 {
 	QColor col = ParupaintSnippets::toColor(fill);
-
-	ParupaintLayer * layer = canvas->layerAt(l);
-	if(layer){
-		ParupaintFrame * frame = layer->frameAt(f);
-		if(frame){
-			frame->clear(col);
-		}
-	}
+	if(!ParupaintCommonOperations::LayerFrameFillOp(canvas, l, f, col)) return;
 	if(record_manager) record_manager->Fill(l, f, fill);
 
 	if(!propagate) return;
@@ -196,23 +146,14 @@ void ParupaintServerInstance::ServerFill(int l, int f, QString fill, bool propag
 	this->sendAll("fill", obj);
 }
 
+void ParupaintServerInstance::ServerPaste(int l, int f, int x, int y, QString base64_img, bool propagate)
+{ this->ServerPaste(l, f, x, y, ParupaintSnippets::Base64GzipToImage(base64_img), propagate); }
+
 void ParupaintServerInstance::ServerPaste(int l, int f, int x, int y, QImage img, bool propagate)
 {
-	this->ServerPaste(l, f, x, y, ParupaintSnippets::ImageToBase64Gzip(img), propagate);
-}
-void ParupaintServerInstance::ServerPaste(int l, int f, int x, int y, QString base64_img, bool propagate)
-{
-	// paste has to be a base64 thing.
-	QImage img = ParupaintSnippets::Base64GzipToImage(base64_img);
-	if(!img.isNull()){
-		ParupaintLayer * layer = canvas->layerAt(l);
-		if(layer){
-			ParupaintFrame * frame = layer->frameAt(f);
-			if(frame){
-				frame->drawImage(QPointF(x, y), img);
-			}
-		}
-	}
+	if(!ParupaintCommonOperations::LayerFramePasteOp(canvas, l, f, x, y, img)) return;
+
+	QString base64_img = ParupaintSnippets::ImageToBase64Gzip(img);
 	if(record_manager) record_manager->Paste(l, f, x, y, base64_img);
 
 	if(!propagate) return;
@@ -227,18 +168,14 @@ void ParupaintServerInstance::ServerPaste(int l, int f, int x, int y, QString ba
 
 void ParupaintServerInstance::ServerResize(int w, int h, bool r, bool propagate)
 {
-	if(!r){
-		canvas->clearCanvas();
-		canvas->setBackgroundColor(Qt::white);
-		canvas->insertLayer(0, 1);
-	}
-	// because resizing only one frame is the quickest.
-	canvas->resize(QSize(w, h));
+	if(!ParupaintCommonOperations::CanvasResizeOp(canvas, w, h, r)) return;
 	if(record_manager) record_manager->Resize(w, h, r);
 
 	if(!propagate) return;
 	this->sendAll("canvas", this->canvasObj());
 }
+
+
 
 void ParupaintServerInstance::message(ParupaintConnection * c, const QString & id, const QByteArray & bytes)
 {

@@ -7,6 +7,7 @@
 #include "../core/parupaintBrush.h"
 #include "../core/parupaintSnippets.h"
 #include "../core/parupaintFrameBrushOps.h"
+#include "../core/parupaintCommonOperations.h"
 #include "../bundled/qcompressor.h"
 
 #include "../parupaintVisualCursor.h"
@@ -109,14 +110,9 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		    f = object["f"].toInt(),
 		    x = object["x"].toInt(),
 		    y = object["y"].toInt();
-		ParupaintLayer * layer = pool->canvas()->layerAt(l);
-		if(layer){
-			ParupaintFrame * frame = layer->frameAt(f);
-			if(frame){
-				QRect rect = frame->drawImage(QPointF(x, y), image);
-				pool->canvas()->redraw(rect);
-			}
-		}
+
+		ParupaintCommonOperations::LayerFramePasteOp(pool->canvas(), l, f, x, y, image);
+
 	} else if (id == "fill") {
 		if(!object["l"].isDouble()) return;
 		if(!object["f"].isDouble()) return;
@@ -124,13 +120,8 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		int l = object["l"].toInt(),
 		    f = object["f"].toInt();
 		QColor c = ParupaintSnippets::toColor(object["c"].toString());
-		ParupaintLayer * layer = pool->canvas()->layerAt(l);
-		if(layer){
-			ParupaintFrame * frame = layer->frameAt(f);
-			if(frame){
-				frame->clear(c);
-			}
-		}
+
+		ParupaintCommonOperations::LayerFrameFillOp(pool->canvas(), l, f, c);
 		pool->canvas()->redraw();
 
 	} else if (id == "canvas") {
@@ -184,18 +175,18 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 
 	} else if (id == "image") {
 
-		auto l = object["l"].toInt();
-		auto f = object["f"].toInt();
-		auto w = object["w"].toInt();
-		auto h = object["h"].toInt();
+		int l = object["l"].toInt(),
+		    f = object["f"].toInt(),
+		    w = object["w"].toInt(),
+		    h = object["h"].toInt();
 
 		QByteArray compressed = QByteArray::fromBase64(object["data"].toString().toLatin1());
 		QByteArray uncompressed;
 		QCompressor::gzipDecompress(compressed, uncompressed);
 
-		auto * layer = pool->canvas()->layerAt(l);
+		ParupaintLayer * layer = pool->canvas()->layerAt(l);
 		if(layer){
-			auto * frame = layer->frameAt(f);
+			ParupaintFrame * frame = layer->frameAt(f);
 			if(frame){
 				QImage img(w, h, QImage::Format_ARGB32);
 				memcpy(img.bits(), uncompressed, img.byteCount());
@@ -206,30 +197,37 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		pool->canvas()->redraw();
 
 	} else if(id == "lfc") {
-		this->send("canvas");
+		if(!object["l"].isDouble()) return;
+		if(!object["f"].isDouble()) return;
+		if(!object["lc"].isDouble()) return;
+		if(!object["fc"].isDouble()) return;
+
+		int l = object["l"].toInt(),
+		    f = object["f"].toInt(),
+		    lc = object["lc"].toInt(),
+		    fc = object["fc"].toInt();
+		// TODO change ext -> extended
+		bool ext = object["ext"].toBool();
+
+		ParupaintCommonOperations::LayerFrameChangeOp(pool->canvas(), l, f, lc, fc, ext);
 
 	} else if(id == "lfa") {
 		if(!object["l"].isDouble()) return;
 		if(!object["f"].isDouble()) return;
 		if(!object["attr"].isObject()) return;
 
-		int l = object["l"].toInt(), f = object["f"].toInt();
 		QJsonObject attr = object["attr"].toObject();
-
-		ParupaintLayer * layer = pool->canvas()->layerAt(l);
-		if(!layer) return;
-		ParupaintFrame * frame = layer->frameAt(f);
-		if(!frame) return;
-
 		if(!attr.length()) return;
+
+		int l = object["l"].toInt(),
+		    f = object["f"].toInt();
+
 		foreach(const QString & key, attr.keys()){
 			const QVariant & val = attr[key].toVariant();
-
-			if(key == "frame-opacity"){
-				frame->setOpacity(val.toDouble());
-				pool->canvas()->redraw();
-			}
+			qDebug() << key << val;
+			ParupaintCommonOperations::LayerFrameAttributeOp(pool->canvas(), l, f, key, val);
 		}
+		pool->canvas()->redraw();
 
 	} else if(id == "chat") {
 		const QString name = object["name"].toString(),
