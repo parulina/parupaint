@@ -242,9 +242,11 @@ QJsonObject ParupaintPanvas::json() const
 				{"opacity", frame->opacity()}
 			};
 		}
-		layers.insert(QString::number(l), QJsonObject{
+		// rightJustified so they are in order
+		layers.insert(QString::number(l).rightJustified(3, '0'), QJsonObject{
 			{"visible", layer->visible()},
-			{"name", "blank"},
+			{"name", layer->name()},
+			{"mode", layer->mode()},
 			{"frames", frames}
 		});
 	}
@@ -275,6 +277,8 @@ void ParupaintPanvas::loadJson(const QJsonObject & obj)
 
 		ParupaintLayer * layer = new ParupaintLayer;
 		layer->setVisible(lo.value("visible").toBool(true));
+		layer->setName(lo.value("name").toString());
+		layer->setMode(lo.value("mode").toInt());
 
 		const QJsonObject & ff = lo.value("frames").toObject();
 

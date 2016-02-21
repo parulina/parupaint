@@ -115,11 +115,15 @@ bool ParupaintCommonOperations::LayerFrameAttributeOp(ParupaintPanvas * canvas, 
 	if(layer){
 		ParupaintFrame * frame = layer->frameAt(f);
 		if(frame){
-			if(attr == "frame-opacity"){
+			if(attr == "frame-opacity" && val.type() == QVariant::Double){
 				qreal v = val.toDouble();
 				if(v > 1.0) v = 1.0;
 				if(v < 0.0) v = 0.0;
 				frame->setOpacity(v);
+				return true;
+			}
+			if(attr == "layer-visible" && val.type() == QVariant::Bool){
+				layer->setVisible(val.toBool());
 				return true;
 			}
 		}

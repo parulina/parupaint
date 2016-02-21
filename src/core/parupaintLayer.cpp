@@ -5,8 +5,33 @@
 
 #include "parupaintPanvas.h" // parentPanvas
 
+inline int textModeToEnum(const QString & m)
+{
+	if(m == "svg:src-over")		return 0;
+	if(m == "svg:multiply")		return 13;
+	if(m == "svg:screen")		return 14;
+	if(m == "svg:overlay")		return 15;
+	if(m == "svg:darken")		return 16;
+	if(m == "svg:lighten")		return 17;
+	if(m == "svg:color-dodge")	return 18;
+	if(m == "svg:color-burn")	return 19;
+	if(m == "svg:hard-light")	return 20;
+	if(m == "svg:soft-light")	return 21;
+	if(m == "svg:difference")	return 22;
+	if(m == "svg:color")		return 0; // ???
+	if(m == "svg:luminosity")	return 0; // ???
+	if(m == "svg:hue")		return 0; // ???
+	if(m == "svg:saturation")	return 0; // ???
+	if(m == "svg:plus")		return 12;
+	if(m == "svg:dst-in")		return 6;
+	if(m == "svg:dst-out")		return 8;
+	if(m == "svg:src-atop")		return 9;
+	if(m == "svg:dst-atop")		return 10;
+	return 0;
+}
+
 ParupaintLayer::ParupaintLayer(QObject * parent, const QSize & frame_size, int frames) : QObject(parent),
-	layer_visible(true)
+	layer_visible(true), layer_name("layer"), layer_mode(0)
 {
 	for(int i = 0; i < frames; i++){
 		this->insertFrame(frame_size, -1);
@@ -226,13 +251,38 @@ ParupaintFrame * ParupaintLayer::frameAt(int i)
 	return frames.at(i);
 }
 
+void ParupaintLayer::setMode(const QString & textmode)
+{
+	this->setMode(textModeToEnum(textmode));
+}
+
+void ParupaintLayer::setMode(int mode)
+{
+	layer_mode = mode;
+	emit onModeChange(layer_mode);
+}
+
+int ParupaintLayer::mode() const
+{
+	return layer_mode;
+}
+void ParupaintLayer::setName(const QString & name)
+{
+	layer_name = name;
+	emit onNameChange(layer_name);
+}
+
+QString ParupaintLayer::name() const
+{
+	return layer_name;
+}
 void ParupaintLayer::setVisible(bool visible)
 {
 	layer_visible = visible;
 	emit onVisiblityChange(layer_visible);
 }
 
-bool ParupaintLayer::visible()
+bool ParupaintLayer::visible() const
 {
 	return layer_visible;
 }

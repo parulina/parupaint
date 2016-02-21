@@ -100,8 +100,10 @@ void ParupaintVisualCanvas::redraw(QRect area)
 		// normal view - draw all layer's current_frame
 		// if preview, draw with less opacity
 		for(int i = 0; i < this->layerCount(); i++){
-
 			ParupaintLayer* layer = this->layerAt(i);
+			if(!layer->visible()) continue;
+
+			painter.setCompositionMode(static_cast<QPainter::CompositionMode>(layer->mode()));
 			if(layer && current_frame < layer->frameCount()){
 				ParupaintFrame* frame = layer->frameAt(current_frame);
 				if(frame){
@@ -110,12 +112,16 @@ void ParupaintVisualCanvas::redraw(QRect area)
 				}
 			}
 		}
+		// reset
+		painter.setOpacity(1.0);
+		painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 	}
 	// now draw the focused frame
 	if(!this->isPreview() || flash_timeout->isActive()){
 		// always draw current frame with max op
 		ParupaintLayer * layer = this->layerAt(current_layer);
 		if(layer != nullptr){
+
 			ParupaintFrame* frame = layer->frameAt(current_frame);
 			if(frame != nullptr) {
 				painter.setOpacity(this->isPreview() ? frame->opacity() : 1.0);

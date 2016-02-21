@@ -17,10 +17,13 @@ Q_OBJECT
 	public:
 	ParupaintFlayerLayer(QWidget * = nullptr);
 	void setLayerVisible(bool hidden);
-	void setName(const QString & name);
+	void setLayerName(const QString & name);
 
 	void addFrame(ParupaintFlayerFrame *);
 	ParupaintFlayerFrame * frameAt(int i);
+
+	signals:
+	void visibleChanged();
 };
 
 #endif

@@ -23,12 +23,16 @@ Q_OBJECT
 	private:
 	QList<ParupaintFrame*> frames;
 	bool layer_visible;
+	QString layer_name;
+	int layer_mode;
 
 	private slots:
 	void removeFrameObject(QObject *);
 
 	signals:
 	void onVisiblityChange(bool visible);
+	void onNameChange(const QString & name);
+	void onModeChange(int mode);
 	void onContentChange();
 
 	public:
@@ -65,8 +69,13 @@ Q_OBJECT
 	int frameIndex(ParupaintFrame*);
 	ParupaintFrame * frameAt(int);
 
+	void setMode(int mode);
+	void setMode(const QString & textmode);
+	int mode() const;
+	void setName(const QString & name);
+	QString name() const;
 	void setVisible(bool b);
-	bool visible();
+	bool visible() const;
 
 	int frameCount();
 	int realFrameCount();

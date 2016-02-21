@@ -256,9 +256,13 @@ bool ParupaintPanvasInputOutput::loadORA(ParupaintPanvas * panvas, const QString
 		if(e.isNull()) continue;
 		if(e.tagName() != "layer") continue;
 		
+		const QString name = e.attribute("name");
 		const QString src = e.attribute("src");
-		const auto x = e.attribute("x").toDouble();
-		const auto y = e.attribute("y").toDouble();
+		const qreal opacity = e.attribute("opacity").toDouble();
+		const QString composite = e.attribute("composite-op");
+		const bool visible = (e.attribute("visibility") == "visible");
+		const qreal x = e.attribute("x").toDouble();
+		const qreal y = e.attribute("y").toDouble();
 
 
 		const auto * layer_entry = d->entry(src);
@@ -282,7 +286,11 @@ bool ParupaintPanvasInputOutput::loadORA(ParupaintPanvas * panvas, const QString
 		paint.end();
 
 		ParupaintLayer * layer = new ParupaintLayer(panvas);
-		layer->insertFrame(new ParupaintFrame(pic, layer));
+		layer->setMode(composite);
+		layer->setVisible(visible);
+		layer->setName(name);
+
+		layer->insertFrame(new ParupaintFrame(pic, layer, opacity));
 		panvas->insertLayer(layer, 0);
 
 	}

@@ -41,7 +41,7 @@ void ParupaintFlayerLayer::setLayerVisible(bool visible)
 {
 	layer_visible->setChecked(visible);
 }
-void ParupaintFlayerLayer::setName(const QString & name)
+void ParupaintFlayerLayer::setLayerName(const QString & name)
 {
 	layer_name->setText(name);
 }

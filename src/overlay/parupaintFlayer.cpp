@@ -97,17 +97,19 @@ void ParupaintFlayer::updateFromCanvas(ParupaintPanvas* panvas)
 	}
 
 	for(int l = 0; l < panvas->layerCount(); l++){
-		
+		ParupaintLayer * layer = panvas->layerAt(l);
 		ParupaintFlayerLayer * flayer_layer = new ParupaintFlayerLayer;
-		flayer_layer->setLayerVisible(panvas->layerAt(l)->visible());
+
+		flayer_layer->setLayerVisible(layer->visible());
+		flayer_layer->setLayerName(layer->name());
 		layout->addWidget(flayer_layer);
 
-		for(int f = 0; f < panvas->layerAt(l)->frameCount(); f++){
+		for(int f = 0; f < layer->frameCount(); f++){
 
 			ParupaintFlayerFrame * frame = new ParupaintFlayerFrame;
 			frame->layer = l; frame->frame = f;
 
-			if(panvas->layerAt(l)) frame->setProperty("extended", panvas->layerAt(l)->isFrameExtended(f));
+			if(layer) frame->setProperty("extended", layer->isFrameExtended(f));
 
 			connect(frame, &ParupaintFlayerFrame::clicked, this, &ParupaintFlayer::frame_click);
 			flayer_layer->addFrame(frame);
