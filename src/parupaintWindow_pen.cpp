@@ -27,15 +27,16 @@ void ParupaintWindow::OnPenPress(const penInfo & info)
 			current_brush->setDrawing(false);
 
 		if(current_brush->drawing())
-			canvas_state = canvasDrawingState;
+			this->setCanvasState(canvasDrawingState);
 	}
 	if(info.buttons & Qt::MiddleButton){
-		canvas_state = canvasMovingState;
+		this->setCanvasState(canvasMovingState);
 		origin_pen = info.gpos;
 		origin_zoom = view->zoom();
 	}
 	if(info.buttons & Qt::RightButton){
 		if(canvas_state == canvasMovingState){
+			this->setCanvasState(canvasZoomingState);
 		} else {
 			brushes->toggleBrush(1);
 		}
@@ -64,15 +65,11 @@ void ParupaintWindow::OnPenMove(const penInfo& info)
 	current_pen = info.gpos;
 
 	if(canvas_state == canvasMovingState){
-
-		if((info.modifiers & Qt::ControlModifier) ||
-		   (info.buttons & Qt::RightButton)){
-			qreal dy = (origin_pen - info.gpos).y()/100 + origin_zoom;
-			view->setZoom(dy);
-		} else {
-			view->moveView((info.old_gpos - info.gpos));
-		}
-		return;
+		view->moveView((info.old_gpos - info.gpos));
+	}
+	if(canvas_state == canvasZoomingState){
+		qreal dy = (origin_pen - info.gpos).y()/100 + origin_zoom;
+		view->setZoom(dy);
 	}
 	if(canvas_state == canvasBrushZoomingState){
 		qreal dy = (info.old_pos - info.pos).y();
@@ -91,8 +88,10 @@ void ParupaintWindow::OnPenMove(const penInfo& info)
 		return;
 	}
 
+	// do not update the visual cursor if line tool
 	current_brush->setPosition(info.pos);
 	current_brush->setPressure(info.pressure);
+	scene->updateMainCursor(current_brush);
 
 	if(scene->canvas()->hasPastePreview()){
 		scene->canvas()->setPastePreviewPosition(scene->canvas()->matrix().map(info.pos));
@@ -109,7 +108,6 @@ void ParupaintWindow::OnPenMove(const penInfo& info)
 			send_update = true;
 		}
 	}
-	scene->updateMainCursor(current_brush);
 
 	if(send_update){
 		client->doBrushUpdate(current_brush);
@@ -138,7 +136,7 @@ void ParupaintWindow::OnPenRelease(const penInfo& info)
 	client->doBrushUpdate(current_brush);
 	scene->updateMainCursor(current_brush);
 
-	canvas_state = noCanvasState;
+	this->setCanvasState(noCanvasState);
 }
 void ParupaintWindow::OnPenPointer(const penInfo& info)
 {

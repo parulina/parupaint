@@ -36,6 +36,7 @@ enum canvasStates {
 	noCanvasState = 0,
 	canvasDrawingState,
 	canvasMovingState,
+	canvasZoomingState,
 	canvasBrushZoomingState
 };
 
@@ -84,6 +85,8 @@ Q_OBJECT
 	public:
 	ParupaintWindow(QWidget * = nullptr);
 	ParupaintClientInstance * networkClient();
+
+	void setCanvasState(canvasStates state);
 
 	void updateOverlay();
 	void showOverlay(overlayStates state);

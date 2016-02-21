@@ -276,6 +276,19 @@ void ParupaintWindow::OnNetworkDisconnect(QString reason)
 	QApplication::alert(this, 2000);
 }
 
+void ParupaintWindow::setCanvasState(canvasStates state)
+{
+	if(canvas_state == state) return;
+
+	if(state == canvasDrawingState)            view->setCursor(Qt::BlankCursor);
+	else if(state == canvasMovingState)        view->setCursor(Qt::ClosedHandCursor);
+	else if(state == canvasZoomingState)       view->setCursor(Qt::SizeVerCursor);
+	else {
+		view->setCursor(Qt::BlankCursor);
+	}
+	canvas_state = state;
+}
+
 
 void ParupaintWindow::showOverlay(overlayStates state)
 {
@@ -345,7 +358,7 @@ void ParupaintWindow::keyReleaseEvent(QKeyEvent * event)
 {
 	if(event->key() == Qt::Key_Space){
 		origin_pen = current_pen; // fix that weird rant-bug
-		canvas_state = noCanvasState;
+		this->setCanvasState(noCanvasState);
 	}
 	if((event->key() == Qt::Key_Tab || event->key() == Qt::Key_Backtab) && !event->isAutoRepeat()){
 
@@ -383,9 +396,13 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 	if(event->key() == Qt::Key_Space){
 		if(canvas_state == noCanvasState){
 			if(event->modifiers() & Qt::ShiftModifier){
-				canvas_state = canvasBrushZoomingState;
+				this->setCanvasState(canvasBrushZoomingState);
+
+			} else if(event->modifiers() & Qt::ControlModifier){
+				this->setCanvasState(canvasZoomingState);
+
 			} else {
-				canvas_state = canvasMovingState;
+				this->setCanvasState(canvasMovingState);
 			}
 			origin_pen = current_pen;
 			origin_zoom = view->zoom();
