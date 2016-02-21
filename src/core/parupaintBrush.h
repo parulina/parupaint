@@ -14,6 +14,7 @@ enum ParupaintBrushToolTypes {
 	BrushToolDotShadingPattern,	// Dense5Pattern
 	BrushToolDotHighlightPattern,	// Dense6Pattern
 	BrushToolCrossPattern,		// DiagCrossPattern
+	BrushToolGrid,			// custom
 	BrushToolMax // don't change this!
 };
 

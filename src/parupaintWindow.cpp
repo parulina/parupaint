@@ -532,6 +532,8 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 					case ParupaintBrushToolTypes::BrushToolDotHighlightPattern:
 						tool = ParupaintBrushToolTypes::BrushToolCrossPattern; break;
 					case ParupaintBrushToolTypes::BrushToolCrossPattern:
+						tool = ParupaintBrushToolTypes::BrushToolGrid; break;
+					case ParupaintBrushToolTypes::BrushToolGrid:
 						tool = ParupaintBrushToolTypes::BrushToolNone; break;
 				}
 			}

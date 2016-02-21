@@ -15,7 +15,8 @@
 static uchar patterns[][8] = {
 	{0xaa, 0x44, 0xaa, 0x11, 0xaa, 0x44, 0xaa, 0x11}, // Dense5Pattern
 	{0x00, 0x11, 0x00, 0x44, 0x00, 0x11, 0x00, 0x44}, // Dense6Pattern (modified to interweave Dense5Pattern)
-	{0x81, 0x42, 0x24, 0x18, 0x18, 0x24, 0x42, 0x81}  // DiagCrossPattern
+	{0x81, 0x42, 0x24, 0x18, 0x18, 0x24, 0x42, 0x81}, // DiagCrossPattern
+	{0xFF, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80}  // Custom checker pattern
 };
 
 // QBitmap (inherits QPixmap) does not work on non-gui builds.
@@ -83,6 +84,10 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * 
 		}
 		case ParupaintBrushToolTypes::BrushToolCrossPattern: {
 			pen_brush.setTextureImage(customPatternToImage(2, color));
+			break;
+		}
+		case ParupaintBrushToolTypes::BrushToolGrid: {
+			pen_brush.setTextureImage(customPatternToImage(3, color));
 			break;
 		}
 	}
