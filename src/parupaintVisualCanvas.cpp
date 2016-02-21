@@ -209,6 +209,11 @@ void ParupaintVisualCanvas::addCurrentLayerFrame(int lc, int fc, bool flash)
 	this->setCurrentLayerFrame(this->currentLayer() + lc, this->currentFrame() + fc, flash);
 }
 
+void ParupaintVisualCanvas::adjustCurrentLayerFrame(bool flash)
+{
+	this->setCurrentLayerFrame(this->currentLayer(), this->currentFrame(), flash);
+}
+
 int ParupaintVisualCanvas::currentLayer() const
 {
 	return current_layer;

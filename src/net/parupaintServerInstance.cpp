@@ -92,7 +92,12 @@ void ParupaintServerInstance::joinConnection(ParupaintConnection * con)
 	this->ServerJoin(con, true);
 }
 
-
+void ParupaintServerInstance::setBrushesDrawing(bool stopdraw)
+{
+	foreach(ParupaintBrush * brush, this->brushes){
+		brush->setDrawing(stopdraw);
+	}
+}
 
 void ParupaintServerInstance::setParupaintWebServeDir(QDir dir)
 {

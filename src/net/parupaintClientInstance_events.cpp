@@ -136,6 +136,10 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		    h = object["h"].toInt();
 
 		ParupaintCommonOperations::CanvasResizeOp(pool->canvas(), w, h, r);
+
+		// adjust selected layer/frame
+		pool->canvas()->adjustCurrentLayerFrame();
+
 		pool->canvas()->redraw();
 
 	} else if (id == "canvas") {
@@ -144,6 +148,7 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		// reload all images
 		this->doReloadImage();
 
+		pool->canvas()->adjustCurrentLayerFrame();
 	} else if (id == "image") {
 
 		int l = object["l"].toInt(),
@@ -182,7 +187,7 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 
 		ParupaintCommonOperations::LayerFrameChangeOp(pool->canvas(), l, f, lc, fc, ext);
 
-		pool->canvas()->setCurrentLayerFrame(pool->canvas()->currentLayer(), pool->canvas()->currentFrame());
+		pool->canvas()->adjustCurrentLayerFrame();
 		pool->canvas()->redraw();
 
 	} else if(id == "lfa") {

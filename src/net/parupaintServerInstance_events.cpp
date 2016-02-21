@@ -115,11 +115,13 @@ void ParupaintServerInstance::ServerLfc(int l, int f, int lc, int fc, bool e, bo
 	bool changed = false;
 	if(!(changed = ParupaintCommonOperations::LayerFrameChangeOp(canvas, l, f, lc, fc, e))) return;
 
+	foreach(ParupaintBrush * brush, this->brushes){
+		ParupaintCommonOperations::AdjustBrush(brush, canvas);
+	}
+
 	if(record_manager) record_manager->Lfc(l, f, lc, fc, e);
 
-	// TODO loop through every brush and reset their pos
 	if(!propagate) return;
-	// TODO and make sure they update their values too
 
 	if((lc != 0 || fc != 0) && changed){
 		QJsonObject obj;
@@ -169,6 +171,11 @@ void ParupaintServerInstance::ServerPaste(int l, int f, int x, int y, QImage img
 void ParupaintServerInstance::ServerResize(int w, int h, bool r, bool propagate)
 {
 	if(!ParupaintCommonOperations::CanvasResizeOp(canvas, w, h, r)) return;
+
+	foreach(ParupaintBrush * brush, this->brushes){
+		ParupaintCommonOperations::AdjustBrush(brush, canvas);
+	}
+
 	if(record_manager) record_manager->Resize(w, h, r);
 
 	if(!propagate) return;

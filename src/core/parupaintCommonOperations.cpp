@@ -160,3 +160,17 @@ bool ParupaintCommonOperations::BrushOp(ParupaintBrush * brush, QLineF & line, c
 	line = QLineF(old_pos, brush->position());
 	return true;
 }
+
+void ParupaintCommonOperations::AdjustBrush(ParupaintBrush * brush, ParupaintPanvas * canvas)
+{
+	if(brush->layer() < 0) brush->setLayer(0);
+	if(brush->layer() > canvas->layerCount()-1)
+		brush->setLayer(canvas->layerCount()-1);
+
+	ParupaintLayer * layer = canvas->layerAt(brush->layer());
+	if(layer){
+		if(brush->frame() < 0) brush->setFrame(0);
+		if(brush->frame() > layer->frameCount()-1)
+			brush->setFrame(layer->frameCount()-1);
+	}
+}

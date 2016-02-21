@@ -52,6 +52,7 @@ Q_OBJECT
 	void setFillPreview(const QImage & = QImage());
 	void setCurrentLayerFrame(int l, int f, bool flash = true);
 	void addCurrentLayerFrame(int lc, int fc, bool flash = true);
+	void adjustCurrentLayerFrame(bool flash = false);
 
 	void setPastePreview(const QImage & = QImage(), const QPointF & pos = QPointF());
 	void setPastePreviewPosition(const QPointF &);

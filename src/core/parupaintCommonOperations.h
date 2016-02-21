@@ -18,6 +18,7 @@ class ParupaintCommonOperations
 
 	// brush
 	static bool BrushOp(ParupaintBrush * brush, QLineF & line, const QVariantMap & data);
+	static void AdjustBrush(ParupaintBrush * brush, ParupaintPanvas * canvas);
 };
 
 #endif
