@@ -90,44 +90,24 @@ bool ParupaintPanvasInputOutput::savePPA(ParupaintPanvas * panvas, const QString
 	archive.writeFile("Thumbnails/thumbnail.png", imageToByteArray(mergedImage.scaled(256, 256, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
 	archive.writeFile("mergedimage.png", imageToByteArray(mergedImage));
 
-	// write layers
-	QJsonObject layers;
+	// write image files
 	for(int l = 0; l < panvas->layerCount(); l++){
-
 		ParupaintLayer * layer = panvas->layerAt(l);
 
-		QJsonObject frames_info;
 		for(int f = 0; f < layer->frameCount(); f++){
-			if(!layer->isFrameReal(f))
-				continue;
+			if(!layer->isFrameReal(f)) continue;
 
 			ParupaintFrame * frame = layer->frameAt(f);
 
-			QImage image = frame->image();
-
-			// write temp buffer for png
-			QByteArray byte_array = imageToByteArray(image);
-
+			QByteArray byte_array = imageToByteArray(frame->image());
 			QString frame_name = QString("%1/%2.png").arg(l).arg(layer->frameLabel(f));
-			frames_info.insert(layer->frameLabel(f), QJsonObject{
-				{"opacity", frame->opacity()}
-			});
+
 			archive.writeFile(frame_name, byte_array);
 		}
-		frames_info["visible"] = layer->visible();
-		layers.insert(QString::number(l), frames_info);
-		// TODO layername
 	}
 
-	QJsonObject ppa_info = {
-		{"canvasWidth", panvas->dimensions().width()},
-		{"canvasHeight", panvas->dimensions().height()},
-		{"backgroundColor", ParupaintSnippets::toHex(panvas->backgroundColor())},
-		{"frameRate", panvas->frameRate()},
-		{"projectName", panvas->projectName()},
-		{"layers", layers}
-	};
-
+	// json info
+	QJsonObject ppa_info = panvas->json();
 	QByteArray json = QJsonDocument(ppa_info).toJson(QJsonDocument::Indented);
 	qDebug("%s", qPrintable(json));
 	archive.writeFile("pp3.json", json);
@@ -339,27 +319,22 @@ bool ParupaintPanvasInputOutput::loadPPA(ParupaintPanvas * panvas, const QString
 		return (errorStr = "Width/height not specified.").isEmpty();
 
 	// load the canvas settings
-	panvas->clearCanvas();
-	panvas->resize(QSize(main_obj.value("canvasWidth").toInt(180), main_obj.value("canvasHeight").toInt(180)));
-	panvas->setFrameRate(main_obj.value("frameRate").toDouble(12));
-	panvas->setProjectName(main_obj.value("projectName").toString());
-	panvas->setBackgroundColor(ParupaintSnippets::toColor(main_obj.value("backgroundColor").toString()));
+	panvas->loadJson(main_obj);
 
+	// load the image frames
 	QJsonObject layers = main_obj.value("layers").toObject();
 	foreach(const QString & lk, layers.keys()) {
 
 		const QJsonObject & lo = layers.value(lk).toObject();
-		ParupaintLayer * layer = new ParupaintLayer;
-		layer->setVisible(lo.value("visible").toBool(true));
+		const QJsonObject & ff = lo.value("frames").toObject();
+		ParupaintLayer * layer = panvas->layerAt(lk.toInt());
 
-		foreach(const QString & fk, lo.keys()){
-			if(!lo.value(fk).isObject()) continue;
+		foreach(const QString & fk, ff.keys()){
+			const QJsonObject & fo = ff.value(fk).toObject();
 
-			const QJsonObject & fo = lo.value(fk).toObject();
-
-			int extended = 0;
+			int framenum = fk.toInt();
 			if(fk.contains('-')){
-				extended = fk.section('-', 1, 1).toInt();
+				framenum = fk.section('-', 0, 0).toInt();
 			}
 
 			const QString fname(QString("%1/%2.png").arg(lk, fk));
@@ -370,17 +345,9 @@ bool ParupaintPanvasInputOutput::loadPPA(ParupaintPanvas * panvas, const QString
 			QImage img(panvas->dimensions(), QImage::Format_ARGB32);
 			img.loadFromData(img_file->data());
 
-			// create a new frame with the image
-			ParupaintFrame * frame = new ParupaintFrame(img);
-			frame->setOpacity(fo.value("opacity").toDouble(1.0));
-
-			layer->insertFrame(frame, layer->frameCount());
-			// extend the frame as far as it wants (TODO: Put limit?)
-			for(; extended > 0; extended--){
-				layer->extendFrame(frame);
-			}
+			ParupaintFrame * frame = layer->frameAt(framenum);
+			frame->replaceImage(img);
 		}
-		panvas->insertLayer(layer, panvas->layerCount());
 	}
 	return true;
 }

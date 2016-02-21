@@ -144,30 +144,7 @@ QJsonObject ParupaintServerInstance::connectionObj(ParupaintConnection * con) co
 
 QJsonObject ParupaintServerInstance::canvasObj() const
 {
-	QJsonObject obj;
-
-	obj["bgc"] = ParupaintSnippets::toHex(canvas->backgroundColor());
-	obj["w"] = canvas->dimensions().width();
-	obj["h"] = canvas->dimensions().height();
-
-	QJsonArray layers;
-	for(int l = 0; l < canvas->layerCount(); l++){
-		ParupaintLayer * layer = canvas->layerAt(l);
-		if(!layer) continue;
-
-		QJsonArray frames;
-		for(int f = 0; f < layer->frameCount(); f++){
-			ParupaintFrame * frame = layer->frameAt(f);
-
-			QJsonObject fobj;
-			fobj["extended"] = !(layer->isFrameReal(f));
-			fobj["opacity"] = frame->opacity();
-			frames.insert(f, fobj);
-		}
-		layers.insert(l, frames);
-	}
-	obj["layers"] = layers;
-
+	QJsonObject obj = canvas->json();
 	return obj;
 }
 

@@ -139,50 +139,7 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		pool->canvas()->redraw();
 
 	} else if (id == "canvas") {
-		if(!object["w"].isDouble()) return;
-		if(!object["h"].isDouble()) return;
-
-		int w = object["w"].toInt();
-		int h = object["h"].toInt();
-		QJsonArray layers = object["layers"].toArray();
-
-		ParupaintVisualCanvas* canvas = pool->canvas();
-		canvas->clearCanvas();
-		canvas->setBackgroundColor(ParupaintSnippets::toColor(object["bgc"].toString("#00000000")));
-		canvas->resize(QSize(w, h));
-
-		for(int i = 0; i < layers.size(); i++){
-			canvas->insertLayer(0, 0);
-		}
-
-		int ll = 0;
-		foreach(QJsonValue l, layers){
-			ParupaintLayer *canvas_layer = canvas->layerAt(ll);
-			if(!canvas_layer) continue;
-
-			int ff = 0;
-			foreach(QJsonValue f, l.toArray()){
-			QJsonObject frame = f.toObject();
-				bool extended = frame["extended"].toBool();
-				qreal opacity = frame["opacity"].toDouble();
-
-				// extended can't be the first. what
-				if(extended && ff == 0) extended = false;
-
-				if(extended){
-					canvas_layer->extendFrame(ff-1);
-				} else {
-					canvas_layer->insertFrame(canvas->dimensions(), ff);
-					canvas_layer->frameAt(ff)->setOpacity(opacity);
-				}
-
-
-				ff++;
-			}
-
-			ll++;
-		}
-		canvas->setCurrentLayerFrame(canvas->currentLayer(), canvas->currentFrame());
+		pool->canvas()->loadJson(object);
 
 		// reload all images
 		this->doReloadImage();

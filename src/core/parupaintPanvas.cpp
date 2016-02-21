@@ -2,6 +2,9 @@
 
 #include <QDebug>
 #include <QPainter> // mergedImageFrames
+#include <QJsonObject>
+
+#include "parupaintSnippets.h"
 
 #define qtMax(x, y) (x > y ? x : y)
 
@@ -132,7 +135,7 @@ int ParupaintPanvas::layerIndex(ParupaintLayer* l)
 	if(i == -1) qDebug() << "layerIndex" << l << "is not found";
 	return i;
 }
-ParupaintLayer * ParupaintPanvas::layerAt(int i)
+ParupaintLayer * ParupaintPanvas::layerAt(int i) const
 {
 	if(layers.isEmpty()) return nullptr;
 	return layers.at(i);
@@ -146,7 +149,7 @@ int ParupaintPanvas::totalFrameCount()
 	}
 	return count;
 }
-int ParupaintPanvas::layerCount()
+int ParupaintPanvas::layerCount() const
 {
 	return layers.length();
 }
@@ -204,15 +207,15 @@ void ParupaintPanvas::setBackgroundColor(const QColor color)
 	this->info.background_color = color;
 }
 
-const QString & ParupaintPanvas::projectName()
+const QString & ParupaintPanvas::projectName() const
 {
 	return this->info.name;
 }
-qreal ParupaintPanvas::frameRate()
+qreal ParupaintPanvas::frameRate() const
 {
 	return this->info.framerate;
 }
-QColor ParupaintPanvas::backgroundColor()
+QColor ParupaintPanvas::backgroundColor() const
 {
 	return this->info.background_color;
 }
@@ -220,4 +223,81 @@ QColor ParupaintPanvas::backgroundColor()
 const QSize & ParupaintPanvas::dimensions() const
 {
 	return this->info.dimensions;
+}
+
+QJsonObject ParupaintPanvas::json() const
+{
+	QJsonObject layers;
+	for(int l = 0; l < this->layerCount(); l++) {
+		ParupaintLayer * layer = this->layerAt(l);
+
+		QJsonObject frames;
+		for(int f = 0; f < layer->frameCount(); f++) {
+			if(!layer->isFrameReal(f)) continue;
+
+			ParupaintFrame * frame = layer->frameAt(f);
+			QString label = layer->frameLabel(f);
+
+			frames[label] = QJsonObject{
+				{"opacity", frame->opacity()}
+			};
+		}
+		layers.insert(QString::number(l), QJsonObject{
+			{"visible", layer->visible()},
+			{"name", "blank"},
+			{"frames", frames}
+		});
+	}
+	return QJsonObject{
+		{"canvasWidth", this->dimensions().width()},
+		{"canvasHeight", this->dimensions().height()},
+		{"backgroundColor", ParupaintSnippets::toHex(this->backgroundColor())},
+		{"frameRate", this->frameRate()},
+		{"projectName", this->projectName()},
+		{"layers", layers}
+	};
+}
+
+void ParupaintPanvas::loadJson(const QJsonObject & obj)
+{
+	this->clearCanvas();
+	this->resize(QSize(obj.value("canvasWidth").toInt(180), obj.value("canvasHeight").toInt(180)));
+	this->setFrameRate(obj.value("frameRate").toDouble(12));
+	this->setProjectName(obj.value("projectName").toString());
+	this->setBackgroundColor(ParupaintSnippets::toColor(obj.value("backgroundColor").toString()));
+
+	QJsonObject layers = obj.value("layers").toObject();
+	foreach(const QString & lk, layers.keys()) {
+
+		const QJsonObject & lo = layers.value(lk).toObject();
+		// lk = layer key
+		// lo = layer object
+
+		ParupaintLayer * layer = new ParupaintLayer;
+		layer->setVisible(lo.value("visible").toBool(true));
+
+		const QJsonObject & ff = lo.value("frames").toObject();
+
+		foreach(const QString & fk, ff.keys()){
+			const QJsonObject & fo = ff.value(fk).toObject();
+
+			int extended = 0;
+			if(fk.contains('-')){
+				extended = fk.section('-', 1, 1).toInt();
+			}
+
+			// create a new frame with the image
+			ParupaintFrame * frame = new ParupaintFrame(this->dimensions());
+			frame->setOpacity(fo.value("opacity").toDouble(1.0));
+
+			layer->insertFrame(frame, layer->frameCount());
+
+			// extend the frame as far as it wants
+			if(extended > 512) extended = 512;
+			for(; extended > 0; extended--){
+				layer->extendFrame(frame);
+			}
+		}
+		this->insertLayer(layer, this->layerCount());
+	}
 }

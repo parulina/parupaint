@@ -49,10 +49,10 @@ Q_OBJECT
 	void removeLayer(ParupaintLayer * l);
 	void removeLayer(int i);
 	int layerIndex(ParupaintLayer*);
-	ParupaintLayer * layerAt(int);
+	ParupaintLayer * layerAt(int) const;
 
 	int totalFrameCount();
-	int layerCount();
+	int layerCount() const;
 	QList<QImage> mergedImageFrames(bool rendered = false);
 	QImage mergedImage(bool rendered = false);
 
@@ -60,10 +60,13 @@ Q_OBJECT
 	void setFrameRate(qreal = 24);
 	void setBackgroundColor(const QColor);
 
-	const QString & projectName();
-	qreal frameRate();
-	QColor backgroundColor();
+	const QString & projectName() const;
+	qreal frameRate() const;
+	QColor backgroundColor() const;
 	const QSize & dimensions() const;
+
+	void loadJson(const QJsonObject & obj);
+	QJsonObject json() const;
 };
 
 #endif
