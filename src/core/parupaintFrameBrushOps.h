@@ -10,9 +10,9 @@ class ParupaintPanvas;
 
 class ParupaintFrameBrushOps {
 	public:
-	static QRect stroke(ParupaintPanvas *, ParupaintBrush *, const QPointF & pos, const QPointF & old_pos);
-	static QRect stroke(ParupaintPanvas *, ParupaintBrush *, const QPointF & pos);
-	static QRect stroke(ParupaintPanvas *, ParupaintBrush *, const QLineF & line);
+	static QRect stroke(ParupaintPanvas *, ParupaintBrush *, const QPointF & pos, const QPointF & old_pos, const qreal s1 = -1);
+	static QRect stroke(ParupaintPanvas *, ParupaintBrush *, const QPointF & pos, const qreal s1 = -1);
+	static QRect stroke(ParupaintPanvas *, ParupaintBrush *, const QLineF & line, const qreal s1 = -1);
 };
 
 #endif

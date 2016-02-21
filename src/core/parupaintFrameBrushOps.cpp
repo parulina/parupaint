@@ -1,5 +1,5 @@
-
 #include "parupaintFrameBrushOps.h"
+
 #include "parupaintFrame.h"
 #include "parupaintLayer.h"
 #include "parupaintPanvas.h"
@@ -35,15 +35,15 @@ inline QImage customPatternToImage(int pattern, const QColor & col = QColor(Qt::
 }
 
 
-QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * brush, const QPointF & pos, const QPointF & old_pos)
+QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * brush, const QPointF & pos, const QPointF & old_pos, const qreal s1)
 {
-	return ParupaintFrameBrushOps::stroke(panvas, brush, QLineF(old_pos, pos));
+	return ParupaintFrameBrushOps::stroke(panvas, brush, QLineF(old_pos, pos), s1);
 }
-QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * brush, const QPointF & pos)
+QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * brush, const QPointF & pos, const qreal s1)
 {
-	return ParupaintFrameBrushOps::stroke(panvas, brush, QLineF(pos, pos));
+	return ParupaintFrameBrushOps::stroke(panvas, brush, QLineF(pos, pos), s1);
 }
-QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * brush, const QLineF & line)
+QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * brush, const QLineF & line, const qreal s1)
 {
 	ParupaintLayer * layer = panvas->layerAt(brush->layer());
 	if(!layer) return QRect();
@@ -70,6 +70,7 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * 
 	QBrush pen_brush(color);
 	pen.setCapStyle(Qt::RoundCap);
 	pen.setWidthF(size);
+	pen.setMiterLimit((s1 > -1) ? s1 : size);
 
 	switch(brush->tool()){
 		case ParupaintBrushToolTypes::BrushToolDotShadingPattern: {

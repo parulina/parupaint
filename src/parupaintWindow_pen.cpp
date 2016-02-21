@@ -63,6 +63,7 @@ void ParupaintWindow::OnPenMove(const penInfo& info)
 {
 	ParupaintBrush * current_brush = brushes->brush();
 	current_pen = info.gpos;
+	qreal old_size = current_brush->pressureSize();
 
 	if(canvas_state == canvasMovingState){
 		view->moveView((info.old_gpos - info.gpos));
@@ -100,7 +101,7 @@ void ParupaintWindow::OnPenMove(const penInfo& info)
 	bool send_update = false;
 	if(current_brush->drawing()){
 		send_update = true;
-		QRect r = ParupaintFrameBrushOps::stroke(scene->canvas(), current_brush, info.pos, info.old_pos);
+		QRect r = ParupaintFrameBrushOps::stroke(scene->canvas(), current_brush, info.pos, info.old_pos, old_size);
 		scene->canvas()->redraw(r);
 	} else {
 		QLineF line(info.old_pos, info.pos);

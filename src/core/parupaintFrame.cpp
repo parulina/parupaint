@@ -72,10 +72,15 @@ QImage ParupaintFrame::renderedImage()
 	return img;
 }
 
-QRect ParupaintFrame::drawLine(const QLineF & line, const qreal w, const QColor color)
+QRect ParupaintFrame::drawLine(const QLineF & line, const QColor color, const qreal s)
+{
+	return this->drawLine(line, color, s, s);
+}
+QRect ParupaintFrame::drawLine(const QLineF & line, const QColor color, const qreal s1, const qreal s2)
 {
 	QPen pen(color);
-	pen.setWidthF(w);
+	pen.setWidthF(s1);
+	pen.setMiterLimit(s2);
 	pen.setCapStyle(Qt::RoundCap);
 	return this->drawLine(line, pen);
 }
@@ -103,9 +108,44 @@ QRect ParupaintFrame::drawLine(const QLineF & line, QPen pen)
 		}
 
 	} else {
+		qreal s1 = pen.widthF(), s2 = pen.miterLimit();
+
 		pen.setBrush(new_brush);
 		painter.setPen(pen);
-		painter.drawLine(pixel_line);
+		painter.setBrush(new_brush);
+
+		if(s1 >= 1 && s2 >= 1 && (s1 > s2 ? s1-s2 : s2-s1) > 0.1){
+			const qreal d = line.length(),
+				    r = qAtan2(line.y2() - line.y1(), line.x2() - line.x1()),
+			            dr = (s1 > s2) ? s1 - s2 : s2 - s1;
+			const qreal tan = qSqrt((d * d) + (dr * dr));
+
+			const qreal p1 = qSqrt((tan * tan) + (s2 * s2)),
+			            p2 = qSqrt((tan * tan) + (s1 * s1));
+
+			const qreal theta1 = qAcos((s1*s1 + d*d - p1*p1) / (2 * s1 * d)) + r,
+			            theta2 = qAcos((s2*s2 + d*d - p2*p2) / (2 * s2 * d)) + r;
+
+			QPointF tf1((s2/2) * qCos(theta1), (s2/2) * qSin(theta1)),
+				tf2((s1/2) * qCos(theta2), (s1/2) * qSin(theta2));
+
+			const QPolygonF poly(QVector<QPointF>{
+				line.p1() + tf1,
+				line.p2() + tf2,
+				line.p2() + QPointF(-(s1/2) * qCos(theta1), -(s1/2) * qSin(theta1)),
+				line.p1() + QPointF(-(s2/2) * qCos(theta2), -(s2/2) * qSin(theta2))
+			});
+			QPainterPath path;
+			path.addPolygon(poly);
+			painter.fillPath(path, new_brush);
+
+			painter.setPen(Qt::NoPen);
+			painter.drawEllipse(line.p1(), s2/2, s2/2);
+			painter.drawEllipse(line.p2(), s1/2, s1/2);
+
+		} else {
+			painter.drawLine(pixel_line);
+		}
 	}
 	painter.end();
 

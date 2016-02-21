@@ -90,11 +90,12 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 			if(object["c"].isString()) map["c"] = ParupaintSnippets::toColor(object["c"].toString());
 
 			QLineF draw_line;
+			double old_size = brush->pressureSize();
 			ParupaintCommonOperations::BrushOp(brush, draw_line, map);
 			brush->QGraphicsItem::setPos(brush->position());
 
 			if(brush->drawing()){
-				QRect r = ParupaintFrameBrushOps::stroke(pool->canvas(), brush, draw_line);
+				QRect r = ParupaintFrameBrushOps::stroke(pool->canvas(), brush, draw_line, old_size);
 				pool->canvas()->redraw(r);
 			}
 			brush->update();

@@ -319,6 +319,7 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 			if(brush) {
 
 				QLineF draw_line;
+				double old_size = brush->pressureSize();
 
 				// convert json stuff to map
 				QVariantMap map;
@@ -342,7 +343,7 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 				// assign the stuff
 				ParupaintCommonOperations::BrushOp(brush, draw_line, map);
 				if(brush->drawing()){
-					ParupaintFrameBrushOps::stroke(canvas, brush, draw_line);
+					ParupaintFrameBrushOps::stroke(canvas, brush, draw_line, old_size);
 				}
 				if(brush->tool() == ParupaintBrushToolTypes::BrushToolFloodFill) brush->setDrawing(false);
 
