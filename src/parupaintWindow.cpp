@@ -581,6 +581,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 					scene->canvas()->currentLayer(),
 					scene->canvas()->currentFrame());
 				client->doBrushUpdate(brush);
+				scene->updateMainCursor(brush);
 
 			} else {
 				int cl = scene->canvas()->currentLayer(),

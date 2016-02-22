@@ -188,8 +188,20 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		bool ext = object["ext"].toBool();
 
 		ParupaintCommonOperations::LayerFrameChangeOp(pool->canvas(), l, f, lc, fc, ext);
+		foreach(ParupaintBrush * brush, this->brushes){
+			ParupaintCommonOperations::AdjustBrush(brush, pool->canvas());
+		}
 
-		pool->canvas()->adjustCurrentLayerFrame();
+		ParupaintBrush * brush = pool->mainCursor();
+
+		if(l <= brush->layer()) {
+			brush->setLayer(brush->layer() + lc);
+		}
+		if(f <= brush->frame()) {
+			brush->setFrame(brush->frame() + fc);
+		}
+
+		pool->canvas()->setCurrentLayerFrame(brush->layer(), brush->frame(), false);
 		pool->canvas()->redraw();
 
 	} else if(id == "lfa") {

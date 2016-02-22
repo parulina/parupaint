@@ -116,6 +116,8 @@ void ParupaintServerInstance::ServerLfc(int l, int f, int lc, int fc, bool e, bo
 	if(!(changed = ParupaintCommonOperations::LayerFrameChangeOp(canvas, l, f, lc, fc, e))) return;
 
 	foreach(ParupaintBrush * brush, this->brushes){
+		if(l <= brush->layer()) brush->setLayer(brush->layer() + lc);
+		if(f <= brush->frame()) brush->setFrame(brush->frame() + fc);
 		ParupaintCommonOperations::AdjustBrush(brush, canvas);
 	}
 

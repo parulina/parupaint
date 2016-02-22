@@ -180,7 +180,9 @@ void ParupaintCommonOperations::AdjustBrush(ParupaintBrush * brush, ParupaintPan
 	ParupaintLayer * layer = canvas->layerAt(brush->layer());
 	if(layer){
 		if(brush->frame() < 0) brush->setFrame(0);
-		if(brush->frame() > layer->frameCount()-1)
+		if(brush->frame() > layer->frameCount()-1){
 			brush->setFrame(layer->frameCount()-1);
+			qDebug() << "adjust" << brush << "to" << brush->frame() << layer->frameCount();
+		}
 	}
 }
