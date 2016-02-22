@@ -67,6 +67,7 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 				brush = new ParupaintVisualCursor;
 				pool->addCursor(brush);
 				brushes[c] = brush;
+				qDebug() << "add brush" << object;
 			} else if(brush) {
 				brush = brushes.take(c);
 				pool->removeCursor(brush);

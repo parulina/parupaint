@@ -96,6 +96,9 @@ void ParupaintPanvas::insertLayer(ParupaintLayer* l, int i)
 		layers.insert(i, l);
 		l->setParent(this);
 		this->connect(l, &ParupaintLayer::onContentChange, this, &ParupaintPanvas::onCanvasContentChange);
+		this->connect(l, &ParupaintLayer::onNameChange, this, &ParupaintPanvas::onCanvasChange);
+		this->connect(l, &ParupaintLayer::onModeChange, this, &ParupaintPanvas::onCanvasChange);
+		this->connect(l, &ParupaintLayer::onVisiblityChange, this, &ParupaintPanvas::onCanvasChange);
 		this->connect(l, &QObject::destroyed, this, &ParupaintPanvas::removeLayerObject);
 		emit onCanvasContentChange();
 	} else {
@@ -120,6 +123,9 @@ void ParupaintPanvas::removeLayer(int i)
 		ParupaintLayer * l = layers.takeAt(i);
 		l->setParent(nullptr);
 		this->disconnect(l, &ParupaintLayer::onContentChange, this, &ParupaintPanvas::onCanvasContentChange);
+		this->disconnect(l, &ParupaintLayer::onNameChange, this, &ParupaintPanvas::onCanvasChange);
+		this->disconnect(l, &ParupaintLayer::onModeChange, this, &ParupaintPanvas::onCanvasChange);
+		this->disconnect(l, &ParupaintLayer::onVisiblityChange, this, &ParupaintPanvas::onCanvasChange);
 		this->disconnect(l, &QObject::destroyed, this, &ParupaintPanvas::removeLayerObject);
 		// i'm not sure if this is okay...
 		delete l;

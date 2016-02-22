@@ -7,6 +7,7 @@
     <file>resources/chat.css</file>
     <file>resources/parufont.ttf</file>
     <file>resources/icons.png</file>
+    <file>resources/uicons.png</file>
     <file>resources/patterns.png</file>
 </qresource>
 </RCC>

@@ -122,10 +122,20 @@ bool ParupaintCommonOperations::LayerFrameAttributeOp(ParupaintPanvas * canvas, 
 				frame->setOpacity(v);
 				return true;
 			}
-			if(attr == "layer-visible" && val.type() == QVariant::Bool){
-				layer->setVisible(val.toBool());
-				return true;
-			}
+		}
+		if(attr == "layer-visible" && val.type() == QVariant::Bool){
+			layer->setVisible(val.toBool());
+			return true;
+		}
+		if(attr == "layer-name" && val.type() == QVariant::String){
+			if(val.toString().length() > 64) return false;
+
+			layer->setName(val.toString());
+			return true;
+		}
+		if(attr == "layer-mode" && (val.type() == QVariant::Double || val.type() == QVariant::Int)){
+			layer->setMode(val.toInt());
+			return true;
 		}
 	}
 

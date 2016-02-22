@@ -8,6 +8,8 @@
 #include <QColor>
 #include <QList>
 
+int textModeToEnum(const QString & m);
+
 class ParupaintPanvas;
 
 enum ParupaintFrameExtensionsDirection {

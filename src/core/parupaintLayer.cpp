@@ -5,7 +5,7 @@
 
 #include "parupaintPanvas.h" // parentPanvas
 
-inline int textModeToEnum(const QString & m)
+int textModeToEnum(const QString & m)
 {
 	if(m == "svg:src-over")		return 0;
 	if(m == "svg:multiply")		return 13;
@@ -258,6 +258,8 @@ void ParupaintLayer::setMode(const QString & textmode)
 
 void ParupaintLayer::setMode(int mode)
 {
+	if(mode == layer_mode) return;
+
 	layer_mode = mode;
 	emit onModeChange(layer_mode);
 }
@@ -268,6 +270,8 @@ int ParupaintLayer::mode() const
 }
 void ParupaintLayer::setName(const QString & name)
 {
+	if(name == layer_name) return;
+
 	layer_name = name;
 	emit onNameChange(layer_name);
 }
@@ -278,6 +282,8 @@ QString ParupaintLayer::name() const
 }
 void ParupaintLayer::setVisible(bool visible)
 {
+	if(visible == layer_visible) return;
+
 	layer_visible = visible;
 	emit onVisiblityChange(layer_visible);
 }

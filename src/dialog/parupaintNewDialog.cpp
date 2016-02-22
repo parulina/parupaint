@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 #include <QPainter>
 #include <QSettings>
+#include <QListView>
 
 class ParupaintCanvasPreviewWidget : public QWidget
 {
@@ -91,6 +92,7 @@ ParupaintNewDialog::ParupaintNewDialog(QWidget * parent) :
 
 	// create width, height, middle buttons
 	width = new QComboBox;
+	width->setView(new QListView());
 	width->addItems(dim_list);
 	width->setEditable(true);
 	width->setCompleter(nullptr);
@@ -101,6 +103,7 @@ ParupaintNewDialog::ParupaintNewDialog(QWidget * parent) :
 			preview->setPreviewWidth(str.toInt());
 		});
 	height = new QComboBox;
+	height->setView(new QListView());
 	height->addItems(dim_list);
 	height->setEditable(true);
 	height->setCompleter(nullptr);

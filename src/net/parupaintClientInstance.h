@@ -58,6 +58,10 @@ Q_OBJECT
 	void doFill(int l, int f, const QString &);
 	void doNew(int w, int h, bool resize = false);
 	void doInfo(const QString & attr, const QVariant & val);
+	
+	void doLayerVisibility(int l, bool visible);
+	void doLayerName(int l, const QString & name);
+	void doLayerMode(int l, int mode);
 
 	void doLoadLocal(const QString & filename);
 	void doLoad(const QString & filename);

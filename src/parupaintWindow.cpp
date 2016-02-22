@@ -152,14 +152,17 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	});
 	
 	connect(flayer, &ParupaintFlayer::onHighlightChange, scene->canvas(), &ParupaintVisualCanvas::current_lf_update);
-	connect(flayer, &ParupaintFlayer::onHighlightChange, infobar->status(), &ParupaintInfoBarStatus::setLayerFrame);
+	connect(flayer, &ParupaintFlayer::onLayerVisibleChange, client, &ParupaintClientInstance::doLayerVisibility);
+	connect(flayer, &ParupaintFlayer::onLayerNameChange, client, &ParupaintClientInstance::doLayerName);
+	connect(flayer, &ParupaintFlayer::onLayerModeChange, client, &ParupaintClientInstance::doLayerMode);
 	connect(flayer, &ParupaintFlayer::onHighlightChange, [&](int l, int f){
 		ParupaintBrush * brush = this->brushes->brush();
 		brush->setLayerFrame(l, f);
 		this->client->doBrushUpdate(brush);
 	});
 
-	connect(scene->canvas(), &ParupaintVisualCanvas::onCurrentLayerFrameChange, flayer, &ParupaintFlayer::current_lf_update);
+
+	connect(scene->canvas(), &ParupaintVisualCanvas::onCurrentLayerFrameChange, flayer, &ParupaintFlayer::setHighlightLayerFrame);
 	connect(scene->canvas(), &ParupaintVisualCanvas::onCurrentLayerFrameChange, infobar->status(), &ParupaintInfoBarStatus::setLayerFrame);
 	connect(scene->canvas(), &ParupaintVisualCanvas::onCurrentLayerFrameChange, [&](int l, int f){
 		ParupaintBrush * brush = this->brushes->brush();
@@ -168,7 +171,8 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	});
 
 	// canvas content -> flayer content
-	connect(scene->canvas(), &ParupaintVisualCanvas::onCanvasContentChange, flayer, &ParupaintFlayer::canvas_content_update);
+	connect(scene->canvas(), &ParupaintPanvas::onCanvasChange, flayer, &ParupaintFlayer::updateCanvasSlot);
+	connect(scene->canvas(), &ParupaintPanvas::onCanvasContentChange, flayer, &ParupaintFlayer::reloadCanvasSlot);
 	connect(scene->canvas(), &ParupaintVisualCanvas::onCanvasResize, infobar->status(), &ParupaintInfoBarStatus::setDimensions);
 
 	// chat message -> chat message

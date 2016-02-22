@@ -221,6 +221,20 @@ void ParupaintClientInstance::doInfo(const QString & attr, const QVariant & val)
 	this->send("info", obj);
 }
 
+void ParupaintClientInstance::doLayerVisibility(int l, bool visible)
+{
+	this->doLayerFrameAttribute(l, 0, "layer-visible", visible);
+}
+void ParupaintClientInstance::doLayerName(int l, const QString & name)
+{
+	this->doLayerFrameAttribute(l, 0, "layer-name", name);
+}
+void ParupaintClientInstance::doLayerMode(int l, int mode)
+{
+	this->doLayerFrameAttribute(l, 0, "layer-mode", mode);
+}
+
+
 void ParupaintClientInstance::doLoadLocal(const QString & filename)
 {
 	if(this->readOnly()) return;

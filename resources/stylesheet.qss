@@ -9,12 +9,35 @@ QLabel{
 	font-family:"parufont";
 }
 QLineEdit,
-QComboBox, QComboBox::drop-down {
+QComboBox {
 	padding:4px 0;
 	border:1px solid #333;
 	background:black;
 	color:white;
 	font-size:14px;
+}
+QListView {
+	border:none;
+	padding:0;
+	margin:0;
+}
+QComboBox, QComboBox::on {
+	background:#75653A;
+}
+QComboBox QListView::item:hover,
+QComboBox QListView::item:selected {
+	background:#333;
+}
+QComboBox QListView {
+	background:#aaa;
+	color:black;
+	font-size:14px;
+}
+QComboBox::down-arrow {
+}
+QComboBox::drop-down {
+	border-width:1px;
+	outline:none;
 }
 
 QPushButton {
@@ -134,19 +157,54 @@ ParupaintScrollBar::down-arrow {
 }
 
 
-ParupaintFlayerList {
-	background:transparent;
+ParupaintFlayer::item:selected {
+	padding:0 2px;
+	background:rgba(0, 0, 0, 0.2)
 }
 
+ParupaintFlayerLayer {
+	font-size:12px;
+	color:#CCC;
+}
+
+ParupaintFlayerLayer #FlayerLayerVisible::indicator {
+	width:16px !important;
+	height:16px !important;
+	margin:0 3px;
+}
+ParupaintFlayerLayer #FlayerLayerVisible::indicator::checked {
+	image:none;
+	background:url(":/resources/uicons.png");
+	background-position:top left;
+}
+ParupaintFlayerLayer #FlayerLayerVisible::indicator::unchecked {
+	image:none;
+	background:url(":/resources/uicons.png");
+	background-position:top right;
+}
 ParupaintFlayerLayer #FlayerLayerVisible {
 	background:none;
 	spacing:0;
 	border:none; outline:none;
 }
+ParupaintFlayerLayer #FlayerLayerMode::drop-down {
+	width:0;
+}
+ParupaintFlayerLayer #FlayerLayerMode {
+	background:transparent;
+	border:none; outline: none;
+	text-decoration:underline;
+}
+ParupaintFlayer::item:selected #FlayerLayerVisible,
+ParupaintFlayer::item:selected #FlayerLayerMode {
+	background:#75653A;
+}
 ParupaintFlayerLayer #FlayerLayerLabel {
-	color:#533E2C;
+	color:#FFF;
 	background:transparent;
 	border:none;
+	font-size:16px;
+	margin-left:8px;
 }
 ParupaintFlayerLayer #FlayerLayerLabel:focus {
 	color:white;
