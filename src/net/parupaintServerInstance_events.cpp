@@ -198,6 +198,7 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 			c->setId(connectid++);
 			// send everyone and the canvas too
 			foreach(ParupaintConnection * con, brushes.keys()){
+				if(con == c) continue;
 				QJsonObject obj = this->connectionObj(con);
 				obj["exists"] = true;
 				c->send("brush", obj);
@@ -215,6 +216,9 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 				c->setAutoJoinFlag(true);
 			}
 		} else if(id == "join"){
+			// don't join again.
+			if(brushes.find(c) != brushes.end()) return;
+
 			bool ok;
 			QJsonObject msgobj;
 			qreal ver = obj["version"].toString("0.00").toDouble(&ok);
