@@ -170,12 +170,15 @@ QList<QImage> ParupaintPanvas::mergedImageFrames(bool rendered)
 	}
 
 	for(auto l = 0; l < this->layerCount(); l++){
-		auto * layer = this->layerAt(l);
+		ParupaintLayer * layer = this->layerAt(l);
 		if(!layer) continue;
+		if(!layer->visible()) continue;
 
 		QList<QImage> layerFrames = layer->imageFrames(rendered);
 		for(int i = 0; i < layerFrames.length(); i++){
 			QPainter painter(&images[i]);
+			painter.setCompositionMode(static_cast<QPainter::CompositionMode>(layer->mode()));
+
 			painter.drawImage(images[i].rect(), layerFrames[i], layerFrames[i].rect());
 		}
 	}

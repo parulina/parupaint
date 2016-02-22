@@ -345,7 +345,7 @@ bool ParupaintPanvasInputOutput::loadPPA(ParupaintPanvas * panvas, const QString
 				framenum = fk.section('-', 0, 0).toInt();
 			}
 
-			const QString fname(QString("%1/%2.png").arg(lk, fk));
+			const QString fname(QString("%1/%2.png").arg(lk.toInt()).arg(fk));
 			const KArchiveFile * img_file = dynamic_cast<const KArchiveFile*>(topdir->entry(fname));
 			if(!img_file) continue;
 
