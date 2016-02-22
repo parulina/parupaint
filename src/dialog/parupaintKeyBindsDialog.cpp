@@ -57,6 +57,8 @@ ParupaintKeyBindsDialog::ParupaintKeyBindsDialog(ParupaintKeys *keys, QWidget * 
 				form_layout = nullptr;
 			}
 		}
+		// add the remaining one
+		h_layout->addLayout(form_layout);
 
 	QVBoxLayout * v_layout = new QVBoxLayout;
 	v_layout->setSizeConstraint(QLayout::SetFixedSize);
