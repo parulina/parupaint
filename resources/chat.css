@@ -6,13 +6,12 @@ h3 {
 }
 
 .chat-entry {
-	font-size:15px;
 	margin-top:1px;
 	color:white;
 	background:rgba(0, 0, 0, 0.6);
 }
 .chat-user, .chat-message {
-	font-size:13px;
+	font-size:16px;
 	margin-bottom:4px;
 }
 .msg-highlight {
@@ -30,9 +29,11 @@ h3 {
 	height:10px;
 }
 .about, .mini-tutorial {
-	font-size:16px;
 	color:#DCA
 }
+.about { font-size:16px; }
+.mini-tutorial { font-size:14px; }
+
 span.notice {
 	color:white;
 }

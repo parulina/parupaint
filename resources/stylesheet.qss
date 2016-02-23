@@ -2,11 +2,13 @@ QDialog {
 	border:6px solid #f2ae99;
 	color:#000;
 }
+QLabel,QCheckbox,QPushButton {
+	font-family:"parufont";
+	font-size:16px;
+}
 
 QLabel{
 	color:black;
-	font-size:15px;
-	font-family:"parufont";
 }
 QLineEdit,
 QComboBox {
@@ -14,7 +16,7 @@ QComboBox {
 	border:1px solid #333;
 	background:black;
 	color:white;
-	font-size:14px;
+	font-size:16px;
 }
 QListView {
 	border:none;
@@ -46,7 +48,6 @@ QPushButton {
 	margin:0;
 	color:white;
 	background:#8a2f1d;
-	font-family:"parufont";
 }
 QPushButton:flat {
 	background:transparent;
@@ -59,7 +60,7 @@ QPushButton:flat:hover {
 }
 QCheckBox {
 	background:transparent;
-	font-family:"parufont";
+	color:black;
 }
 QCheckBox::indicator{
 }
@@ -116,7 +117,6 @@ ParupaintChat {
 	margin:0;
 	padding:0;
 	color:black;
-	font-family:Monospace;
 }
 
 ParupaintChatInput {
@@ -124,8 +124,8 @@ ParupaintChatInput {
 	color:black;
 
 	border:none;
-	font-size:13px;
-	height:14px;
+	font-size:16px;
+	height:20px;
 }
 ParupaintChatInput:focus {
 	background:black;
