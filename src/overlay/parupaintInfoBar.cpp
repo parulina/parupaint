@@ -13,7 +13,6 @@ QString stylesheet = "";
 
 ParupaintInfoBarText::ParupaintInfoBarText(QWidget * parent) : QTextBrowser(parent)
 {
-	this->setAutoFillBackground(false);
 	this->document()->setDocumentMargin(2);
 	this->document()->setDefaultStyleSheet(stylesheet);
 	this->setFocusPolicy(Qt::ClickFocus);
@@ -38,7 +37,6 @@ QSize ParupaintInfoBarText::minimumSizeHint() const
 
 ParupaintInfoBarTutorial::ParupaintInfoBarTutorial(QWidget * parent) : QTextBrowser(parent)
 {
-	this->setAutoFillBackground(false);
 	this->document()->setDocumentMargin(2);
 	this->document()->setDefaultStyleSheet(stylesheet);
 	this->setFocusPolicy(Qt::ClickFocus);
@@ -66,12 +64,11 @@ QSize ParupaintInfoBarTutorial::minimumSizeHint() const
 
 ParupaintInfoBarStatus::ParupaintInfoBarStatus(QWidget * parent) : QTextBrowser(parent)
 {
-	this->setAutoFillBackground(false);
-	this->document()->setDocumentMargin(10);
+	this->document()->setDocumentMargin(3);
 	this->document()->setDefaultStyleSheet(stylesheet);
 	this->setFixedHeight(30);
 	this->setOpenLinks(false);
-	this->setContentsMargins(0, 0, 0, 0);
+	this->setContentsMargins(10, 0, 0, 0);
 
 	this->setFocusPolicy(Qt::ClickFocus); // NoFocus
 	this->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
@@ -82,9 +79,7 @@ void ParupaintInfoBarStatus::updateTitle()
 	this->setHtml(QString(
 		"<p class=\"titletext\">"
 			"<a href=\"#f1_notice\">(help: F1)</a>  "
-			"<a href=\"#connected\">connected to " + (connected_to == "localhost" ? "yourself" : connected_to) + "</a>  "
-			"<a href=\"#dimensions\">&lt;" + dimensions + "&gt;</a>  "
-			"<span href=\"#layerframe\">{" + layerframe + "}</span>"
+			"<a href=\"#connected\">connected to " + (connected_to == "localhost" ? "yourself" : connected_to) + "</a> "
 		"</p>"
 	));
 }
@@ -93,19 +88,9 @@ void ParupaintInfoBarStatus::setConnectedTo(const QString & con)
 	connected_to = con;
 	this->updateTitle();
 }
-void ParupaintInfoBarStatus::setDimensions(const QSize & size)
-{
-	dimensions = QString("%1 x %2").arg(QString::number(size.width()), QString::number(size.height()));
-	this->updateTitle();
-}
-void ParupaintInfoBarStatus::setLayerFrame(int layer, int frame)
-{
-	layerframe = QString("%1 : %2").arg(QString::number(layer + 1), QString::number(frame + 1));
-	this->updateTitle();
-}
 
 // InfoBar
-ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QWidget(parent)
+ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QFrame(parent)
 {
 	this->setFocusPolicy(Qt::NoFocus);
 

@@ -62,6 +62,9 @@ Q_OBJECT
 	void doLayerVisibility(int l, bool visible);
 	void doLayerName(int l, const QString & name);
 	void doLayerMode(int l, int mode);
+	void doProjectName(const QString & name);
+	void doProjectFramerate(const qreal framerate);
+	void doProjectBackgroundColor(const QColor & color);
 
 	void doLoadLocal(const QString & filename);
 	void doLoad(const QString & filename);

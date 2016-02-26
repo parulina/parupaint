@@ -11,7 +11,8 @@ QLabel{
 	color:black;
 }
 QLineEdit,
-QComboBox {
+QComboBox,
+QSpinBox, QDoubleSpinBox {
 	padding:4px 0;
 	border:1px solid #333;
 	background:black;
@@ -75,26 +76,18 @@ ParupaintCanvasView {
 	background:rgb(200, 200, 200);
 	color:white;
 }
-QDialog, ParupaintFlayer{
+QDialog,
+ParupaintFlayer,
+ParupaintProjectInfo{
 	background:rgb(200, 180, 128);
 }
 ParupaintScrollBar::handle:hover { background:#de9a3c; }
-QLineEdit, QTextEdit, QLabel {
+
+QLineEdit, QTextEdit, QLabel, QComboBox, QSpinBox, QDoubleSpinBox {
 	selection-background-color:#de9a3c;
 	selection-color:black;
 }
 
-
-
-ParupaintFlayer,
-ParupaintColorPicker,
-ParupaintChat {
-	border:1px solid rgba(0, 0, 0, 0.4);
-}
-ParupaintFlayer { border-left:none; border-right:none; border-bottom:none; }
-ParupaintChat, ParupaintColorPicker { border-top:none; }
-ParupaintChat { border-right:none; }
-ParupaintColorPicker { border-left:none; }
 
 
 ParupaintInfoBar ParupaintInfoBarText,
@@ -121,9 +114,8 @@ ParupaintChat {
 
 ParupaintChatInput {
 	background:transparent;
+	border:1px solid rgba(0, 0, 0, 0.4);
 	color:black;
-
-	border:none;
 	font-size:16px;
 	height:20px;
 }
@@ -154,6 +146,17 @@ ParupaintScrollBar::sub-line {
 ParupaintScrollBar::up-arrow, 
 ParupaintScrollBar::down-arrow {
 	background:none;
+}
+
+
+
+ParupaintProjectInfo {
+}
+
+ParupaintProjectInfo #ProjectQuickInfo{
+	color:black;
+	text-decoration:underline;
+	text-align:center;
 }
 
 

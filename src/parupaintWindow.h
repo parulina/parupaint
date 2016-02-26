@@ -15,6 +15,7 @@ class ParupaintClientInstance;
 class ParupaintBrushGlass;
 
 class ParupaintChat;
+class ParupaintProjectInfo;
 class ParupaintFlayer;
 class ParupaintColorPicker;
 class ParupaintInfoBar;
@@ -52,7 +53,6 @@ Q_OBJECT
 	QTimer * 	overlay_timeout;
 	QTimer * 	overlay_button_timeout;
 
-	QPointF 	view_pos;
 	QPointF 	current_pen, origin_pen;
 	qreal 		origin_zoom;
 	QString 	local_server;
@@ -64,6 +64,7 @@ Q_OBJECT
 	ParupaintKeys *		key_shortcuts;
 
 	ParupaintChat *		chat;
+	ParupaintProjectInfo * 	project_info;
 	ParupaintFlayer * 	flayer;
 	ParupaintColorPicker * 	picker;
 	ParupaintInfoBar * 	infobar;

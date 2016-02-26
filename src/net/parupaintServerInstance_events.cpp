@@ -493,14 +493,21 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 			}
 		} else if(id == "info") {
 			if(brushes.find(c) == brushes.end()) return;
-			if(true) return; // disable this for the time being
 
 			foreach(const QString & key, obj.keys()){
-				const QVariant val = obj[key].toVariant();
+				QVariant val = obj[key].toVariant();
 				if(key == "sessionpw"){
 					this->setPassword(val.toString());
+					obj_copy.remove("sessionpw");
+					continue;
 				}
+				if(key == "project-bgc" && val.type() == QVariant::String) val = QColor(val.toString());
+				ParupaintCommonOperations::CanvasAttributeOp(canvas, key, val);
 			}
+			// send obj_copy so that password isn't sent to everyone
+			this->sendAll("info", obj_copy);
+
+
 		} else if(id == "play") {
 			if(brushes.find(c) == brushes.end()) return;
 

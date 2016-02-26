@@ -32,12 +32,10 @@ Q_OBJECT
 	public:
 	ParupaintInfoBarStatus(QWidget * = nullptr);
 	void setConnectedTo(const QString &);
-	void setDimensions(const QSize &);
-	void setLayerFrame(int layer, int frame);
 	void updateTitle();
 };
 
-class ParupaintInfoBar : public QWidget
+class ParupaintInfoBar : public QFrame
 {
 Q_OBJECT
 	QString current_title;

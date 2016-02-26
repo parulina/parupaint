@@ -30,6 +30,7 @@ Q_OBJECT
 
 	signals:
 	void onCanvasResize(const QSize &);
+	void onCanvasBackgroundChange();
 	void onCanvasChange();
 	void onCanvasContentChange();
 
@@ -61,6 +62,7 @@ Q_OBJECT
 	void setBackgroundColor(const QColor);
 
 	const QString & projectName() const;
+	const QString projectDisplayName() const;
 	qreal frameRate() const;
 	QColor backgroundColor() const;
 	const QSize & dimensions() const;

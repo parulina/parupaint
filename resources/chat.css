@@ -8,21 +8,26 @@ h3 {
 .chat-entry {
 	margin-top:1px;
 	color:white;
-	background:rgba(0, 0, 0, 0.6);
 }
-.chat-user, .chat-message {
+.chat-user, .chat-message, .chat-time {
 	font-size:16px;
 	margin-bottom:4px;
+	background-color:rgba(0, 0, 0, 0.6);
 }
+
 .msg-highlight {
 	font-size:16px;
 }
+.chat-time {
+	color:#CCC;
+	font-size:12px;
+}
 .chat-user {
-	background-color:#B1A087;
+	color:#BA7;
 }
 .chat-message {
-	background-color:transparent;
 }
+
 
 .about > a, .mini-tutorial > a {
 	margin:0;
@@ -31,7 +36,7 @@ h3 {
 .about, .mini-tutorial {
 	color:#DCA
 }
-.about { font-size:16px; }
+.about { font-size:15px; }
 .mini-tutorial { font-size:14px; }
 
 span.notice {
@@ -43,12 +48,12 @@ span.notice {
 
 
 .titletext {
+	font-size:16px;
 	vertical-align:bottom;
 }
 .titletext, .titletext a {
 	color:white;
 	text-decoration:none;
-	font-size:16px;
 	outline:none;
 }
 

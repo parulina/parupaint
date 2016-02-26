@@ -39,7 +39,9 @@ Q_OBJECT
 	protected:
 	void mouseMoveEvent(QMouseEvent * );
 	void mouseReleaseEvent(QMouseEvent * );
+
 	QSize minimumSizeHint() const;
+	QSize sizeHint() const;
 };
 
 #endif

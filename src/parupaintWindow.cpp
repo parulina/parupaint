@@ -31,6 +31,7 @@
 #include "core/parupaintFrame.h"
 
 #include "overlay/parupaintChat.h"
+#include "overlay/parupaintProjectInfo.h"
 #include "overlay/parupaintFlayer.h"
 #include "overlay/parupaintColorPicker.h"
 #include "overlay/parupaintNetJoinPrompt.h"
@@ -109,8 +110,10 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	brushes->loadBrushes();
 	brushes->saveBrushes();
 
+	QWidget * central_widget = new QWidget(this);
+
 	// create view and scene
-	view = new ParupaintCanvasView(this);
+	view = new ParupaintCanvasView(central_widget);
 	view->setScene((scene = new ParupaintCanvasScene(view)));
 
 	// parupaintWindow_pen.cpp
@@ -132,6 +135,7 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 
 	chat = 		new ParupaintChat(this);
 	picker = 	new ParupaintColorPicker(this);
+	project_info = 	new ParupaintProjectInfo(this);
 	flayer = 	new ParupaintFlayer(this);
 	infobar =	new ParupaintInfoBar(this);
 	netjoin =	new ParupaintNetJoinPrompt(this);
@@ -163,7 +167,6 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 
 
 	connect(scene->canvas(), &ParupaintVisualCanvas::onCurrentLayerFrameChange, flayer, &ParupaintFlayer::setHighlightLayerFrame);
-	connect(scene->canvas(), &ParupaintVisualCanvas::onCurrentLayerFrameChange, infobar->status(), &ParupaintInfoBarStatus::setLayerFrame);
 	connect(scene->canvas(), &ParupaintVisualCanvas::onCurrentLayerFrameChange, [&](int l, int f){
 		ParupaintBrush * brush = this->brushes->brush();
 		brush->setLayerFrame(l, f);
@@ -171,9 +174,11 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	});
 
 	// canvas content -> flayer content
+	connect(scene->canvas(), &ParupaintPanvas::onCanvasChange, project_info, &ParupaintProjectInfo::updateCanvasSlot);
+	connect(scene->canvas(), &ParupaintPanvas::onCanvasContentChange, project_info, &ParupaintProjectInfo::updateCanvasSlot);
+
 	connect(scene->canvas(), &ParupaintPanvas::onCanvasChange, flayer, &ParupaintFlayer::updateCanvasSlot);
 	connect(scene->canvas(), &ParupaintPanvas::onCanvasContentChange, flayer, &ParupaintFlayer::reloadCanvasSlot);
-	connect(scene->canvas(), &ParupaintVisualCanvas::onCanvasResize, infobar->status(), &ParupaintInfoBarStatus::setDimensions);
 
 	// chat message -> chat message
 	connect(chat, &ParupaintChat::Message, this, &ParupaintWindow::doChat);
@@ -184,6 +189,11 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 
 	// visual brush -> color picker
 	connect(scene->mainCursor(), &ParupaintBrush::onColorChange, picker, &ParupaintColorPicker::color_change);
+
+	// project -> canvas
+	connect(project_info, &ParupaintProjectInfo::projectNameChanged, client, &ParupaintClientInstance::doProjectName);
+	connect(project_info, &ParupaintProjectInfo::frameRateChanged, client, &ParupaintClientInstance::doProjectFramerate);
+	connect(project_info, &ParupaintProjectInfo::backgroundColorChanged, client, &ParupaintClientInstance::doProjectBackgroundColor);
 
 
 	connect(infobar, &ParupaintInfoBar::onStatusClick, [&](const QUrl & url){
@@ -199,13 +209,32 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 		}
 	});
 
-	// set a nice layout to the window, infobar and view
-	QWidget * central_widget = new QWidget(this);
-		QVBoxLayout * main_layout = new QVBoxLayout;
-			main_layout->addWidget(infobar, 0, Qt::AlignBottom);
-			main_layout->addWidget(view, 1);
-			main_layout->addWidget(flayer, 0, Qt::AlignBottom);
-		central_widget->setLayout(main_layout);
+	// set up the overlay layout
+	QVBoxLayout * main_layout = new QVBoxLayout;
+		main_layout->setMargin(0);
+		main_layout->setSpacing(0);
+		main_layout->setContentsMargins(0, 0, 18, 18);
+
+		main_layout->addWidget(infobar, 0, Qt::AlignTop);
+
+			QHBoxLayout * tophalf_layout = new QHBoxLayout;
+				tophalf_layout->addWidget(picker, 0, Qt::AlignLeft);
+				main_layout->addLayout(tophalf_layout);
+
+		main_layout->addStretch(1);
+
+		QHBoxLayout * bottomhalf_layout = new QHBoxLayout;
+			bottomhalf_layout->setMargin(2);
+			bottomhalf_layout->addWidget(chat);
+			bottomhalf_layout->addStretch(0);
+			bottomhalf_layout->addWidget(netjoin, 0, Qt::AlignBottom);
+			main_layout->addLayout(bottomhalf_layout);
+
+		QHBoxLayout * bottom_layout = new QHBoxLayout;
+			bottom_layout->addWidget(project_info, 0, Qt::AlignTop);
+			bottom_layout->addWidget(flayer, 1, Qt::AlignBottom);
+			main_layout->addLayout(bottom_layout);
+	central_widget->setLayout(main_layout);
 	this->setCentralWidget(central_widget);
 
 
@@ -306,6 +335,7 @@ void ParupaintWindow::showOverlay(overlayStates state)
 
 	chat->show();
 	flayer->show();
+	project_info->show();
 	picker->show();
 
 	this->updateOverlay();
@@ -324,6 +354,7 @@ void ParupaintWindow::hideOverlay()
 
 		if(widgetContainsCursor(chat) ||
 		   widgetContainsCursor(picker) ||
+		   widgetContainsCursor(project_info) ||
 		   widgetContainsCursor(flayer)) {
 			return;
 		}
@@ -333,6 +364,7 @@ void ParupaintWindow::hideOverlay()
 	if(!chat->hasFocus())
 		chat->hide();
 	picker->hide();
+	project_info->hide();
 	flayer->hide();
 
 	overlay_state = overlayHiddenState;
@@ -340,22 +372,14 @@ void ParupaintWindow::hideOverlay()
 }
 void ParupaintWindow::updateOverlay()
 {
-	if(view_pos.isNull()) view_pos = view->pos();
-	if(view->pos() != view_pos){
+	bool expanded = (overlay_state == overlayExpandedState);
+	infobar->setMaximumHeight(expanded ? 200 : 30);
+	project_info->setMaximumHeight(expanded ? 200 : 30);
+	flayer->setMaximumHeight(expanded ? 200 : 30);
 
-		QPointF diff = view->pos() - view_pos;
-		view->moveView(diff);
-		view_pos = view->pos();
-	}
-
-	infobar->setFixedHeight(overlay_state == overlayExpandedState ? 180 : 30);
-	const QRect inner_size = QRect(view->pos(), view->viewport()->size()).adjusted(1, 1, 1, 1);
-
-	picker->move(inner_size.topLeft());
-	chat->move(inner_size.topRight() - QPoint(chat->width(), 0));
-
-	netjoin->move(QPoint(inner_size.left(), inner_size.bottom() - netjoin->height()));
+	/* FIXME
 	netlist->move(inner_size.topLeft() + QPoint(0, picker->height()));
+	*/
 }
 
 void ParupaintWindow::keyReleaseEvent(QKeyEvent * event)
@@ -698,6 +722,7 @@ void ParupaintWindow::closeEvent(QCloseEvent *)
 void ParupaintWindow::resizeEvent(QResizeEvent* event)
 {
 	this->updateOverlay();
+	view->setGeometry(this->contentsRect());
 	QMainWindow::resizeEvent(event);
 }
 

@@ -52,6 +52,11 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		if(object["password"].isBool()){
 			remote_password = object["password"].toBool(false);
 		}
+		foreach(const QString & key, object.keys()){
+			QVariant val = object[key].toVariant();
+			if(key == "project-bgc" && val.type() == QVariant::String) val = QColor(val.toString());
+			ParupaintCommonOperations::CanvasAttributeOp(pool->canvas(), key, val);
+		}
 
 	} else if(id == "brush"){
 		int c = object["id"].toInt();
@@ -67,7 +72,6 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 				brush = new ParupaintVisualCursor;
 				pool->addCursor(brush);
 				brushes[c] = brush;
-				qDebug() << "add brush" << object;
 			} else if(brush) {
 				brush = brushes.take(c);
 				pool->removeCursor(brush);

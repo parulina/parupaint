@@ -10,6 +10,7 @@ class ParupaintCommonOperations
 {
 	public:
 	// canvas
+	static bool CanvasAttributeOp(ParupaintPanvas * canvas, const QString & attr, const QVariant & val);
 	static bool CanvasResizeOp(ParupaintPanvas * canvas, int w, int h, bool resize = true);
 	static bool LayerFramePasteOp(ParupaintPanvas * canvas, int l, int f, int x, int y, const QImage & img);
 	static bool LayerFrameFillOp(ParupaintPanvas * canvas, int l, int f, const QColor & color);

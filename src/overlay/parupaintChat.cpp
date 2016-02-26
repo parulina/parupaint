@@ -9,15 +9,13 @@
 #include <QSizePolicy>
 #include <QDebug>
 
+#include "../widget/parupaintScrollBar.h"
+
 ParupaintChat::ParupaintChat(QWidget * parent) : QFrame(parent)
 {
 	this->setFocusPolicy(Qt::ClickFocus);
 	this->resize(400, 200);
 
-	auto * layout = new QVBoxLayout(this);
-	layout->setSpacing(0);
-	layout->setMargin(0);
-	
 	chat = new ParupaintChatContent(this);
 
 	line = new ParupaintChatInput(this);
@@ -50,11 +48,25 @@ ParupaintChat::ParupaintChat(QWidget * parent) : QFrame(parent)
 	connect(chat, &ParupaintChatContent::focusOut, this, &ParupaintChat::chatOutFocus);
 
 
-	layout->addWidget(chat);
-	layout->addWidget(line);
+	ParupaintScrollBar * vsb = new ParupaintScrollBar(Qt::Vertical, chat);
+	vsb->setRange(0, 0);
+	vsb->setFixedHeight(this->height() - line->height());
+	connect(chat->verticalScrollBar(), &QScrollBar::rangeChanged, vsb, &QScrollBar::setRange);
+	connect(vsb, &QScrollBar::valueChanged, chat->verticalScrollBar(), &QScrollBar::setValue);
+	connect(chat->verticalScrollBar(), &QScrollBar::valueChanged, vsb, &QScrollBar::setValue);
+
+	QVBoxLayout * layout = new QVBoxLayout(this);
+	layout->setSpacing(0);
+	layout->setMargin(0);
+		QHBoxLayout * content_layout = new QHBoxLayout;
+			content_layout->addWidget(vsb, 0, Qt::AlignLeft);
+			content_layout->addWidget(chat, 1, Qt::AlignBottom);
+		layout->addLayout(content_layout, 1);
+
+		layout->addWidget(line, 0);
+	this->setLayout(layout);
 
 	this->setFocusProxy(line);
-	this->setLayout(layout);
 
 	this->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 }

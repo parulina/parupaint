@@ -6,6 +6,27 @@
 #include "parupaintPanvas.h"
 #include "parupaintBrush.h"
 
+// set canvas attributes
+bool ParupaintCommonOperations::CanvasAttributeOp(ParupaintPanvas * canvas, const QString & attr, const QVariant & val)
+{
+	Q_ASSERT(canvas);
+
+	if(attr == "project-name" && val.type() == QVariant::String){
+		canvas->setProjectName(val.toString());
+		return true;
+	}
+	if(attr == "project-fps" && val.type() == QVariant::Double){
+		canvas->setFrameRate(val.toDouble());
+		return true;
+	}
+	if(attr == "project-bgc" && val.type() == QVariant::Color){
+		canvas->setBackgroundColor(val.value<QColor>());
+		return true;
+	}
+
+	return false;
+}
+
 // resize the canvas
 bool ParupaintCommonOperations::CanvasResizeOp(ParupaintPanvas * canvas, int w, int h, bool resize)
 {

@@ -27,6 +27,7 @@ ParupaintVisualCanvas::ParupaintVisualCanvas(QGraphicsItem * parent) :
 
 
 	this->connect(this, &ParupaintPanvas::onCanvasResize, this, &ParupaintVisualCanvas::newCache);
+	this->connect(this, &ParupaintPanvas::onCanvasBackgroundChange, this, &ParupaintVisualCanvas::timeoutRedraw);
 
 	this->setFlag(QGraphicsItem::ItemUsesExtendedStyleOption);
 }

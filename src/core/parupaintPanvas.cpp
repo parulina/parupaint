@@ -202,20 +202,32 @@ QImage ParupaintPanvas::mergedImage(bool rendered)
 
 void ParupaintPanvas::setProjectName(const QString & name)
 {
+	if(this->info.name == name) return;
+
 	this->info.name = name;
 	emit onCanvasChange();
 }
 void ParupaintPanvas::setFrameRate(qreal framerate)
 {
+	if(this->info.framerate == framerate) return;
+
 	this->info.framerate = framerate;
 	emit onCanvasChange();
 }
 
 void ParupaintPanvas::setBackgroundColor(const QColor color)
 {
+	if(this->info.background_color == color) return;
+
 	this->info.background_color = color;
+	emit onCanvasChange();
+	emit onCanvasBackgroundChange();
 }
 
+const QString ParupaintPanvas::projectDisplayName() const
+{
+	return this->projectName().isEmpty() ? "Unnamed" : this->projectName();
+}
 const QString & ParupaintPanvas::projectName() const
 {
 	return this->info.name;

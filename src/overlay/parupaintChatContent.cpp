@@ -9,17 +9,25 @@
 #include <QDebug>
 #include <QDateTime>
 #include <QTextCursor>
+#include <QAbstractTextDocumentLayout>
+#include <QHBoxLayout>
 #include <QFileDialog>
-
-#include "../widget/parupaintScrollBar.h"
+#include <QScrollBar>
+#include <QDateTime>
 
 ParupaintChatContent::ParupaintChatContent(QWidget * parent) : QTextBrowser(parent)
 {
 	this->setFocusPolicy(Qt::ClickFocus);
 	this->setStyleSheet("margin:0; padding:0; border:none; background:transparent;");
-	this->setVerticalScrollBar(new ParupaintScrollBar(Qt::Vertical, this));
+
+	this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	this->document()->setDocumentMargin(0);
+
+	connect(this->document()->documentLayout(), &QAbstractTextDocumentLayout::documentSizeChanged,
+	[this](const QSizeF & newsize){
+		this->setMaximumHeight(newsize.height());
+	});
 
 	QFile file(":resources/chat.css");
 	file.open(QFile::ReadOnly);
@@ -30,16 +38,19 @@ ParupaintChatContent::ParupaintChatContent(QWidget * parent) : QTextBrowser(pare
 		QDesktopServices::openUrl(url);
 	});
 	
-	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::MinimumExpanding);
 }
 
 void ParupaintChatContent::AddMessage(QString msg, QString who)
 {
 	// if it's a system message, don't escape
 	// TODO make sure you can't join without a valid name
-	QString str = "<span class=\"chat-message\">" + (who.isEmpty() ? msg : " " + msg.toHtmlEscaped()) + "</span>";
+	QString str = "<span class=\"chat-message\">" + (who.isEmpty() ? msg : (" " + msg.toHtmlEscaped() + " ")) + "</span>";
 	if(!who.isEmpty()){
 		str.prepend("<span class=\"chat-user\">" + who.toHtmlEscaped() + ":</span>");
+
+		QString time = QDateTime::currentDateTime().toString("HH:mm ");
+		str.prepend("<span class=\"chat-time\">" + time + "</span>");
 	}
 	this->AddChatMessage(str);
 }

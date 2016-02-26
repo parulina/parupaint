@@ -234,6 +234,19 @@ void ParupaintClientInstance::doLayerMode(int l, int mode)
 	this->doLayerFrameAttribute(l, 0, "layer-mode", mode);
 }
 
+void ParupaintClientInstance::doProjectName(const QString & name)
+{
+	this->doInfo("project-name", name);
+}
+void ParupaintClientInstance::doProjectFramerate(const qreal framerate)
+{
+	this->doInfo("project-fps", framerate);
+}
+void ParupaintClientInstance::doProjectBackgroundColor(const QColor & color)
+{
+	this->doInfo("project-bgc", color);
+}
+
 
 void ParupaintClientInstance::doLoadLocal(const QString & filename)
 {

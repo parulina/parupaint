@@ -171,3 +171,8 @@ QSize ParupaintFlayer::minimumSizeHint() const
 {
 	return QSize(200, 20);
 }
+
+QSize ParupaintFlayer::sizeHint() const
+{
+	return QSize(800, 200);
+}
