@@ -71,7 +71,11 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * 
 	QBrush pen_brush(color);
 	pen.setCapStyle(Qt::RoundCap);
 	pen.setWidthF(size);
-	pen.setMiterLimit((s1 > -1) ? s1 : size);
+	pen.setMiterLimit(size);
+
+	if(brush->tool() != ParupaintBrushToolTypes::BrushToolLine){
+		pen.setMiterLimit((s1 > -1) ? s1 : size);
+	}
 
 	switch(brush->tool()){
 		case ParupaintBrushToolTypes::BrushToolDotShadingPattern: {
