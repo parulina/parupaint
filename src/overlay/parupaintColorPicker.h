@@ -24,7 +24,6 @@ Q_OBJECT
 
 	QColor preview_color;
 	void paintEvent(QPaintEvent*);
-	void keyPressEvent(QKeyEvent*);
 
 	public:
 	ParupaintColorPicker(QWidget * parent = nullptr);

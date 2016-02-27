@@ -93,6 +93,7 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 
 		"pick_layer_color=R",
 		"pick_canvas_color=Shift+R",
+		"color_picker=C",
 
 		"tool_fill=Q",
 		"tool_opacity=Shift+Q",
@@ -122,9 +123,6 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	connect(view, &ParupaintCanvasView::pointerRelease, this, &ParupaintWindow::OnPenRelease);
 	connect(view, &ParupaintCanvasView::pointerPointer, this, &ParupaintWindow::OnPenPointer);
 	connect(view, &ParupaintCanvasView::pointerScroll, this, &ParupaintWindow::OnPenScroll);
-
-	// update the overlay items with the viewport change
-	connect(view, &ParupaintCanvasView::viewportChange, this, &ParupaintWindow::updateOverlay);
 
 	// create the client and connect it
 	client = new ParupaintClientInstance(scene, this);
@@ -217,9 +215,9 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 
 		main_layout->addWidget(infobar, 0, Qt::AlignTop);
 
-			QHBoxLayout * tophalf_layout = new QHBoxLayout;
-				tophalf_layout->addWidget(picker, 0, Qt::AlignLeft);
-				main_layout->addLayout(tophalf_layout);
+		QHBoxLayout * tophalf_layout = new QHBoxLayout;
+			//tophalf_layout->addWidget(picker, 0, Qt::AlignLeft);
+			main_layout->addLayout(tophalf_layout);
 
 		main_layout->addStretch(1);
 
@@ -236,7 +234,6 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 			main_layout->addLayout(bottom_layout);
 	central_widget->setLayout(main_layout);
 	this->setCentralWidget(central_widget);
-
 
 	// set up some overlay keybinds
 	overlay_timeout = new QTimer(this);
@@ -373,9 +370,12 @@ void ParupaintWindow::hideOverlay()
 void ParupaintWindow::updateOverlay()
 {
 	bool expanded = (overlay_state == overlayExpandedState);
-	infobar->setMaximumHeight(expanded ? 200 : 30);
+
+	infobar->setFixedHeight(expanded ? 170 : 0);
 	project_info->setMaximumHeight(expanded ? 200 : 30);
 	flayer->setMaximumHeight(expanded ? 200 : 30);
+
+	picker->move(infobar->geometry().bottomLeft());
 
 	/* FIXME
 	netlist->move(inner_size.topLeft() + QPoint(0, picker->height()));
@@ -457,6 +457,15 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			view->showToast("reloaded image", 2000);
 			client->doReloadImage();
 
+		} else if(shortcut_name == "color_picker"){
+			if(picker->isVisible()){
+				picker->hide();
+				updateOverlay();
+			} else {
+				picker->show();
+				QPoint pos = this->mapFromGlobal(QCursor::pos());
+				picker->setGeometry(QRect(pos, picker->size()));
+			}
 		} else if(shortcut_name == "copy"){
 			if(view->hasFocus()){
 				if(scene->canvas()->hasPastePreview())

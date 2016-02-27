@@ -202,9 +202,6 @@ void ParupaintCanvasView::showEvent(QShowEvent * event)
 
 bool ParupaintCanvasView::viewportEvent(QEvent * event)
 {
-	if(event->type() == QEvent::Resize){
-		emit viewportChange();
-	}
 	if(event->type() == QEvent::TabletMove ||
 	   event->type() == QEvent::TabletPress ||
 	   event->type() == QEvent::TabletRelease) {

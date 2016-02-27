@@ -43,7 +43,6 @@ Q_OBJECT
 
 	signals:
 	void zoomChange(qreal);
-	void viewportChange();
 	void pixelGridChange(bool);
 
 	void pointerRelease(const penInfo & info);

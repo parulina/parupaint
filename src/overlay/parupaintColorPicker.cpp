@@ -109,11 +109,6 @@ void ParupaintColorPicker::color_change(QColor color)
 	this->blockSignals(signals_blocked);
 }
 
-void ParupaintColorPicker::keyPressEvent(QKeyEvent*e)
-{
-	e->ignore();
-}
-
 void ParupaintColorPicker::paintEvent(QPaintEvent* event)
 {
 	// draw current color in the middle
