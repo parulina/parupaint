@@ -35,7 +35,7 @@
 #include "overlay/parupaintFlayer.h"
 #include "overlay/parupaintColorPicker.h"
 #include "overlay/parupaintNetJoinPrompt.h"
-#include "overlay/parupaintNetPlayerList.h"
+#include "overlay/parupaintNetServerInfo.h"
 #include "overlay/parupaintInfoBar.h"
 
 
@@ -137,7 +137,7 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	flayer = 	new ParupaintFlayer(this);
 	infobar =	new ParupaintInfoBar(this);
 	netjoin =	new ParupaintNetJoinPrompt(this);
-	netlist = 	new ParupaintNetPlayerList(this);
+	netinfo = 	new ParupaintNetServerInfo(this);
 
 	connect(client, &ParupaintClientInstance::onConnect, netjoin, &QWidget::show);
 	connect(client, &ParupaintClientInstance::onDisconnect, netjoin, &QWidget::hide);
@@ -213,10 +213,10 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 		main_layout->setSpacing(0);
 		main_layout->setContentsMargins(0, 0, 18, 18);
 
-		main_layout->addWidget(infobar, 0, Qt::AlignTop);
-
 		QHBoxLayout * tophalf_layout = new QHBoxLayout;
-			//tophalf_layout->addWidget(picker, 0, Qt::AlignLeft);
+			tophalf_layout->addWidget(picker, 0, Qt::AlignLeft);
+			tophalf_layout->addWidget(infobar, 1, Qt::AlignTop);
+			tophalf_layout->addWidget(netinfo, 0, Qt::AlignRight);
 			main_layout->addLayout(tophalf_layout);
 
 		main_layout->addStretch(1);
@@ -330,10 +330,12 @@ void ParupaintWindow::showOverlay(overlayStates state)
 		overlay_timeout->start(cfg.value("client/tabtimeout", 1400).toInt());
 	}
 
+	infobar->show();
 	chat->show();
 	flayer->show();
 	project_info->show();
 	picker->show();
+	netinfo->show();
 
 	this->updateOverlay();
 }
@@ -360,9 +362,11 @@ void ParupaintWindow::hideOverlay()
 
 	if(!chat->hasFocus())
 		chat->hide();
+	infobar->hide();
 	picker->hide();
 	project_info->hide();
 	flayer->hide();
+	netinfo->hide();
 
 	overlay_state = overlayHiddenState;
 	this->updateOverlay();
@@ -371,15 +375,9 @@ void ParupaintWindow::updateOverlay()
 {
 	bool expanded = (overlay_state == overlayExpandedState);
 
-	infobar->setFixedHeight(expanded ? 170 : 0);
+	infobar->setFixedHeight(expanded ? 170 : 30);
 	project_info->setMaximumHeight(expanded ? 200 : 30);
 	flayer->setMaximumHeight(expanded ? 200 : 30);
-
-	picker->move(infobar->geometry().bottomLeft());
-
-	/* FIXME
-	netlist->move(inner_size.topLeft() + QPoint(0, picker->height()));
-	*/
 }
 
 void ParupaintWindow::keyReleaseEvent(QKeyEvent * event)

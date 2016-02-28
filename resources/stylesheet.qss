@@ -77,8 +77,8 @@ ParupaintCanvasView {
 	color:white;
 }
 QDialog,
-ParupaintFlayer,
-ParupaintProjectInfo{
+ParupaintProjectInfo, ParupaintFlayer,
+ParupaintNetServerInfo {
 	background:rgb(200, 180, 128);
 }
 ParupaintScrollBar::handle:hover { background:#de9a3c; }
@@ -104,6 +104,8 @@ ParupaintInfoBar ParupaintInfoBarTutorial {
 ParupaintInfoBar ParupaintInfoBarStatus {
 }
 
+ParupaintNetServerInfo {
+}
 
 
 ParupaintChat {
