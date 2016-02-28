@@ -274,7 +274,7 @@ QJsonObject ParupaintPanvas::json() const
 	return QJsonObject{
 		{"canvasWidth", this->dimensions().width()},
 		{"canvasHeight", this->dimensions().height()},
-		{"backgroundColor", ParupaintSnippets::toHex(this->backgroundColor())},
+		{"backgroundColor", this->backgroundColor().name(QColor::HexArgb)},
 		{"frameRate", this->frameRate()},
 		{"projectName", this->projectName()},
 		{"layers", layers}
@@ -287,7 +287,7 @@ void ParupaintPanvas::loadJson(const QJsonObject & obj)
 	this->resize(QSize(obj.value("canvasWidth").toInt(180), obj.value("canvasHeight").toInt(180)));
 	this->setFrameRate(obj.value("frameRate").toDouble(12));
 	this->setProjectName(obj.value("projectName").toString());
-	this->setBackgroundColor(ParupaintSnippets::toColor(obj.value("backgroundColor").toString()));
+	this->setBackgroundColor(QColor(obj.value("backgroundColor").toString()));
 
 	QJsonObject layers = obj.value("layers").toObject();
 	foreach(const QString & lk, layers.keys()) {

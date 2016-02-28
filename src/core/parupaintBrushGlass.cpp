@@ -120,7 +120,7 @@ void ParupaintBrushGlass::loadBrushes()
 		QStringList val = cfg.value(key).toStringList();
 		if(val.size() != 3) continue;
 
-		QColor col = ParupaintSnippets::toColor(val[0]);
+		QColor col = QColor(val[0]);
 		qreal size = val[1].toDouble();
 		int tool = val[2].toInt();
 

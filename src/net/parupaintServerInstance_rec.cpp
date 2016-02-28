@@ -189,7 +189,7 @@ void ParupaintServerInstance::RecordLineDecoder(const QString & line, bool recov
 
 		} else if(id == "color" && ct == 1) {
 			QString col = str.takeFirst();
-			brushes[con]->setColor(ParupaintSnippets::toColor(col));
+			brushes[con]->setColor(QColor(col));
 			if(!recovery){
 				QJsonObject obj;
 				obj["id"] = b;

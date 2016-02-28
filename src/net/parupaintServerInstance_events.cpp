@@ -138,7 +138,7 @@ void ParupaintServerInstance::ServerLfc(int l, int f, int lc, int fc, bool e, bo
 }
 void ParupaintServerInstance::ServerFill(int l, int f, QString fill, bool propagate)
 {
-	QColor col = ParupaintSnippets::toColor(fill);
+	QColor col(fill);
 	if(!ParupaintCommonOperations::LayerFrameFillOp(canvas, l, f, col)) return;
 	if(record_manager) record_manager->Fill(l, f, fill);
 
@@ -336,7 +336,7 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 				if(obj["f"].isDouble()) map["f"] = obj["f"].toInt();
 				if(obj["d"].isBool())   map["d"] = obj["d"].toBool();
 
-				if(obj["c"].isString()) { map["c"] = ParupaintSnippets::toColor(obj["c"].toString());
+				if(obj["c"].isString()) { map["c"] = QColor(obj["c"].toString());
 					if(record_manager) record_manager->Color(c->id(), obj["c"].toString());
 				}
 				if(obj["s"].isDouble()) { map["s"] = obj["s"].toDouble();

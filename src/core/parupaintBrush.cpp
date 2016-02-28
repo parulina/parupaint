@@ -98,11 +98,7 @@ qreal ParupaintBrush::pressureSize() {
 	return brush_size * brush_pressure;
 }
 QString ParupaintBrush::colorString() {
-	return ("#"+ 
-		("0" + QString::number(brush_color.red(), 16)).right(2) + 
-		("0" + QString::number(brush_color.green(), 16)).right(2) + 
-		("0" + QString::number(brush_color.blue() , 16)).right(2) +
-		("0" + QString::number(brush_color.alpha(), 16)).right(2)).toUpper();
+	return this->brush_color.name(QColor::HexArgb);
 }
 
 QRectF ParupaintBrush::localRect()

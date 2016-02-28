@@ -7,8 +7,6 @@
 class ParupaintSnippets
 {
 	public:
-	static QColor toColor(const QString & hex);
-	static QString toHex(const QColor & col);
 	static QImage Base64GzipToImage(const QString & base64_image);
 	static QString ImageToBase64Gzip(const QImage & img);
 };

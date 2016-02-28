@@ -92,7 +92,7 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 			if(object["f"].isDouble()) map["f"] = object["f"].toInt();
 			if(object["t"].isDouble()) map["t"] = object["t"].toInt();
 			if(object["d"].isBool())   map["d"] = object["d"].toBool();
-			if(object["c"].isString()) map["c"] = ParupaintSnippets::toColor(object["c"].toString());
+			if(object["c"].isString()) map["c"] = QColor(object["c"].toString());
 
 			QLineF draw_line;
 			double old_size = brush->pressureSize();
@@ -127,7 +127,7 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		if(!object["c"].isString()) return;
 		int l = object["l"].toInt(),
 		    f = object["f"].toInt();
-		QColor c = ParupaintSnippets::toColor(object["c"].toString());
+		QColor c(object["c"].toString());
 
 		ParupaintCommonOperations::LayerFrameFillOp(pool->canvas(), l, f, c);
 		pool->canvas()->redraw();

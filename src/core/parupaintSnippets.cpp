@@ -1,3 +1,4 @@
+#include "parupaintSnippets.h"
 
 #include <QRegularExpression>
 #include <QBuffer>
@@ -5,28 +6,7 @@
 
 //TODO move qcompressor to src/ or src/bundled dir?
 #include "../bundled/qcompressor.h"
-#include "parupaintSnippets.h"
 
-QColor ParupaintSnippets::toColor(const QString & hex)
-{
-	QString h = hex;
-	h = h.remove('#');
-
-	const QString alpha = h.right((h.length() == 4 || h.length() == 8) ? (h.length() / 4) : 0);
-	QColor color(hex.left(hex.length() - alpha.length()));
-	if(!alpha.isEmpty()){
-		color.setAlpha(alpha.toInt(nullptr, 16));
-	}
-	return color;
-}
-QString ParupaintSnippets::toHex(const QColor & col)
-{
-	return ("#"+ 
-		("0" + QString::number(col.red(), 16)).right(2) +
-		("0" + QString::number(col.green(), 16)).right(2) +
-		("0" + QString::number(col.blue() , 16)).right(2) +
-		("0" + QString::number(col.alpha(), 16)).right(2)).toUpper();
-}
 QImage ParupaintSnippets::Base64GzipToImage(const QString & base64_image)
 {
 	QRegularExpression exp("^data:image/(png|jpg|jpeg|bmp);base64,");
