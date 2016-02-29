@@ -24,7 +24,8 @@ void ParupaintWindow::showOpenDialog()
 }
 void ParupaintWindow::showSaveAsDialog()
 {
-	ParupaintFileDialog * dialog = new ParupaintFileDialog(ParupaintFileDialogType::dialogTypeSaveAs, this);
+	ParupaintFileDialog * dialog = new ParupaintFileDialog(ParupaintFileDialogType::dialogTypeSaveAs, this, this->saveName());
+
 	connect(dialog, &ParupaintFileDialog::fileSelected, [&](const QString & file){
 		QFileInfo fi(this->doSaveAs(file));
 		this->addChatMessage("Saved as '<a href=\"file:///"+fi.absoluteFilePath()+"\">"+fi.fileName()+"</a>'.");

@@ -944,6 +944,13 @@ QDir ParupaintWindow::saveDir() const
 	qDebug() << "Save dir:" << dir.path();
 	return dir;
 }
+QString ParupaintWindow::saveName() const
+{
+	if(scene->canvas()->projectName().isEmpty())
+		return QString();
+	else
+		return scene->canvas()->projectName() + ".ppa";
+}
 
 
 void ParupaintWindow::setLocalServer(const QString & server)

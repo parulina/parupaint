@@ -86,7 +86,7 @@ QSize ParupaintFileDialogPreview::sizeHint() const
 }
 
 
-ParupaintFileDialog::ParupaintFileDialog(ParupaintFileDialogType type, QWidget * parent) : 
+ParupaintFileDialog::ParupaintFileDialog(ParupaintFileDialogType type, QWidget * parent, const QString & selectfile) : 
 	QFileDialog(parent, "browse...")
 {	
 	QSettings cfg;
@@ -113,19 +113,30 @@ ParupaintFileDialog::ParupaintFileDialog(ParupaintFileDialogType type, QWidget *
 	}
 	// set sidebar url
 
+	QString default_dir = cfg.value("client/directory").toString();
 	QList<QUrl> sidebar = {
-		QUrl::fromLocalFile(QCoreApplication::applicationDirPath())
+		QUrl::fromLocalFile(QCoreApplication::applicationDirPath()),
+		QUrl::fromLocalFile(QDir::currentPath()),
+		QUrl::fromLocalFile(default_dir)
 	};
-	if(cfg.contains("client/directory"))
-		sidebar << QUrl::fromLocalFile(cfg.value("client/directory").toString());
 	this->setSidebarUrls(sidebar);
 
 	this->restoreState(cfg.value("window/" + config_key).toByteArray());
 
+	// if file isn't set by outside, put the file as the last selected one
 	QFileInfo lastfile(cfg.value("client/" + config_key, ".").toString());
-	if(!lastfile.isFile()) lastfile.setFile(".png");
-	this->setDirectory(lastfile.absoluteDir());
-	this->selectFile(lastfile.fileName());
+	if(lastfile.isFile() && (selectfile.isEmpty() && lastfile.fileName() == selectfile)){
+		qDebug() << "Settings from lastfile";
+		this->setDirectory(lastfile.absoluteDir());
+		this->selectFile(lastfile.fileName());
+	} else if(!selectfile.isEmpty()) {
+		qDebug() << "Settings from selectfile";
+		this->selectFile(selectfile);
+	} else {
+		qDebug() << "No selectfile, default .ppa";
+		QFileInfo info(default_dir, ".ppa");
+		this->selectFile(info.filePath());
+	}
 
 	connect(this, &QFileDialog::fileSelected, this,
 	[this, config_key](const QString & file){

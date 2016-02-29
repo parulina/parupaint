@@ -26,8 +26,9 @@ Q_OBJECT
 class ParupaintFileDialog : public QFileDialog
 {
 Q_OBJECT
+	// TODO static funcs?...
 	public:
-	ParupaintFileDialog(ParupaintFileDialogType type, QWidget * = nullptr);
+	ParupaintFileDialog(ParupaintFileDialogType type, QWidget * = nullptr, const QString & selectfile = QString());
 };
 
 

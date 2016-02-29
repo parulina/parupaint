@@ -119,6 +119,7 @@ Q_OBJECT
 
 	QSize canvasDimensions();
 	QDir saveDir() const;
+	QString saveName() const;
 	void setLocalServer(const QString &);
 
 	signals:
