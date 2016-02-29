@@ -169,5 +169,6 @@ void ParupaintWindow::OnPenScroll(QWheelEvent * event)
 		ParupaintBrush * current_brush = brushes->brush();
 		current_brush->setSize(current_brush->size() + (actual_zoom * 4));
 		scene->updateMainCursor(current_brush);
+		client->doBrushUpdate(current_brush);
 	}
 }

@@ -575,6 +575,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			}
 			brush->setTool(tool);
 			scene->updateMainCursor(brush);
+			client->doBrushUpdate(brush);
 		}
 	}
 	// repeating hotkeys
