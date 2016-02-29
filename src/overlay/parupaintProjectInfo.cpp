@@ -30,14 +30,16 @@ ParupaintProjectInfo::ParupaintProjectInfo(QWidget * parent) :
 	line_title->setFixedHeight(20);
 
 	QFormLayout * form_layout = new QFormLayout;
-		form_layout->setMargin(0);
+		form_layout->setMargin(4);
 		form_layout->addRow("Project name", line_name);
 		form_layout->addRow("Frames/second", line_fps);
 		form_layout->addRow("Background color", line_bgc);
 
 
 	QVBoxLayout * layout = new QVBoxLayout;
-		layout->addWidget(line_title, 0, Qt::AlignTop | Qt::AlignHCenter);
+	layout->setMargin(0);
+		layout->addSpacing(4);
+		layout->addWidget(line_title, 0, Qt::AlignCenter);
 		layout->addSpacing(10);
 		layout->addLayout(form_layout, 0);
 		layout->addStretch(1);

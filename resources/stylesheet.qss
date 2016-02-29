@@ -181,7 +181,6 @@ ParupaintProjectInfo {
 
 ParupaintProjectInfo #ProjectQuickInfo{
 	color:black;
-	text-decoration:underline;
 	text-align:center;
 }
 
