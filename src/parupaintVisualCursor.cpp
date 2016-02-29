@@ -75,7 +75,8 @@ void ParupaintStaticCursorIcon::setIconRowColumn(int row, int column, QRgb col)
 // Cursor
 
 ParupaintVisualCursor::ParupaintVisualCursor(QGraphicsItem * parent) :
-	QGraphicsItem(parent)
+	QGraphicsItem(parent),
+	current_name(""), current_status(0)
 {
 	this->setObjectName("Cursor");
 	this->setAcceptHoverEvents(true);
@@ -114,12 +115,19 @@ QRectF ParupaintVisualCursor::boundingRect() const
 void ParupaintVisualCursor::setCursorName(const QString & name)
 {
 	Q_ASSERT(name_obj);
-	name_obj->setText(name);
+	current_name = name;
+
+	name_obj->setText(current_name);
+	emit onCursorNameChange(current_name);
 }
 
 void ParupaintVisualCursor::setStatus(int s, int timeout)
 {
-	status_obj->setIconRowColumn(1, s, this->rgba());
+	if(s == current_status) return;
+	current_status = s;
+
+	status_obj->setIconRowColumn(1, current_status, this->rgba());
+	emit onCursorStatusChange(current_status);
 
 	status_timeout->stop();
 	if(timeout > 0) status_timeout->start(timeout);
@@ -199,6 +207,15 @@ void ParupaintVisualCursor::setSize(qreal size)
 {
 	this->prepareGeometryChange();
 	ParupaintBrush::setSize(size);
+}
+
+int ParupaintVisualCursor::status() const
+{
+	return current_status;
+}
+QString ParupaintVisualCursor::cursorName() const
+{
+	return current_name;
 }
 
 void ParupaintVisualCursor::updateChanges()

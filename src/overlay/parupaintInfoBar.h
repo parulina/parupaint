@@ -2,16 +2,15 @@
 #define PARUPAINTINFOBAR_H
 
 #include <QStringList>
-#include <QWidget>
 #include <QTextBrowser>
 #include <QLabel>
+#include <QTabWidget>
 
 class ParupaintInfoBarText : public QTextBrowser
 {
 Q_OBJECT
 	public:
 	ParupaintInfoBarText(QWidget * = nullptr);
-	QSize minimumSizeHint() const;
 };
 
 class ParupaintInfoBarTutorial : public QTextBrowser
@@ -19,43 +18,42 @@ class ParupaintInfoBarTutorial : public QTextBrowser
 Q_OBJECT
 	public:
 	ParupaintInfoBarTutorial(QWidget * = nullptr);
+};
+
+class ParupaintInfoBarTabWidget : public QTabWidget
+{
+Q_OBJECT
+	public:
+	ParupaintInfoBarTabWidget(QWidget * = nullptr);
+
+	protected:
 	QSize minimumSizeHint() const;
 };
-class ParupaintInfoBarStatus : public QTextBrowser
+
+class ParupaintInfoBarStatus : public QFrame
 {
 Q_OBJECT
 	private:
-	QString connected_to;
-	QString dimensions;
-	QString layerframe;
+	QLabel * connected_text;
 
 	public:
 	ParupaintInfoBarStatus(QWidget * = nullptr);
-	void setConnectedTo(const QString &);
-	void updateTitle();
+	void setConnectedText(const QString & text);
+
+	protected:
+	QSize minimumSizeHint() const;
 };
 
 class ParupaintInfoBar : public QFrame
 {
 Q_OBJECT
-	QString current_title;
-	QString current_dimensions;
-	QString current_lfstatus;
-
 	ParupaintInfoBarText * info_text;
+	ParupaintInfoBarText * info_tutorial;
 	ParupaintInfoBarStatus * info_status;
-	ParupaintInfoBarTutorial * info_tutorial;
 	
-	void ReloadTitle();
-
 	public:
 	ParupaintInfoBar(QWidget * = nullptr);
-
-	ParupaintInfoBarStatus * status();
-	void setKeyList(const QStringList &);
-
-	signals:
-	void onStatusClick(const QUrl &);
+	void setConnectedText(const QString & text);
 };
 
 #endif

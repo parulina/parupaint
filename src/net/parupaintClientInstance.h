@@ -31,6 +31,9 @@ Q_OBJECT
 	void onConnect();
 	void onDisconnect(const QString & reason = "");
 
+	void onPlayerCountChange(int num);
+	void onSpectatorCountChange(int num);
+
 	public:
 	ParupaintClientInstance(ParupaintCanvasScene*, QObject * = nullptr);
 	virtual void send(const QString , const QJsonObject & = QJsonObject());

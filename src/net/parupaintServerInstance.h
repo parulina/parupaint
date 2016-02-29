@@ -56,6 +56,8 @@ Q_OBJECT
 	void joinConnection(ParupaintConnection * con);
 	void setBrushesDrawing(bool stopdraw=false);
 
+	void sendInfo();
+
 	void setParupaintWebServeDir(QDir dir);
 	const QDir & parupaintWebServeDir() const;
 

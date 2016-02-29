@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QFile> // stylesheet
 #include <QDebug>
+#include <QTabWidget>
 
 #include "../widget/parupaintScrollBar.h"
 
@@ -21,18 +22,6 @@ ParupaintInfoBarText::ParupaintInfoBarText(QWidget * parent) : QTextBrowser(pare
 	this->setTextInteractionFlags(Qt::LinksAccessibleByMouse | Qt::TextSelectableByMouse);
 	this->setVerticalScrollBar(new ParupaintScrollBar(Qt::Vertical, this));
 	this->setHorizontalScrollBar(new ParupaintScrollBar(Qt::Horizontal, this));
-	this->setHtml(QStringLiteral(
-	 "<p class=\"about\">"
-		"<h3>PARUPAINT</h3>"
-		"<a href=\"http://parupaint.sqnya.se\">official homepage</a>&nbsp;&nbsp;&nbsp;<a href=\"http://github.com/parulina/parupaint\">github</a><br/>"
-		"Welcome to my painting program, parupaint. The program is designed to be quick and light, while still being a nice drawing application. You can read a summary of what this program does on the homepage. Thank you for downloading and using this!<br/>"
-		"<span class=\"notice\">Please note that this program is currently in alpha and is constantly adding/removing features.</span>"
-	 "</p>"
-	));
-}
-QSize ParupaintInfoBarText::minimumSizeHint() const
-{
-	return QSize(600, 0);
 }
 
 ParupaintInfoBarTutorial::ParupaintInfoBarTutorial(QWidget * parent) : QTextBrowser(parent)
@@ -45,48 +34,49 @@ ParupaintInfoBarTutorial::ParupaintInfoBarTutorial(QWidget * parent) : QTextBrow
 	this->setTextInteractionFlags(Qt::LinksAccessibleByMouse | Qt::TextSelectableByMouse);
 	this->setVerticalScrollBar(new ParupaintScrollBar(Qt::Vertical, this));
 	this->setHorizontalScrollBar(new ParupaintScrollBar(Qt::Horizontal, this));
-	this->setFixedWidth(400);
 	this->setHtml(QStringLiteral(
-	 "<p class=\"mini-tutorial\">"
-		 "<h3>QUICK START (DEFAULT KEYS)</h3>"
-		 "<a href=\"http://parupaint.sqnya.se/tutorial.html\">full tutorial</a><br/>"
-		 "Press Ctrl+K to quicksave, and Ctrl+M for settings.<br/>"
-		 "<span class=\"notice\">The settings has a full key reference.</span><br/>"
-		 "Hold Space to move canvas, and Ctrl+Space to zoom. Hold Shift+Space to change brush size. Press W for halftones, Q for fill tool, T to test fill.<br/>"
-		 "<u>Press Shift+Tab to hide this!</u>"
-	 "</p>"
 	));
 }
-QSize ParupaintInfoBarTutorial::minimumSizeHint() const
+
+ParupaintInfoBarTabWidget::ParupaintInfoBarTabWidget(QWidget * parent) :
+	QTabWidget(parent)
 {
-	return QSize(400, 0);
+	// for some reason setting background color through QSS
+	// doesn't even work.....
+	this->setFocusPolicy(Qt::NoFocus);
 }
 
-ParupaintInfoBarStatus::ParupaintInfoBarStatus(QWidget * parent) : QTextBrowser(parent)
+QSize ParupaintInfoBarTabWidget::minimumSizeHint() const
 {
-	this->document()->setDocumentMargin(3);
-	this->document()->setDefaultStyleSheet(stylesheet);
+	return QSize(300, 0);
+}
+
+ParupaintInfoBarStatus::ParupaintInfoBarStatus(QWidget * parent) : QFrame(parent)
+{
 	this->setFixedHeight(30);
-	this->setOpenLinks(false);
-	this->setContentsMargins(10, 0, 0, 0);
-
 	this->setFocusPolicy(Qt::ClickFocus); // NoFocus
-	this->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
-	this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+	connected_text = new QLabel("");
+	QLabel * prefix = new QLabel("#");
+
+	connected_text->setObjectName("ConnectedTo");
+
+	QHBoxLayout * layout = new QHBoxLayout;
+		layout->addStretch(1);
+		layout->addWidget(prefix, 0, Qt::AlignCenter);
+		layout->addWidget(connected_text, 0, Qt::AlignCenter);
+		layout->addStretch(1);
+	this->setLayout(layout);
 }
-void ParupaintInfoBarStatus::updateTitle()
+
+void ParupaintInfoBarStatus::setConnectedText(const QString & text)
 {
-	this->setHtml(QString(
-		"<p class=\"titletext\">"
-			"<a href=\"#f1_notice\">(help: F1)</a>  "
-			"<a href=\"#connected\">connected to " + (connected_to == "localhost" ? "yourself" : connected_to) + "</a> "
-		"</p>"
-	));
+	connected_text->setText(text);
 }
-void ParupaintInfoBarStatus::setConnectedTo(const QString & con)
+
+QSize ParupaintInfoBarStatus::minimumSizeHint() const
 {
-	connected_to = con;
-	this->updateTitle();
+	return QSize(300, 30);
 }
 
 // InfoBar
@@ -99,38 +89,44 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QFrame(parent)
 	stylesheet = file.readAll();
 
 	QVBoxLayout * box = new QVBoxLayout;
-	box->setMargin(0);
-	box->setSpacing(0);
-	box->setContentsMargins(0, 0, 0, 0);
-	box->setAlignment(Qt::AlignBottom);
+		box->setMargin(0);
+		box->setSpacing(0);
+		box->setContentsMargins(0, 0, 0, 0);
 
-		QHBoxLayout * top = new QHBoxLayout;
-		top->setMargin(0);
-		top->setSpacing(0);
-		top->setContentsMargins(0, 0, 0, 0);
+		info_status = new ParupaintInfoBarStatus(this);
+		info_text = new ParupaintInfoBarText;
+		info_tutorial = new ParupaintInfoBarText;
 
-		QHBoxLayout * bot = new QHBoxLayout;
-		bot->setMargin(0);
-		bot->setSpacing(0);
-		bot->setContentsMargins(0, 0, 0, 0);
+		info_text->setHtml(QStringLiteral(
+		 "<p class=\"about\">"
+			"<h3>PARUPAINT</h3>"
+			"<a href=\"http://parupaint.sqnya.se\">official homepage</a>&nbsp;&nbsp;&nbsp;<a href=\"http://github.com/parulina/parupaint\">github</a><br/>"
+			"Welcome to my painting program, parupaint. The program is designed to be quick and light, while still being a nice drawing application. You can read a summary of what this program does on the homepage. Thank you for downloading and using this!<br/>"
+			"<span class=\"notice\">Please note that parupaint is in alpha and features are constantly changed.</span>"
+		 "</p>"
+		));
+		info_tutorial->setHtml(QStringLiteral(
+		 "<p class=\"mini-tutorial\">"
+			 "<h3>QUICK START (DEFAULT KEYS)</h3>"
+			 "<a href=\"http://parupaint.sqnya.se/tutorial.html\">full tutorial</a><br/>"
+			 "Press Ctrl+K to quicksave, and Ctrl+M for settings.<br/>"
+			 "<span class=\"notice\">The settings has a full key reference.</span><br/>"
+			 "Hold Space to move canvas, and Ctrl+Space to zoom. Hold Shift+Space to change brush size. Press W for halftones, Q for fill tool, T to test fill.<br/>"
+			 "<u>Press Shift+Tab to hide this!</u>"
+		 "</p>"
+		));
 
 
-		top->addWidget((info_text = new ParupaintInfoBarText(this)));
-		top->addWidget((info_tutorial = new ParupaintInfoBarTutorial(this)));
-		bot->addWidget((info_status = new ParupaintInfoBarStatus(this)));
+		ParupaintInfoBarTabWidget * tab_widget = new ParupaintInfoBarTabWidget(this);
+			tab_widget->addTab(info_text, "parupaint");
+			tab_widget->addTab(info_tutorial, "quick start");
 
-		connect(info_text, &QTextBrowser::anchorClicked, this, &ParupaintInfoBar::onStatusClick);
-		connect(info_tutorial, &QTextBrowser::anchorClicked, this, &ParupaintInfoBar::onStatusClick);
-		connect(info_status, &QTextBrowser::anchorClicked, this, &ParupaintInfoBar::onStatusClick);
+		box->addWidget(tab_widget, 1, Qt::AlignTop);
+		box->addWidget(info_status, 0, Qt::AlignBottom);
 
-	box->addLayout(top, 0);
-	box->addLayout(bot, 1);
 	this->setLayout(box);
-
-	this->status()->updateTitle();
-	this->show();
 }
-ParupaintInfoBarStatus * ParupaintInfoBar::status()
+void ParupaintInfoBar::setConnectedText(const QString & text)
 {
-	return info_status;
+	info_status->setConnectedText(text);
 }

@@ -206,10 +206,7 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 				c->send("brush", obj);
 			}
 			c->send("canvas", this->canvasObj());
-
-			QJsonObject pw_obj;
-			pw_obj["password"] = !this->password().isEmpty();
-			c->send("info", pw_obj);
+			this->sendInfo();
 
 			emit onConnect(c);
 
@@ -262,6 +259,7 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 			} else if(id == "disconnect"){
 				emit onDisconnect(c);
 			}
+			this->sendInfo();
 
 		} else if(id == "name") {
 			if(!obj["name"].isString()) return;

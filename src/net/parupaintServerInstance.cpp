@@ -90,6 +90,7 @@ void ParupaintServerInstance::joinConnection(ParupaintConnection * con)
 	emit onJoin(con);
 
 	this->ServerJoin(con, true);
+	this->sendInfo();
 }
 
 void ParupaintServerInstance::setBrushesDrawing(bool stopdraw)
@@ -97,6 +98,17 @@ void ParupaintServerInstance::setBrushesDrawing(bool stopdraw)
 	foreach(ParupaintBrush * brush, this->brushes){
 		brush->setDrawing(stopdraw);
 	}
+}
+
+void ParupaintServerInstance::sendInfo()
+{
+	QJsonObject obj;
+	obj["painters"] = this->numPainters();
+	obj["spectators"] = this->numSpectators();
+	obj["password"] = !this->password().isEmpty();
+	qDebug() << this->numPainters() << this->numSpectators();
+
+	this->sendAll("info", obj);
 }
 
 void ParupaintServerInstance::setParupaintWebServeDir(QDir dir)

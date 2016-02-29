@@ -35,7 +35,7 @@
 #include "overlay/parupaintFlayer.h"
 #include "overlay/parupaintColorPicker.h"
 #include "overlay/parupaintNetJoinPrompt.h"
-#include "overlay/parupaintNetServerInfo.h"
+#include "overlay/parupaintNetInfo.h"
 #include "overlay/parupaintInfoBar.h"
 
 
@@ -137,11 +137,14 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	flayer = 	new ParupaintFlayer(this);
 	infobar =	new ParupaintInfoBar(this);
 	netjoin =	new ParupaintNetJoinPrompt(this);
-	netinfo = 	new ParupaintNetServerInfo(this);
+	netinfo = 	new ParupaintNetInfo(this);
 
 	connect(client, &ParupaintClientInstance::onConnect, netjoin, &QWidget::show);
 	connect(client, &ParupaintClientInstance::onDisconnect, netjoin, &QWidget::hide);
 	connect(client, &ParupaintClientInstance::onSpectateChange, netjoin, &QWidget::setVisible);
+
+	connect(client, &ParupaintClientInstance::onPlayerCountChange, netinfo, &ParupaintNetInfo::setNumPainters);
+	connect(client, &ParupaintClientInstance::onSpectatorCountChange, netinfo, &ParupaintNetInfo::setNumSpectators);
 
 	connect(netjoin, &ParupaintNetJoinPrompt::wantJoin, this, &ParupaintWindow::doJoin);
 
@@ -163,6 +166,7 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 		this->client->doBrushUpdate(brush);
 	});
 
+	netinfo->setCursorListModel(scene->cursorList());
 
 	connect(scene->canvas(), &ParupaintVisualCanvas::onCurrentLayerFrameChange, flayer, &ParupaintFlayer::setHighlightLayerFrame);
 	connect(scene->canvas(), &ParupaintVisualCanvas::onCurrentLayerFrameChange, [&](int l, int f){
@@ -193,20 +197,6 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	connect(project_info, &ParupaintProjectInfo::frameRateChanged, client, &ParupaintClientInstance::doProjectFramerate);
 	connect(project_info, &ParupaintProjectInfo::backgroundColorChanged, client, &ParupaintClientInstance::doProjectBackgroundColor);
 
-
-	connect(infobar, &ParupaintInfoBar::onStatusClick, [&](const QUrl & url){
-		const QString str = url.toString();
-		qDebug() << str;
-
-		if(str == "#f1_notice"){
-			this->showOverlay(overlayExpandedState);
-		} else if(str == "#connected"){
-			this->showConnectDialog();
-		} else if(str == "#dimensions"){
-			this->showNewDialog();
-		}
-	});
-
 	// set up the overlay layout
 	QVBoxLayout * main_layout = new QVBoxLayout;
 		main_layout->setMargin(0);
@@ -216,7 +206,7 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 		QHBoxLayout * tophalf_layout = new QHBoxLayout;
 			tophalf_layout->addWidget(picker, 0, Qt::AlignLeft);
 			tophalf_layout->addWidget(infobar, 1, Qt::AlignTop);
-			tophalf_layout->addWidget(netinfo, 0, Qt::AlignRight);
+			tophalf_layout->addWidget(netinfo, 0, Qt::AlignTop | Qt::AlignRight);
 			main_layout->addLayout(tophalf_layout);
 
 		main_layout->addStretch(1);
@@ -292,7 +282,7 @@ ParupaintClientInstance * ParupaintWindow::networkClient()
 void ParupaintWindow::OnNetworkConnect()
 {
 	QUrl url = client->url();
-	infobar->status()->setConnectedTo(url.host());
+	infobar->setConnectedText(url.host());
 
 	if(url.host() == "localhost") return;
 	chat->AddMessage("You are connected to " + url.host());
@@ -301,7 +291,7 @@ void ParupaintWindow::OnNetworkDisconnect(QString reason)
 {
 	chat->show();
 	chat->AddMessage("You were disconnected from the server.");
-	infobar->status()->setConnectedTo("");
+	infobar->setConnectedText("");
 
 	QApplication::alert(this, 2000);
 }
@@ -352,6 +342,7 @@ void ParupaintWindow::hideOverlay()
 	if(overlay_state != overlayHiddenState) {
 
 		if(widgetContainsCursor(chat) ||
+		   widgetContainsCursor(netinfo) ||
 		   widgetContainsCursor(picker) ||
 		   widgetContainsCursor(project_info) ||
 		   widgetContainsCursor(flayer)) {
@@ -375,7 +366,9 @@ void ParupaintWindow::updateOverlay()
 {
 	bool expanded = (overlay_state == overlayExpandedState);
 
-	infobar->setFixedHeight(expanded ? 170 : 30);
+	infobar->setFixedHeight(expanded ? 200 : 30);
+	netinfo->setMaximumHeight(expanded ? 200 : 30);
+
 	project_info->setMaximumHeight(expanded ? 200 : 30);
 	flayer->setMaximumHeight(expanded ? 200 : 30);
 }

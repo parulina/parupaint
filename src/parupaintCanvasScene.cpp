@@ -12,6 +12,83 @@
 #include "parupaintVisualCanvas.h"
 #include "parupaintVisualCursor.h"
 
+
+ParupaintCursorList::ParupaintCursorList(QObject * parent) :
+	QAbstractListModel(parent)
+{
+}
+void ParupaintCursorList::add(ParupaintVisualCursor * cursor)
+{
+	emit this->layoutAboutToBeChanged();
+	cursors.append(cursor);
+	emit this->layoutChanged();
+
+	connect(cursor, &ParupaintVisualCursor::onCursorNameChange, this, &ParupaintCursorList::cursorUpdate);
+	connect(cursor, &ParupaintVisualCursor::onCursorStatusChange, this, &ParupaintCursorList::cursorUpdate);
+	connect(cursor, &ParupaintBrush::onToolChange, this, &ParupaintCursorList::cursorUpdate);
+	connect(cursor, &ParupaintBrush::onColorChange, this, &ParupaintCursorList::cursorUpdate);
+}
+void ParupaintCursorList::remove(ParupaintVisualCursor * cursor)
+{
+	emit this->layoutAboutToBeChanged();
+	cursors.removeAll(cursor);
+	emit this->layoutChanged();
+}
+void ParupaintCursorList::clear()
+{
+	qDeleteAll(cursors);
+
+	emit this->layoutAboutToBeChanged();
+	cursors.clear();
+	emit this->layoutChanged();
+}
+
+void ParupaintCursorList::cursorUpdate()
+{
+	ParupaintVisualCursor * cursor = qobject_cast<ParupaintVisualCursor*>(sender());
+	if(cursor){
+		QModelIndex index = this->index(cursors.indexOf(cursor), 0);
+		emit this->dataChanged(index, index);
+	}
+}
+
+int ParupaintCursorList::rowCount(const QModelIndex & index) const
+{
+	return cursors.size();
+}
+
+QVariant ParupaintCursorList::data(const QModelIndex & index, int role) const
+{
+	ParupaintVisualCursor * cursor = nullptr;
+	if(index.row() >= 0 && index.row() < cursors.size())
+		cursor = cursors.at(index.row());
+
+	if(role == Qt::FontRole){
+		QFont font;
+		if(cursor){
+			if(cursor->status() == ParupaintVisualCursorStatus::CursorStatusTyping){
+				font.setUnderline(true);
+			}
+		}
+		return font;
+	}
+	if(role == Qt::DisplayRole){
+		return cursor ? cursor->cursorName() : "n/a";
+	}
+	if(role == Qt::UserRole){
+		if(cursor){
+			return cursor->color();
+		}
+	}
+	if(role == Qt::UserRole + 1){
+		if(cursor){
+			return cursor->status() ? -cursor->status() : cursor->tool();
+		}
+	}
+	return QVariant();
+}
+
+
 ParupaintCanvasScene::~ParupaintCanvasScene()
 {
 	delete panvas;
@@ -19,6 +96,8 @@ ParupaintCanvasScene::~ParupaintCanvasScene()
 
 ParupaintCanvasScene::ParupaintCanvasScene(QObject * parent) : QGraphicsScene(parent)
 {
+	cursors = new ParupaintCursorList;
+
 	this->addItem(panvas = new ParupaintVisualCanvas());
 	connect(panvas, &ParupaintVisualCanvas::onCanvasResize, [&](){
 		QSettings cfg;
@@ -38,6 +117,11 @@ ParupaintVisualCanvas * ParupaintCanvasScene::canvas()
 {
 	Q_ASSERT(panvas);
 	return panvas;
+}
+
+ParupaintCursorList * ParupaintCanvasScene::cursorList() const
+{
+	return cursors;
 }
 
 void ParupaintCanvasScene::updateMainCursor(ParupaintBrush * cursor)
@@ -72,16 +156,18 @@ ParupaintVisualCursor * ParupaintCanvasScene::mainCursor()
 void ParupaintCanvasScene::addCursor(ParupaintVisualCursor * cursor)
 {
 	Q_ASSERT_X(cursor, "addCursor", "Cursor is invalid (failed to create?)");
-	cursors.append(cursor); addItem(cursor);
+
+	cursors->add(cursor);
+	addItem(cursor);
 }
 void ParupaintCanvasScene::removeCursor(ParupaintVisualCursor * cursor)
 {
 	Q_ASSERT_X(cursor, "removeCursor", "Cursor is invalid");
-	cursors.removeAll(cursor); removeItem(cursor);
+	cursors->remove(cursor);
+	removeItem(cursor);
 }
 
 void ParupaintCanvasScene::clearCursors()
 {
-	foreach(auto c, cursors) { removeItem(c); }
-	qDeleteAll(cursors);
+	cursors->clear();
 }

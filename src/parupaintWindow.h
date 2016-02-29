@@ -20,7 +20,7 @@ class ParupaintFlayer;
 class ParupaintColorPicker;
 class ParupaintInfoBar;
 class ParupaintNetJoinPrompt;
-class ParupaintNetServerInfo;
+class ParupaintNetInfo;
 
 class ParupaintKeys;
 
@@ -70,7 +70,7 @@ Q_OBJECT
 	ParupaintInfoBar * 	infobar;
 
 	ParupaintNetJoinPrompt*	netjoin;
-	ParupaintNetServerInfo* netinfo;
+	ParupaintNetInfo* 	netinfo;
 
 	ParupaintCanvasView * 	view;
 	ParupaintCanvasScene * 	scene;

@@ -31,6 +31,7 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 
 	} else if(id == "disconnect"){
 		emit onDisconnect(bytes);
+		pool->clearCursors();
 
 	// we got confirmation
 	} else if(id == "join"){
@@ -49,6 +50,12 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		emit onSpectateChange(!(client_joined = false));
 
 	} else if(id == "info") {
+		if(object["painters"].isDouble()){
+			emit onPlayerCountChange(object["painters"].toInt());
+		}
+		if(object["spectators"].isDouble()){
+			emit onSpectatorCountChange(object["spectators"].toInt());
+		}
 		if(object["password"].isBool()){
 			remote_password = object["password"].toBool(false);
 		}

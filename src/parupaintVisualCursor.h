@@ -46,9 +46,16 @@ Q_INTERFACES(QGraphicsItem)
 
 	QTimer * status_timeout;
 
+	QString current_name;
+	int current_status;
+
 	void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
 	void hoverEnterEvent(QGraphicsSceneHoverEvent*);
 	void hoverLeaveEvent(QGraphicsSceneHoverEvent*);
+
+	signals:
+	void onCursorNameChange(const QString & cursorName);
+	void onCursorStatusChange(int status);
 
 	private slots:
 	void updateChanges();
@@ -60,6 +67,9 @@ Q_INTERFACES(QGraphicsItem)
 
 	void setCursorName(const QString & name);
 	void setStatus(int s = 0, int timeout = 0);
+
+	int status() const;
+	QString cursorName() const;
 
 	// reimplemented
 	void setSize(qreal size);

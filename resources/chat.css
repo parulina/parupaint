@@ -33,17 +33,14 @@ h3 {
 	margin:0;
 	height:10px;
 }
-.about, .mini-tutorial {
-	color:#DCA
+.about,
+.mini-tutorial {
+	color:#DCA;
+	font-size:14px;
 }
-.about { font-size:15px; }
-.mini-tutorial { font-size:14px; }
 
 span.notice {
 	color:white;
-}
-.mini-tutorial {
-	text-align:right;
 }
 
 

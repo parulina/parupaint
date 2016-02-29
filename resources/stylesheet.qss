@@ -10,6 +10,22 @@ QLabel,QCheckbox,QPushButton {
 QLabel{
 	color:black;
 }
+
+QTabWidget::pane {
+	border:none;
+}
+QTabBar::tab {
+	background:none;
+	color:gray;
+	image:none;
+	padding:10px;
+	margin:0;
+}
+QTabBar::tab:selected, QTabBar::tab:hover {
+	background:#333;
+	color:white;
+}
+
 QLineEdit,
 QComboBox,
 QSpinBox, QDoubleSpinBox {
@@ -78,8 +94,11 @@ ParupaintCanvasView {
 }
 QDialog,
 ParupaintProjectInfo, ParupaintFlayer,
-ParupaintNetServerInfo {
+ParupaintNetInfo {
 	background:rgb(200, 180, 128);
+}
+ParupaintPlayerList, ParupaintFlayer {
+	background:rgb(180, 160, 110);
 }
 ParupaintScrollBar::handle:hover { background:#de9a3c; }
 
@@ -90,21 +109,26 @@ QLineEdit, QTextEdit, QLabel, QComboBox, QSpinBox, QDoubleSpinBox {
 
 
 
-ParupaintInfoBar ParupaintInfoBarText,
-ParupaintInfoBar ParupaintInfoBarTutorial,
-ParupaintInfoBar ParupaintInfoBarStatus {
-	background:transparent;
+ParupaintInfoBarText,
+ParupaintInfoBarStatus {
+	background:#333;
 	border:none;
 }
-
-ParupaintInfoBar ParupaintInfoBarText,
-ParupaintInfoBar ParupaintInfoBarTutorial {
-	color:#B1A087;
+ParupaintInfoBarStatus QLabel {
+	color:white;
+	background:transparent;
 }
-ParupaintInfoBar ParupaintInfoBarStatus {
+ParupaintInfoBarStatus #ConnectedTo {
+	text-decoration:underline;
 }
 
-ParupaintNetServerInfo {
+ParupaintNetInfo {
+	color:black;
+	font-size:16px;
+}
+
+ParupaintPlayerList {
+	font-size:18px;
 }
 
 
