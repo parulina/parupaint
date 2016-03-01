@@ -524,12 +524,18 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			if(shortcut_name.endsWith("pencil")){
 				brushes->clearToggle();
 				brushes->setBrush(0);
+
 				scene->updateMainCursor(brushes->brush());
+				client->doBrushUpdate(brushes->brush());
+
 				view->showToast(brushes->brush()->name(), 600);
 
 			} else if(shortcut_name.endsWith("eraser")){
 				brushes->toggleBrush(1);
 				scene->updateMainCursor(brushes->brush());
+				client->doBrushUpdate(brushes->brush());
+
+				view->showToast(brushes->brush()->name(), 600);
 
 			} else if(shortcut_name.endsWith("fillpreview")){
 				ParupaintBrush * brush = brushes->brush();
@@ -673,6 +679,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			brushes->clearToggle();
 
 			scene->updateMainCursor(brush);
+			client->doBrushUpdate(brush);
 
 			QString toaststr = brush->name();
 			if(brushes->brushNum() == tool)

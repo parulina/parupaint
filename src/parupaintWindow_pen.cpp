@@ -82,6 +82,7 @@ void ParupaintWindow::OnPenMove(const penInfo& info)
 		qreal dy = (info.old_pos - info.pos).y();
 		current_brush->setSize(current_brush->size() + dy);
 		scene->updateMainCursor(current_brush);
+		client->doBrushUpdate(current_brush);
 		return;
 	}
 
