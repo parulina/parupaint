@@ -144,13 +144,14 @@ void ParupaintVisualCursor::paint(QPainter* painter, const QStyleOptionGraphicsI
 	       cc((-QPointF(w/2, w/2)),		QSizeF(w, w));
 
 	// should we draw pressure ring?
-	if(w > 1 && p > 0 && p < 1){
+	if(w > 1 && p > 0 && p < 0.985){
 		painter->save();
 
 		QPen inner_pen(Qt::white);
 		inner_pen.setCosmetic(true);
 
 		painter->setPen(inner_pen);
+		painter->setOpacity(0.5);
 		painter->setCompositionMode(QPainter::CompositionMode_Exclusion);
 		painter->drawEllipse(cp);
 
