@@ -37,7 +37,8 @@ void ParupaintWindow::OnPenPress(const penInfo & info)
 	if(info.buttons & Qt::RightButton){
 		if(canvas_state == canvasMovingState){
 			this->setCanvasState(canvasZoomingState);
-		} else {
+		// if you ONLY pressed right button
+		} else if(info.buttons == Qt::RightButton) {
 			brushes->toggleBrush(1);
 		}
 	}
