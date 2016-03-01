@@ -2,7 +2,6 @@
 <qresource>
     <file>resources/parupaint.ico</file>
     <file>resources/parupaint.png</file>
-    <file>resources/checker.png</file>
     <file>resources/stylesheet.qss</file>
     <file>resources/chat.css</file>
     <file>resources/parufont.ttf</file>

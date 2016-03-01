@@ -248,6 +248,7 @@ int ParupaintLayer::frameIndex(ParupaintFrame* f)
 ParupaintFrame * ParupaintLayer::frameAt(int i)
 {
 	if(frames.isEmpty()) return nullptr;
+	if(i < 0 || i >= frames.size()) return nullptr;
 	return frames.at(i);
 }
 

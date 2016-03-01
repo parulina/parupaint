@@ -9,7 +9,7 @@ ParupaintVisualCanvas::ParupaintVisualCanvas(QGraphicsItem * parent) :
 	QGraphicsItem(parent),
 	current_layer(0), current_frame(0),
 	canvas_preview(true),
-	checker_pixmap(":/resources/checker.png")
+	checker_pixmap("#cccccc", "#ffffff")
 {
 	this->resize(QSize(500, 500));
 
@@ -92,31 +92,53 @@ void ParupaintVisualCanvas::redraw(QRect area)
 	const QPointF ppp(area.x() % checker_pixmap.width(), area.y() % checker_pixmap.height());
 	painter.drawTiledPixmap(area, checker_pixmap, ppp);
 
-	if(!flash_timeout->isActive()){
-		if(this->isPreview()){
-			painter.setOpacity(1.0);
-			painter.fillRect(area, this->backgroundColor());
-		}
+	// preview should not be onion skin, but then again it shows a checkerboard background...
+	// a preview shows the current frame, no onionskin, with all of the layers
+	// non preview shows the current frame with onionskin, with the layers in the background
+	// when navigating, only the current layer should be shown...
 
-		// normal view - draw all layer's current_frame
-		// if preview, draw with less opacity
-		for(int i = 0; i < this->layerCount(); i++){
-			ParupaintLayer* layer = this->layerAt(i);
-			if(!layer->visible()) continue;
+	if(this->isPreview() && !flash_timeout->isActive()){
+		painter.setOpacity(1.0);
+		painter.fillRect(area, this->backgroundColor());
+	}
 
-			painter.setCompositionMode(static_cast<QPainter::CompositionMode>(layer->mode()));
-			if(layer && current_frame < layer->frameCount()){
-				ParupaintFrame* frame = layer->frameAt(current_frame);
-				if(frame){
-					painter.setOpacity(this->isPreview() ? frame->opacity() : 0.6);
+	// normal view - draw all layer's current_frame
+	// if preview, draw with less opacity
+	painter.save();
+	for(int i = 0; i < this->layerCount(); i++){
+		ParupaintLayer* layer = this->layerAt(i);
+		if(!layer->visible()) continue;
+
+		// do not show other layers when... (flashing & preview)
+		if((flash_timeout->isActive() && this->isPreview()) && (i != current_layer)) continue;
+
+		painter.setCompositionMode(static_cast<QPainter::CompositionMode>(layer->mode()));
+		if(layer && current_frame < layer->frameCount()){
+			ParupaintFrame* frame = layer->frameAt(current_frame);
+			if(frame){
+				painter.setOpacity(this->isPreview() ? frame->opacity() : 0.6);
+				painter.drawImage(area, frame->image(), area);
+			}
+			// only draw onionskin if preview is off.
+			if((!this->isPreview()) && current_layer == i){
+
+				int prev_frame = current_frame - 1,
+				    next_frame = current_frame + 1;
+
+				// make the onionskin opaque
+				painter.setOpacity(0.3);
+				if((frame = layer->frameAt(prev_frame))){
+					painter.drawImage(area, frame->image(), area);
+				}
+				if((frame = layer->frameAt(next_frame))){
 					painter.drawImage(area, frame->image(), area);
 				}
 			}
 		}
-		// reset
-		painter.setOpacity(1.0);
-		painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 	}
+	// reset
+	painter.restore();
+
 	// now draw the focused frame
 	if(!this->isPreview() || flash_timeout->isActive()){
 		// always draw current frame with max op

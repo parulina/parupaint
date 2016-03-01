@@ -2,6 +2,7 @@
 #define PARUPAINTVISUALCANVAS_H
 
 #include "core/parupaintPanvas.h"
+#include "parupaintCheckerboardPixmap.h"
 
 #include <QGraphicsObject>
 
@@ -20,7 +21,7 @@ Q_OBJECT
 
 	QPixmap canvas_cache;
 
-	QPixmap checker_pixmap;
+	ParupaintCheckerboardPixmap checker_pixmap;
 	QPixmap fillpreview_pixmap;
 
 	QPointF pastepreview_pos;
