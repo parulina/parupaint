@@ -69,7 +69,12 @@ void ParupaintWindow::OnPenMove(const penInfo& info)
 	if(canvas_state == canvasMovingState){
 		view->moveView((info.old_gpos - info.gpos));
 	}
-	if(canvas_state == canvasZoomingState){
+	// the rant-bug causes canvas_state to be noCanvasState all the time.
+	// so lets just include if the pen zoom button is being held.
+	// i avoid setting the canvasstate back to zoomingstate because otherwise
+	// the cursor flips all the time, wasting processing time
+	if(canvas_state == canvasZoomingState ||
+	   (canvas_state == canvasMovingState && (info.buttons & Qt::RightButton))){
 		qreal dy = (origin_pen - info.gpos).y()/100 + origin_zoom;
 		view->setZoom(dy);
 	}
