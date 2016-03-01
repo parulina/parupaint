@@ -6,7 +6,7 @@
 #include <QDebug>
 #include <QSettings>
 #include <QTimer>
-#include <cmath> // clang
+#include <QtMath>
 #include <QDate> // new year event
 
 #include "widget/parupaintScrollBar.h"
@@ -160,7 +160,10 @@ void ParupaintCanvasView::setZoom(qreal z)
 	if(smooth_zoom) this->setRenderHint(QPainter::SmoothPixmapTransform, !(z > 3));
 	
 	QMatrix nm(1,0,0,1, matrix().dx(), matrix().dy());
-	nm.scale(canvas_zoom, canvas_zoom);
+
+	const qreal opt_zoom = (canvas_zoom < 1 ? (qRound(canvas_zoom * 10.0) / 10.0): canvas_zoom);
+	nm.scale(opt_zoom, opt_zoom);
+
 	nm.scale(canvas_horflip ? -1 : 1, canvas_verflip ? -1 : 1);
 	setMatrix(nm);
 }
@@ -186,7 +189,7 @@ inline QPointF mapToSceneF(QGraphicsView * view, const QPointF & pos)
 	qreal xf = qAbs(modf(pos.x(), &tmp));
 	qreal yf = qAbs(modf(pos.y(), &tmp));
 
-	QPoint p0(floor(pos.x()), floor(pos.y()));
+	QPoint p0(qFloor(pos.x()), qFloor(pos.y()));
 	QPointF p1 = view->mapToScene(p0);
 	QPointF p2 = view->mapToScene(p0 + QPoint(1, 1));
 
