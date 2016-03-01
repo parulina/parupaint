@@ -166,6 +166,12 @@ void ParupaintVisualCanvas::redraw(QRect area)
 		QPen line_pen(line_color);
 		line_pen.setWidthF(line_thickness);
 		line_pen.setCapStyle(Qt::RoundCap);
+
+		if(line_color.alpha() == 0) {
+			painter.setCompositionMode(QPainter::CompositionMode_DestinationOut);
+			line_pen.setColor(Qt::white);
+		}
+
 		painter.setPen(line_pen);
 		painter.setOpacity(1.0);
 		painter.drawLine(line_preview);
