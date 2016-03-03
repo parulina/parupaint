@@ -152,9 +152,7 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	chat->setChatInputPlaceholder(
 		QString("press [%1] to chat.").arg(key_shortcuts->keyString("chat")).toLower()
 	);
-	connect(chat, &ParupaintChat::onActivity, [this](){
-		this->client->doChat();
-	});
+	connect(chat, &ParupaintChat::onActivity, client, &ParupaintClientInstance::doTyping);
 	
 	connect(flayer, &ParupaintFlayer::onHighlightChange, scene->canvas(), &ParupaintVisualCanvas::current_lf_update);
 	connect(flayer, &ParupaintFlayer::onLayerVisibleChange, client, &ParupaintClientInstance::doLayerVisibility);

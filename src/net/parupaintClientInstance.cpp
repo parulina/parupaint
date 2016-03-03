@@ -102,12 +102,15 @@ void ParupaintClientInstance::doReloadImage(int l, int f)
 
 void ParupaintClientInstance::doChat(const QString & str)
 {
-	QJsonObject obj;
-	if(!str.isEmpty()){
-		obj["message"] = str;
-		obj["name"] = this->name();
-	}
+	QJsonObject obj = {
+		{"message", str},
+		{"name", this->name()}
+	};
 	this->send("chat", obj);
+}
+void ParupaintClientInstance::doTyping()
+{
+	this->send("chat");
 }
 
 void ParupaintClientInstance::doBrushUpdate(ParupaintBrush * brush)

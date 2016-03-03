@@ -53,6 +53,7 @@ Q_OBJECT
 	void doReloadCanvas();
 	void doReloadImage(int l = -1, int f = -1);
 	void doChat(const QString & str = QString());
+	void doTyping();
 	void doBrushUpdate(ParupaintBrush * brush);
 
 	void doLayerFrameAttribute(int l, int f, const QString & attr, const QJsonValue & val);
