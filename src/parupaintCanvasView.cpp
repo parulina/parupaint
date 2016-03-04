@@ -249,7 +249,7 @@ inline QTabletEvent MouseToTabletEvent(QEvent::Type type, QMouseEvent * event){
 	return QTabletEvent(type, event->localPos(), event->globalPos(),
 			QTabletEvent::NoDevice,
 			QTabletEvent::Cursor,
-			1.0, // pressure
+			(event->buttons() != 0), // pressure
 			0, 0, 0, 0, 0, // xtilt, ytilt, tang_rot, rot, z
 			event->modifiers(), 0, event->button(), event->buttons());
 

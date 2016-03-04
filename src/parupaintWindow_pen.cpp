@@ -22,6 +22,7 @@ void ParupaintWindow::OnPenPress(const penInfo & info)
 	   canvas_state == noCanvasState){
 
 		current_brush->setDrawing(true);
+		current_brush->setPressure(info.pressure);
 		if(client->connected() &&
 		   (client->readOnly() || !client->isJoined()))
 			current_brush->setDrawing(false);
