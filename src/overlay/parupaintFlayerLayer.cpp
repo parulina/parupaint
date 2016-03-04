@@ -52,10 +52,10 @@ ParupaintFlayerLayer::ParupaintFlayerLayer(int l, QWidget * parent, bool visible
 	layer_mode->addItem("Hard light", 	textModeToEnum("svg:hard-light"));
 	layer_mode->addItem("Soft light", 	textModeToEnum("svg:soft-light"));
 	layer_mode->addItem("Difference", 	textModeToEnum("svg:difference"));
-	layer_mode->addItem("Color", 		textModeToEnum("svg:color"));
-	layer_mode->addItem("Luminosity", 	textModeToEnum("svg:luminosity"));
-	layer_mode->addItem("Hue", 		textModeToEnum("svg:hue"));
-	layer_mode->addItem("Saturation", 	textModeToEnum("svg:saturation"));
+	//layer_mode->addItem("Color", 		textModeToEnum("svg:color"));
+	//layer_mode->addItem("Luminosity", 	textModeToEnum("svg:luminosity"));
+	//layer_mode->addItem("Hue", 		textModeToEnum("svg:hue"));
+	//layer_mode->addItem("Saturation", 	textModeToEnum("svg:saturation"));
 	layer_mode->addItem("Plus", 		textModeToEnum("svg:plus"));
 	layer_mode->addItem("Dest in",		textModeToEnum("svg:dst-in"));
 	layer_mode->addItem("Dest out", 	textModeToEnum("svg:dst-out"));
