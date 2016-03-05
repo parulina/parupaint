@@ -63,6 +63,9 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * 
 		op = QPointF(qFloor(op.x()), qFloor(op.y()));
 		np = QPointF(qFloor(np.x()), qFloor(np.y()));
 	}
+	if(brush->tool() == ParupaintBrushToolTypes::BrushToolOpacityDrawing){
+		size = brush->size();
+	}
 
 	QRect urect(op.toPoint() + QPoint(-size/2, -size/2), QSize(size, size));
 	urect |= QRect(np.toPoint() + QPoint(-size/2, -size/2), QSize(size, size));
@@ -104,9 +107,12 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * 
 		}
 		// intentional fallthrough
 		case ParupaintBrushToolTypes::BrushToolOpacityDrawing: {
-			double pressure = brush->pressure();
-			if(pressure < 0.01) pressure = 0.01;
-			color.setAlphaF(pressure * color.alphaF());
+
+			color.setAlpha(brush->pressure() * color.alpha());
+			if(color.alpha() == 0) color.setAlpha(1);
+
+			pen_brush.setColor(color);
+			pen.setBrush(pen_brush);
 			pen.setColor(color);
 		}
 		default: {
