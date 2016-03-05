@@ -12,6 +12,7 @@
 #include <QClipboard>
 #include <QVBoxLayout>
 #include <QMessageBox>
+#include <QScrollBar>
 
 #include "parupaintKeys.h"
 
@@ -199,7 +200,6 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	QVBoxLayout * main_layout = new QVBoxLayout;
 		main_layout->setMargin(0);
 		main_layout->setSpacing(0);
-		main_layout->setContentsMargins(0, 0, 18, 18);
 
 		QHBoxLayout * tophalf_layout = new QHBoxLayout;
 			tophalf_layout->addWidget(picker, 0, Qt::AlignLeft);
@@ -270,6 +270,9 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	// make sure the overlay controls are able to be above this
 	this->centralWidget()->lower();
 	this->show();
+
+	QSize view_size = view->size() - view->viewport()->size();
+	main_layout->setContentsMargins(0, 0, view_size.width()-1, view_size.height()-1);
 }
 
 ParupaintClientInstance * ParupaintWindow::networkClient()
