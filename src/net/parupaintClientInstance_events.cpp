@@ -89,6 +89,7 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		if(brush) {
 
 			if(object["n"].isString())	brush->setCursorName(object["n"].toString("Unnamed"));
+			if(object["st"].isDouble())	brush->setStatus(object["st"].toInt(), 2000);
 
 			QVariantMap map;
 			if(object["x"].isDouble()) map["x"] = object["x"].toDouble();
@@ -113,11 +114,11 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 			brush->update();
 		}
 	} else if (id == "paste") {
-		if(!object["paste"].isString()) return;
+		if(!object["image"].isString()) return;
 		if(!object["l"].isDouble()) return;
 		if(!object["f"].isDouble()) return;
 
-		QImage image = ParupaintSnippets::Base64GzipToImage(object["paste"].toString());
+		QImage image = ParupaintSnippets::Base64GzipToImage(object["image"].toString());
 		if(image.isNull()) return;
 
 		int l = object["l"].toInt(),
@@ -234,9 +235,10 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		pool->canvas()->redraw();
 
 	} else if(id == "chat") {
-		const QString name = object["name"].toString(),
-		              message = object["message"].toString();
-		if(object["message"].isString()){
+		if(!object.contains("message") || !object.value("message").isString()) return;
+
+		const QString name = object["name"].toString(), message = object["message"].toString();
+		if(!message.isEmpty()){
 			emit onChatMessage(message, name);
 		}
 
@@ -245,12 +247,8 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 
 		if(brushes.find(id) == brushes.end()) return;
 		ParupaintVisualCursor * brush = brushes.value(id);
-		if(brush){
-			if(message.isEmpty()){
-				brush->setStatus(ParupaintVisualCursorStatus::CursorStatusTyping, 2000);
-			} else {
-				brush->setStatus(ParupaintVisualCursorStatus::CursorStatusNone, 0);
-			}
+		if(brush && brush->status() == ParupaintVisualCursorStatus::CursorStatusTyping){
+			brush->setStatus(ParupaintVisualCursorStatus::CursorStatusNone, 0);
 			brush->update();
 		}
 

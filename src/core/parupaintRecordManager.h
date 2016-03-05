@@ -1,39 +1,31 @@
 #ifndef PARUPAINTRECORDMANAGER_H
 #define PARUPAINTRECORDMANAGER_H
 
-#include <QFile>
-
-class QTextStream;
+#include "parupaintRecordFile.h"
+#include <QTextStream>
+#include <QJsonObject>
 
 class ParupaintRecordManager
 {
 	private:
-	QFile temp_log;
-	QTextStream *temp_stream;
+	ParupaintRecordFile log;
+	QTextStream text_stream;
 
-	void Write(QStringList);
 	public:
-	ParupaintRecordManager(QString);
+	ParupaintRecordManager();
 	~ParupaintRecordManager();
 
-	void Join(int);
-	void Leave(int);
-	void Name(int, QString);
-	void Pos(int, int, int, double, bool);
-	void Lf(int, int, int);
-	void Tool(int, int);
-	void Color(int, QString);
-	void Width(int, double);
-	void Chat(int, QString);
-	void Paste(int l, int f, int x, int y, QString base64_img);
+	void setLogFile(const QString & file, bool append = false);
 
-	void Fill(int, int, QString);
-	void Resize(int, int, bool);
-	void Lfa(int, int, QString, QVariant);
-	void Lfc(int, int, int, int, bool);
-	// TODO lf creation
+	void writeLogFile(QString name, QJsonObject data);
+	void writeLogFile(const QString & name, const QString & data = QString());
 
-	void Reset();
+	bool logLine(QString * str = nullptr);
+	bool logLines(QStringList & list);
+	void resetLogReader();
+	void remove();
+
+	QTextStream & textStream();
 };
 
 #endif

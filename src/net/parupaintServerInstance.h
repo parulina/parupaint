@@ -7,12 +7,11 @@
 #include <QTimer>
 #include <QDir>
 
+#include "../core/parupaintRecordManager.h"
 #include "parupaintServer.h"
 
 class ParupaintBrush;
 class ParupaintPanvas;
-class ParupaintRecordManager;
-class ParupaintRecordPlayer;
 
 class ParupaintServerInstance : public ParupaintServer
 {
@@ -27,57 +26,45 @@ Q_OBJECT
 	int connectid;
 	QString server_password;
 	QDir ppweb_serve;
+	QDir parupaintlog_dir;
+
+	ParupaintRecordManager record_manager;
 
 	protected:
-	// Record related things (parupaintServerInstance.rec.cpp)
-	ParupaintRecordPlayer * record_player;
-	ParupaintRecordManager * record_manager;
-
-	void StopRecordSystems();
-	void StartRecordSystems();
-
-	void StartRecordTimer();
-	void RecordTimerStep();
-	void SaveRecordBrushes();
-	void RestoreRecordBrushes();
-
-	void RecordLineDecoder(const QString & line, bool recovery=false);
-	// play directly to canvas, no updates
-	void PlayRecordLog(const QString & file);
-	// end record related things
+	void objMessage(const QString & id, const QJsonObject & obj);
 
 	private slots:
 	void browserVisit(QTcpSocket * socket, const QString & path);
 
 	public:
 	~ParupaintServerInstance();
-	ParupaintServerInstance(quint16 , QObject * = nullptr);
+	ParupaintServerInstance(quint16 port, QObject * = nullptr);
+
+	void startRecord();
+	void backupState();
+	void restoreState();
+	void playLogFile(const QString & logfile, int limit = -1);
+	void doLine(const QString & line);
+	void doLines(const QStringList & lines);
 
 	void joinConnection(ParupaintConnection * con);
+	void leaveConnection(ParupaintConnection * con);
+	ParupaintConnection * getConnection(int id);
 	void setBrushesDrawing(bool stopdraw=false);
 
 	void sendInfo();
+	void doMessage(const QString & id, QJsonObject obj);
 
 	void setParupaintWebServeDir(QDir dir);
 	const QDir & parupaintWebServeDir() const;
+
+	void setParupaintLogDir(QDir dir);
+	const QDir & parupaintLogDir() const;
 
 	void setPassword(const QString & password);
 	const QString & password();
 
 	virtual void message(ParupaintConnection *, const QString &, const QByteArray & = QByteArray());
-
-	void ServerJoin(ParupaintConnection *, bool=true);
-	void ServerLeave(ParupaintConnection *, bool=true);
-	void ServerName(ParupaintConnection *, QString, bool=true);
-	void ServerChat(ParupaintConnection *, QString, bool=true);
-
-	// special - uses no id
-	void ServerLfa(int l, int f, const QString & attr, const QVariant & val, bool=true);
-	void ServerLfc(int l, int f, int lc, int fc, bool e, bool=true);
-	void ServerFill(int l, int f, QString, bool=true);
-	void ServerPaste(int l, int f, int x, int y, QImage img, bool propagate=true);
-	void ServerPaste(int l, int f, int x, int y, QString base64_img, bool propagate=true);
-	void ServerResize(int l, int f, bool r, bool propagate=true);
 
 	QJsonObject connectionObj(ParupaintConnection * con) const;
 	QJsonObject canvasObj() const;

@@ -10,6 +10,7 @@
 #include <QUrl>
 #include <QTime>
 #include <QInputDialog>
+#include <QStandardPaths>
 
 #include "net/parupaintServerInstance.h"
 #include "net/parupaintClientInstance.h"
@@ -86,6 +87,14 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 	if(server_str.isEmpty()){
 		ParupaintBundledServer* server = new ParupaintBundledServer(server_port, this);
 		server->setProtective(true);
+
+		// log dir is by default in ./
+		// when using built in server in the client, place it at %appdata%
+		QDir appdata(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+		appdata.mkpath(appdata.path());
+
+		server->setParupaintLogDir(appdata.path());
+		server->startRecord();
 
 		connect(main_window, &ParupaintWindow::doLocalSessionPassword, server, &ParupaintBundledServer::setPassword);
 

@@ -110,7 +110,7 @@ void ParupaintClientInstance::doChat(const QString & str)
 }
 void ParupaintClientInstance::doTyping()
 {
-	this->send("chat");
+	this->send("brush", { {"st", 1} });
 }
 
 void ParupaintClientInstance::doBrushUpdate(ParupaintBrush * brush)

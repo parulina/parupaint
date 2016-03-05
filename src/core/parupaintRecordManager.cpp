@@ -6,120 +6,92 @@
 #include <QColor>
 #include <QSize>
 
+#include <QJsonDocument>
+#include <QtMath>
 #include <QDebug>
 
 #define PARUPAINT_ENDL qSetFieldWidth(0) << endl << qSetFieldWidth(3)
 
+// manages the record file, storing snapshots and current line
+// also provides batches of lines for each tick
+
 ParupaintRecordManager::~ParupaintRecordManager()
 {
-	//temp_stream->flush();
-	temp_log.close();
-	delete temp_stream;
-}
-ParupaintRecordManager::ParupaintRecordManager(QString log) : temp_log(log), temp_stream(nullptr)
-{
-	if(temp_log.open(QFile::WriteOnly)){
-		qDebug() << "Session log file open.";
-		temp_stream = new QTextStream(&temp_log);
-	}
 }
 
-void ParupaintRecordManager::Write(QStringList list)
+ParupaintRecordManager::ParupaintRecordManager() :
+	text_stream(&log)
 {
-	*temp_stream << list.join(' ') << endl;
-	temp_stream->flush();
 }
 
-void ParupaintRecordManager::Join(int id)
+void ParupaintRecordManager::setLogFile(const QString & file, bool append)
 {
-	if(temp_stream){
-		this->Write({"join", QString::number(id)});
+	log.openLog(file);
+	if(!append) {
+		log.resetLog();
 	}
-}
-void ParupaintRecordManager::Leave(int id)
-{
-	if(temp_stream){
-		this->Write({"leave", QString::number(id)});
-	}
+
+	text_stream.reset();
 }
 
-void ParupaintRecordManager::Name(int id, QString name)
+void ParupaintRecordManager::writeLogFile(QString name, QJsonObject data)
 {
-	if(temp_stream){
-		this->Write({"name", QString::number(id), name});
-	}
-}
-void ParupaintRecordManager::Pos(int id, int x, int y, double p, bool d)
-{
-	if(temp_stream){
-		this->Write({"pos", QString::number(id), QString::number(x), QString::number(y), QString::number(p), QString::number(d)});
-	}
-}
-void ParupaintRecordManager::Tool(int id, int t)
-{
-	if(temp_stream){
-		this->Write({"tool", QString::number(id), QString::number(t)});
-	}
-}
-void ParupaintRecordManager::Lf(int id, int l, int f)
-{
-	if(temp_stream){
-		this->Write({"lf", QString::number(id), QString::number(l), QString::number(f)});
-	}
-}
-void ParupaintRecordManager::Color(int id, QString col)
-{
-	if(temp_stream){
-		this->Write({"color", QString::number(id), col});
-	}
-}
-void ParupaintRecordManager::Width(int id, double w)
-{
-	if(temp_stream){
-		this->Write({"width", QString::number(id), QString::number(w)});
-	}
-}
-void ParupaintRecordManager::Chat(int id, QString chat)
-{
-	if(temp_stream){
-		this->Write({"chat", QString::number(id), chat});
-	}
-}
-void ParupaintRecordManager::Paste(int l, int f, int x, int y, QString base64_img)
-{
-	if(temp_stream){
-		this->Write({"paste", QString::number(l), QString::number(f), QString::number(x), QString::number(y), base64_img});
-	}
-}
-void ParupaintRecordManager::Fill(int l, int f, QString col)
-{
-	if(temp_stream){
-		this->Write({"fill", QString::number(l), QString::number(f), col});
-	}
-}
-void ParupaintRecordManager::Resize(int width, int height, bool clear)
-{
-	if(temp_stream){
-		this->Write({"resize", QString::number(width), QString::number(height), QString::number(clear)});
-	}
-}
-void ParupaintRecordManager::Lfa(int l, int f, QString attr, QVariant val)
-{
-	if(temp_stream){
-		this->Write({"lfa", QString::number(l), QString::number(f), attr, val.toString()});
-	}
-}
-void ParupaintRecordManager::Lfc(int l, int f, int lc, int fc, bool ext)
-{
-	if(temp_stream){
-		this->Write({"lfc", QString::number(l), QString::number(f), QString::number(lc), QString::number(fc), QString::number(ext)});
-	}
+	if(data.isEmpty()) this->writeLogFile(name);
+
+	if(data.contains("id") && data["id"].isDouble())
+		name = QString("%1:%2").arg(name).arg(data.take("id").toInt(0));
+
+	if(data.contains("x") && data.value("x").isDouble())
+		data["x"] = qFloor(data["x"].toDouble());
+
+	if(data.contains("y") && data.value("y").isDouble())
+		data["y"] = qFloor(data["y"].toInt());
+
+	this->writeLogFile(name, QJsonDocument(data).toJson(QJsonDocument::Compact));
 }
 
-void ParupaintRecordManager::Reset()
+void ParupaintRecordManager::writeLogFile(const QString & name, const QString & data)
 {
-	if(temp_stream){
-		temp_log.resize(0);
-		temp_stream->seek(0);
+	log.writeLog(name, data);
+}
+
+bool ParupaintRecordManager::logLine(QString * str)
+{
+	bool r;
+	do {
+		// anything over a MB - can't do
+		r = text_stream.readLineInto(str, 1024*1024);
+
+	} while((str->trimmed().startsWith('#') || str->isEmpty()) && r);
+	
+	return r;
+}
+
+bool ParupaintRecordManager::logLines(QStringList & list)
+{
+	if(text_stream.atEnd()) return false;
+
+	list.clear();
+
+	QString line;
+	while(this->logLine(&line)){
+		if(line.startsWith("tick")) break;
+		list.append(line);
 	}
+	return true;
+}
+
+void ParupaintRecordManager::resetLogReader()
+{
+	text_stream.seek(0);
+}
+
+void ParupaintRecordManager::remove()
+{
+	log.remove();
+}
+
+QTextStream & ParupaintRecordManager::textStream()
+{
+	return text_stream;
 }
