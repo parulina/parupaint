@@ -91,6 +91,8 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 		"brush_eraser=E",
 		"brush_pencil=B",
 		"brush_fillpreview=T",
+		"brush_sizeinc=.",
+		"brush_sizedec=,",
 
 		"pick_layer_color=R",
 		"pick_canvas_color=Shift+R",
@@ -660,6 +662,11 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 				qreal op = frame->opacity() + (shortcut_name.endsWith("_opacityinc") ? 0.1 : -0.1);
 				client->doLayerFrameAttribute(scene->canvas()->currentLayer(), scene->canvas()->currentFrame(), "frame-opacity", op);
 			}
+		} else if(shortcut_name == "brush_sizeinc" || shortcut_name == "brush_sizedec"){
+			ParupaintBrush * brush = brushes->brush();
+			brush->setSize(brush->size() + (shortcut_name.endsWith("_sizeinc") ? 4 : -4));
+			scene->updateMainCursor(brush);
+			client->doBrushUpdate(brush);
 		}
 
 	}
