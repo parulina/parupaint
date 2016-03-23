@@ -45,7 +45,7 @@ void ParupaintRecordManager::writeLogFile(QString name, QJsonObject data)
 		data["x"] = qFloor(data["x"].toDouble());
 
 	if(data.contains("y") && data.value("y").isDouble())
-		data["y"] = qFloor(data["y"].toInt());
+		data["y"] = qFloor(data["y"].toDouble());
 
 	this->writeLogFile(name, QJsonDocument(data).toJson(QJsonDocument::Compact));
 }

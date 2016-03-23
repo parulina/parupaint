@@ -301,33 +301,35 @@ void ParupaintServerInstance::doMessage(const QString & id, QJsonObject obj)
 
 			// convert json stuff to map
 			QVariantMap map = {{"id", i}};
-			if(obj["st"].isDouble()) map["st"] = obj["st"].toInt();
+			if(obj.contains("st") && obj["st"].isDouble()) map["st"] = obj["st"].toInt();
 
-			if(obj["x"].isDouble()) map["x"] = obj["x"].toDouble();
-			if(obj["y"].isDouble()) map["y"] = obj["y"].toDouble();
-			if(obj["p"].isDouble()) map["p"] = obj["p"].toDouble();
-			if(obj["d"].isBool())   map["d"] = obj["d"].toBool();
+			if(obj.contains("x") && obj["x"].isDouble()) map["x"] = obj["x"].toDouble();
+			if(obj.contains("y") && obj["y"].isDouble()) map["y"] = obj["y"].toDouble();
+			if(obj.contains("p") && obj["p"].isDouble()) map["p"] = obj["p"].toDouble();
+			if(obj.contains("d") && obj["d"].isBool())   map["d"] = obj["d"].toBool();
 
-			if(obj["c"].isString()) { map["c"] = QColor(obj["c"].toString());
+			if(obj.contains("c") && obj["c"].isString()) { map["c"] = QColor(obj["c"].toString());
 				record_manager.writeLogFile(id, { {"id", obj["id"]}, {"c", obj["c"]} });
 			}
-			if(obj["s"].isDouble()) { map["s"] = obj["s"].toDouble();
+			if(obj.contains("s") && obj["s"].isDouble()) { map["s"] = obj["s"].toDouble();
 				record_manager.writeLogFile(id, { {"id", obj["id"]}, {"s", obj["s"]} });
 			}
-			if(obj["t"].isDouble()) { map["t"] = obj["t"].toInt();
+			if(obj.contains("t") && obj["t"].isDouble()) { map["t"] = obj["t"].toInt();
 				record_manager.writeLogFile(id, { {"id", obj["id"]}, {"t", obj["t"]} });
 			}
-			if(obj["l"].isDouble()) { map["l"] = obj["l"].toInt();
+			if(obj.contains("l") && obj["l"].isDouble()) { map["l"] = obj["l"].toInt();
 				record_manager.writeLogFile(id, { {"id", obj["id"]}, {"l", obj["l"]} });
 			}
-			if(obj["f"].isDouble()) { map["f"] = obj["f"].toInt();
+			if(obj.contains("f") && obj["f"].isDouble()) { map["f"] = obj["f"].toInt();
 				record_manager.writeLogFile(id, { {"id", obj["id"]}, {"f", obj["f"]} });
 			}
 
 
 			// assign the stuff
 			ParupaintCommonOperations::BrushOp(brush, draw_line, map);
-			if(map.contains("d"))     record_manager.writeLogFile(id, { {"id", obj["id"]}, {"d", obj["d"]}, {"x", brush->x()}, {"y", brush->y()} });
+			if(map.contains("d")) {
+				record_manager.writeLogFile(id, { {"id", obj["id"]}, {"d", obj["d"]}, {"x", brush->x()}, {"y", brush->y()} });
+			}
 
 			if(brush->drawing()){
 				ParupaintFrameBrushOps::stroke(canvas, brush, draw_line, old_size);
