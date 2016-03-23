@@ -308,21 +308,12 @@ void ParupaintServerInstance::doMessage(const QString & id, QJsonObject obj)
 			if(obj.contains("p") && obj["p"].isDouble()) map["p"] = obj["p"].toDouble();
 			if(obj.contains("d") && obj["d"].isBool())   map["d"] = obj["d"].toBool();
 
-			if(obj.contains("c") && obj["c"].isString()) { map["c"] = QColor(obj["c"].toString());
-				record_manager.writeLogFile(id, { {"id", obj["id"]}, {"c", obj["c"]} });
-			}
-			if(obj.contains("s") && obj["s"].isDouble()) { map["s"] = obj["s"].toDouble();
-				record_manager.writeLogFile(id, { {"id", obj["id"]}, {"s", obj["s"]} });
-			}
-			if(obj.contains("t") && obj["t"].isDouble()) { map["t"] = obj["t"].toInt();
-				record_manager.writeLogFile(id, { {"id", obj["id"]}, {"t", obj["t"]} });
-			}
-			if(obj.contains("l") && obj["l"].isDouble()) { map["l"] = obj["l"].toInt();
-				record_manager.writeLogFile(id, { {"id", obj["id"]}, {"l", obj["l"]} });
-			}
-			if(obj.contains("f") && obj["f"].isDouble()) { map["f"] = obj["f"].toInt();
-				record_manager.writeLogFile(id, { {"id", obj["id"]}, {"f", obj["f"]} });
-			}
+			if(obj.contains("c") && obj["c"].isString()) map["c"] = QColor(obj["c"].toString());
+			if(obj.contains("s") && obj["s"].isDouble()) map["s"] = obj["s"].toDouble();
+
+			if(obj.contains("t") && obj["t"].isDouble()) map["t"] = obj["t"].toInt();
+			if(obj.contains("l") && obj["l"].isDouble()) map["l"] = obj["l"].toInt();
+			if(obj.contains("f") && obj["f"].isDouble()) map["f"] = obj["f"].toInt();
 
 
 			// assign the stuff
@@ -330,6 +321,13 @@ void ParupaintServerInstance::doMessage(const QString & id, QJsonObject obj)
 			if(map.contains("d")) {
 				record_manager.writeLogFile(id, { {"id", obj["id"]}, {"d", obj["d"]}, {"x", brush->x()}, {"y", brush->y()} });
 			}
+
+			if(map.contains("c")) record_manager.writeLogFile(id, { {"id", map["id"].toInt()}, {"c", map["c"].value<QColor>().name(QColor::HexArgb)} });
+			if(map.contains("s")) record_manager.writeLogFile(id, { {"id", map["id"].toInt()}, {"s", map["s"].toInt()} });
+			if(map.contains("t")) record_manager.writeLogFile(id, { {"id", map["id"].toInt()}, {"t", map["t"].toInt()} });
+			if(map.contains("l")) record_manager.writeLogFile(id, { {"id", map["id"].toInt()}, {"l", map["l"].toInt()} });
+			if(map.contains("f")) record_manager.writeLogFile(id, { {"id", map["id"].toInt()}, {"f", map["f"].toInt()} });
+
 
 			if(brush->drawing()){
 				ParupaintFrameBrushOps::stroke(canvas, brush, draw_line, old_size);
