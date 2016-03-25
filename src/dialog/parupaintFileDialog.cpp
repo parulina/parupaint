@@ -125,7 +125,7 @@ ParupaintFileDialog::ParupaintFileDialog(ParupaintFileDialogType type, QWidget *
 
 	// if file isn't set by outside, put the file as the last selected one
 	QFileInfo lastfile(cfg.value("client/" + config_key, ".").toString());
-	if(lastfile.isFile() && (selectfile.isEmpty() && lastfile.fileName() == selectfile)){
+	if(lastfile.isFile() && (selectfile.isEmpty() || lastfile.fileName() == selectfile)){
 		qDebug() << "Settings from lastfile";
 		this->setDirectory(lastfile.absoluteDir());
 		this->selectFile(lastfile.fileName());
