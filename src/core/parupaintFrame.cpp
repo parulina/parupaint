@@ -89,6 +89,8 @@ QRect ParupaintFrame::drawLine(const QLineF & line, QPen pen)
 	qreal ps = pen.widthF();
 	QLine pixel_line(QPoint(qFloor(line.x1()), qFloor(line.y1())), QPoint(qFloor(line.x2()), qFloor(line.y2())));
 
+	QRect changed_rect = QRect(line.p1().toPoint(), line.p2().toPoint()).adjusted(-ps, -ps, ps, ps);
+
 	QPainter painter(&frame);
 
 	QBrush new_brush = pen.brush();
@@ -114,43 +116,57 @@ QRect ParupaintFrame::drawLine(const QLineF & line, QPen pen)
 		painter.setPen(pen);
 		painter.setBrush(new_brush);
 
-		if(s1 >= 1 && s2 >= 1 && (s1 > s2 ? s1-s2 : s2-s1) > 0.1){
+		if(s1 >= 1 && s2 >= 1 && (s1 > s2 ? s1-s2 : s2-s1) > 0.001){
+
+			// i switched from trying to figuring out the tangent to simple angle calculation
+			// if you would like to mess around with tangents and acos and stuff, be my guest
 			const qreal d = line.length(),
-				    r = qAtan2(line.y2() - line.y1(), line.x2() - line.x1()),
-			            dr = (s1 > s2) ? s1 - s2 : s2 - s1;
-			const qreal tan = qSqrt((d * d) + (dr * dr));
+			      r = qAtan2(line.y2() - line.y1(), line.x2() - line.x1()),
+			      rr = r - M_PI/2;
 
-			const qreal p1 = qSqrt((tan * tan) + (s2 * s2)),
-			            p2 = qSqrt((tan * tan) + (s1 * s1));
+			QVector<QPointF> points;
+			if(s2 != 1){
+				const qreal s = s2/2.0;
+				points << line.p1() + QPointF(s * qCos(rr), s * qSin(rr));
+				points << line.p1() - QPointF(s * qCos(rr), s * qSin(rr));
+			} else points << line.p1();
 
-			const qreal theta1 = qAcos((s1*s1 + d*d - p1*p1) / (2 * s1 * d)) + r,
-			            theta2 = qAcos((s2*s2 + d*d - p2*p2) / (2 * s2 * d)) + r;
+			if(s1 != 1){
+				const qreal s = s1/2.0;
+				points << line.p2() - QPointF(s * qCos(rr), s * qSin(rr));
+				points << line.p2() + QPointF(s * qCos(rr), s * qSin(rr));
+			} else points << line.p2();
 
-			QPointF tf1((s2/2) * qCos(theta1), (s2/2) * qSin(theta1)),
-				tf2((s1/2) * qCos(theta2), (s1/2) * qSin(theta2));
-
-			const QPolygonF poly(QVector<QPointF>{
-				line.p1() + tf1,
-				line.p2() + tf2,
-				line.p2() + QPointF(-(s1/2) * qCos(theta1), -(s1/2) * qSin(theta1)),
-				line.p1() + QPointF(-(s2/2) * qCos(theta2), -(s2/2) * qSin(theta2))
-			});
 			QPainterPath path;
-			path.addPolygon(poly);
+
+			path.addPolygon(QPolygonF(points));
+			path.closeSubpath();
+
+			if(s2 != 1){
+				path.moveTo(line.p1());
+				path.arcTo(QRectF(line.p1() - QPointF(s2/2, s2/2), QSizeF(s2, s2)), line.angle()+90, 180);
+				path.closeSubpath();
+			}
+			/*
+			// unsure if this is needed
+			if(s1 != 1){
+				path.moveTo(line.p2());
+				path.arcTo(QRectF(line.p2() - QPointF(s1/2, s1/2), QSizeF(s1, s1)), line.angle()-90, 180);
+				path.closeSubpath();
+			}
+			*/
 			painter.fillPath(path, new_brush);
 
-			painter.setPen(Qt::NoPen);
-			painter.drawEllipse(line.p1(), s2/2, s2/2);
-			painter.drawEllipse(line.p2(), s1/2, s1/2);
+			changed_rect = path.boundingRect().toRect();
 
 		} else {
 			painter.drawLine(pixel_line);
+			changed_rect = changed_rect.united(QRect(line.p1().toPoint() - QPoint(s2/2, s2/2), QSize(s2, s2)));
+			changed_rect = changed_rect.united(QRect(line.p2().toPoint() - QPoint(s1/2, s1/2), QSize(s1, s1)));
 		}
 	}
 	painter.end();
 
-	ps = pen.width();
-	QRect changed_rect = QRect(line.p1().toPoint(), line.p2().toPoint()).adjusted(-ps, -ps, ps, ps);
 	emit onChange(changed_rect);
 	return changed_rect;
 }

@@ -116,7 +116,7 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * 
 			pen.setColor(color);
 		}
 		default: {
-			frame->drawLine(QLineF(op, np), pen);
+			urect = frame->drawLine(QLineF(op, np), pen);
 		}
 	}
 	return urect.adjusted(-1, -1, 1, 1);
