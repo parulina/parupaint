@@ -6,15 +6,21 @@
 #include <QPen>
 #include <QColor>
 
-enum ParupaintBrushToolTypes {
+enum ParupaintBrushPattern {
+	BrushPatternNone = 0,
+
+	BrushShadingPattern,   // Dense5Pattern
+	BrushHighlightPattern, // Dense6Pattern
+	BrushCrossPattern,     // DiagCrossPattern
+	BrushGridPattern,      // Own pattern
+
+	BrushPatternMax
+};
+enum ParupaintBrushTool {
 	BrushToolNone = 0,
 	BrushToolFloodFill,
 	BrushToolOpacityDrawing,
 	BrushToolLine,
-	BrushToolDotShadingPattern,	// Dense5Pattern
-	BrushToolDotHighlightPattern,	// Dense6Pattern
-	BrushToolCrossPattern,		// DiagCrossPattern
-	BrushToolGrid,			// custom
 	BrushToolMax // don't change this!
 };
 
@@ -34,15 +40,17 @@ Q_OBJECT
 
 	bool 	brush_drawing;
 	int 	brush_tool;
+	int 	brush_pattern;
 
 	signals:
 	void onNameChange(const QString &);
 	void onColorChange(const QColor &);
 	void onPositionChange(const QPointF &);
 	void onToolChange(int);
+	void onPatternChange(int);
 
 	public:
-	ParupaintBrush(QObject * = nullptr, qreal size = 1.0, const QColor = QColor(-1, -1, -1, -1), const QString & name = "", int tool = ParupaintBrushToolTypes::BrushToolNone);
+	ParupaintBrush(QObject * = nullptr, qreal size = 1.0, const QColor = QColor(-1, -1, -1, -1), const QString & name = "", int tool = ParupaintBrushTool::BrushToolNone, int pattern = ParupaintBrushPattern::BrushPatternNone);
 
 	virtual void setName(const QString &);
 	virtual void setColor(const QColor &);
@@ -56,6 +64,7 @@ Q_OBJECT
 	void setFrame(int f);
 	void setDrawing(bool);
 	void setTool(int);
+	void setPattern(int);
 
 	const QString & name() const;
 	const QColor & color() const;
@@ -66,16 +75,18 @@ Q_OBJECT
 	int frame() const;
 	bool drawing() const;
 	int tool() const;
+	int pattern() const;
 
 	// handy funcs
 	qreal x();
 	qreal y();
 	QRgb rgba();
-	QPen pen() ;
+	QPen pen();
 	QPoint pixelPosition();
 	qreal pressureSize();
 	QString colorString();
 	QRectF localRect();
+	QImage patternImage();
 
 	void copyTo(ParupaintBrush &);
 };

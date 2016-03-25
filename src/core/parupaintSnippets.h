@@ -30,7 +30,7 @@ class ParupaintFillHelper {
 		return QImage(img_data, ww, hh, fmt);
 	}
 	QImage mask(){
-		return mask_image;
+		return mask_image.createAlphaMask();
 	}
 
 	QRect fill(int x, int y, const QRgb to) { return fill(x, y, pixel(x, y), to); }

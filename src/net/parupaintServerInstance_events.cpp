@@ -313,6 +313,7 @@ void ParupaintServerInstance::doMessage(const QString & id, QJsonObject obj)
 			if(obj.contains("s") && obj["s"].isDouble()) map["s"] = obj["s"].toDouble();
 
 			if(obj.contains("t") && obj["t"].isDouble()) map["t"] = obj["t"].toInt();
+			if(obj.contains("a") && obj["a"].isDouble()) map["a"] = obj["a"].toInt();
 			if(obj.contains("l") && obj["l"].isDouble()) map["l"] = obj["l"].toInt();
 			if(obj.contains("f") && obj["f"].isDouble()) map["f"] = obj["f"].toInt();
 
@@ -323,9 +324,11 @@ void ParupaintServerInstance::doMessage(const QString & id, QJsonObject obj)
 				record_manager.writeLogFile(id, { {"id", obj["id"]}, {"d", obj["d"]}, {"x", brush->x()}, {"y", brush->y()} });
 			}
 
+			// could possibly be done a lot smoother...
 			if(map.contains("c")) record_manager.writeLogFile(id, { {"id", map["id"].toInt()}, {"c", map["c"].value<QColor>().name(QColor::HexArgb)} });
 			if(map.contains("s")) record_manager.writeLogFile(id, { {"id", map["id"].toInt()}, {"s", map["s"].toInt()} });
 			if(map.contains("t")) record_manager.writeLogFile(id, { {"id", map["id"].toInt()}, {"t", map["t"].toInt()} });
+			if(map.contains("a")) record_manager.writeLogFile(id, { {"id", map["id"].toInt()}, {"a", map["a"].toInt()} });
 			if(map.contains("l")) record_manager.writeLogFile(id, { {"id", map["id"].toInt()}, {"l", map["l"].toInt()} });
 			if(map.contains("f")) record_manager.writeLogFile(id, { {"id", map["id"].toInt()}, {"f", map["f"].toInt()} });
 
@@ -333,7 +336,7 @@ void ParupaintServerInstance::doMessage(const QString & id, QJsonObject obj)
 			if(brush->drawing()){
 				ParupaintFrameBrushOps::stroke(canvas, brush, draw_line, old_size);
 			}
-			if(brush->tool() == ParupaintBrushToolTypes::BrushToolFloodFill) brush->setDrawing(false);
+			if(brush->tool() == ParupaintBrushTool::BrushToolFloodFill) brush->setDrawing(false);
 
 
 			// write new pos

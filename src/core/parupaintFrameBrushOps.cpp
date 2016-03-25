@@ -9,33 +9,6 @@
 #include <QDebug>
 #include <QBitmap>
 
-
-// Lifted from:
-// src/gui/painting/qbrush.cpp
-static uchar patterns[][8] = {
-	{0xaa, 0x44, 0xaa, 0x11, 0xaa, 0x44, 0xaa, 0x11}, // Dense5Pattern
-	{0x00, 0x11, 0x00, 0x44, 0x00, 0x11, 0x00, 0x44}, // Dense6Pattern (modified to interweave Dense5Pattern)
-	{0x81, 0x42, 0x24, 0x18, 0x18, 0x24, 0x42, 0x81}, // DiagCrossPattern
-	{0xFF, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80}  // Custom checker pattern
-};
-
-// QBitmap (inherits QPixmap) does not work on non-gui builds.
-// Qt segfaults (???) if you attempt to do it anyways...
-// so we end up using QImage instead as a brush texture.
-inline QImage customPatternToImage(int pattern, const QColor & col = QColor(Qt::black))
-{
-	QImage img(QSize(8, 8), QImage::Format_MonoLSB);
-	img.setColor(0, QColor(Qt::transparent).rgba());
-	img.setColor(1, QColor(Qt::white).rgba());
-	if(col.alpha() != 0) img.setColor(1, col.rgba());
-
-	for(int y = 0; y < 8; ++y){
-		memcpy(img.scanLine(y), patterns[pattern] + y, 1);
-	}
-	return img;
-}
-
-
 QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * brush, const QPointF & pos, const QPointF & old_pos, const qreal s1)
 {
 	return ParupaintFrameBrushOps::stroke(panvas, brush, QLineF(old_pos, pos), s1);
@@ -63,7 +36,7 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * 
 		op = QPointF(qFloor(op.x()), qFloor(op.y()));
 		np = QPointF(qFloor(np.x()), qFloor(np.y()));
 	}
-	if(brush->tool() == ParupaintBrushToolTypes::BrushToolOpacityDrawing){
+	if(brush->tool() == ParupaintBrushTool::BrushToolOpacityDrawing){
 		size = brush->size();
 	}
 
@@ -76,37 +49,21 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * 
 	pen.setWidthF(size);
 	pen.setMiterLimit(size);
 
-	if(brush->tool() != ParupaintBrushToolTypes::BrushToolLine){
+	if(brush->tool() != ParupaintBrushTool::BrushToolLine){
 		pen.setMiterLimit((s1 > -1) ? s1 : size);
 	}
-
-	switch(brush->tool()){
-		case ParupaintBrushToolTypes::BrushToolDotShadingPattern: {
-			pen_brush.setTextureImage(customPatternToImage(0, color));
-			break;
-		}
-		case ParupaintBrushToolTypes::BrushToolDotHighlightPattern: {
-			pen_brush.setTextureImage(customPatternToImage(1, color));
-			break;
-		}
-		case ParupaintBrushToolTypes::BrushToolCrossPattern: {
-			pen_brush.setTextureImage(customPatternToImage(2, color));
-			break;
-		}
-		case ParupaintBrushToolTypes::BrushToolGrid: {
-			pen_brush.setTextureImage(customPatternToImage(3, color));
-			break;
-		}
+	if(brush->pattern() != ParupaintBrushPattern::BrushPatternNone){
+		pen_brush.setTextureImage(brush->patternImage());
 	}
 	pen.setBrush(pen_brush);
 
 	switch(brush->tool()){
-		case ParupaintBrushToolTypes::BrushToolFloodFill: {
-			urect = frame->drawFill(np, color);
+		case ParupaintBrushTool::BrushToolFloodFill: {
+			urect = frame->drawFill(np, color, pen_brush);
 			break;
 		}
 		// intentional fallthrough
-		case ParupaintBrushToolTypes::BrushToolOpacityDrawing: {
+		case ParupaintBrushTool::BrushToolOpacityDrawing: {
 
 			color.setAlpha(brush->pressure() * color.alpha());
 			if(color.alpha() == 0) color.setAlpha(1);

@@ -6,6 +6,7 @@
 #include <QPainter>
 #include <QPen>
 #include <QRgb>
+#include <QBitmap>
 
 #include "parupaintLayer.h" // parentLayer
 #include "parupaintSnippets.h"
@@ -176,19 +177,31 @@ QRect ParupaintFrame::drawImage(const QPointF & pos, const QImage & image)
 	QRectF target(pos, image.size()),
 	       source(QPointF(0, 0), image.size());
 	painter.drawImage(target, image, source);
+	painter.end();
 
 	QRect changed_rect = target.toRect() & frame.rect();
 	emit onChange(changed_rect);
 	return changed_rect;
 }
-QRect ParupaintFrame::drawFill(const QPointF & pos, QColor to_color, QColor from_color)
+QRect ParupaintFrame::drawFill(const QPointF & pos, QColor to_color, const QBrush & brush)
 {
-	if(!from_color.isValid()){
-		from_color = frame.pixel(pos.toPoint());
-	}
 	ParupaintFillHelper help(frame);
 	QRect rect = help.fill(pos.x(), pos.y(), to_color.rgba());
-	this->drawImage(QPointF(0, 0), help.mask());
+
+	QPixmap bm = QPixmap::fromImage(help.mask());
+
+	QPainter painter(&frame);
+	painter.setClipRegion(QRegion(bm));
+
+	QBrush nb = brush;
+	if(nb.color().alpha() == 0){
+		nb.setColor(Qt::white);
+		painter.setCompositionMode(QPainter::CompositionMode_Clear);
+	}
+	painter.setBrush(nb);
+
+	painter.fillRect(frame.rect(), nb);
+	painter.end();
 
 	emit onChange(rect);
 	return rect;

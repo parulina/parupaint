@@ -102,7 +102,7 @@ QRect ParupaintFillHelper::fill(int x, int y, const QRgb orig, const QRgb to){
 		for(int x = tx; x < tx2; x++){
 			above_pixels[x] = below_pixels[x] = false;
 			*(QRgb*)(img_data + (4 * (x + (ty * ww)))) = to;
-			*(QRgb*)(mask_image.bits() + (4 * (x + (ty * ww)))) = to;
+			*(QRgb*)(mask_image.bits() + (4 * (x + (ty * ww)))) = QColor(Qt::white).rgba();
 
 			// first check if the above pixel is valid to change
 			// if it is, then check if the neighboring pixel to the above pixel is planned to change.

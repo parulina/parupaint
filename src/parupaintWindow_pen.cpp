@@ -45,7 +45,7 @@ void ParupaintWindow::OnPenPress(const penInfo & info)
 	}
 
 	if(current_brush->drawing()){
-		if(current_brush->tool() == ParupaintBrushToolTypes::BrushToolLine){
+		if(current_brush->tool() == ParupaintBrushTool::BrushToolLine){
 			current_brush->setPosition(info.pos);
 		} else {
 			QRect r = ParupaintFrameBrushOps::stroke(scene->canvas(), current_brush, current_brush->pixelPosition());
@@ -56,7 +56,7 @@ void ParupaintWindow::OnPenPress(const penInfo & info)
 	scene->updateMainCursor(brushes->brush());
 	client->doBrushUpdate(current_brush);
 
-	if(current_brush->tool() == ParupaintBrushToolTypes::BrushToolFloodFill){
+	if(current_brush->tool() == ParupaintBrushTool::BrushToolFloodFill){
 		current_brush->setDrawing(false);
 	}
 }
@@ -126,7 +126,7 @@ void ParupaintWindow::OnPenMove(const penInfo& info)
 void ParupaintWindow::OnPenRelease(const penInfo& info)
 {
 	ParupaintBrush * current_brush = brushes->brush();
-	if(current_brush->tool() == ParupaintBrushToolTypes::BrushToolLine && current_brush->drawing()){
+	if(current_brush->tool() == ParupaintBrushTool::BrushToolLine && current_brush->drawing()){
 
 		current_brush->setPressure(1.0);
 		QRect r = ParupaintFrameBrushOps::stroke(scene->canvas(), current_brush, info.pos, current_brush->position());

@@ -5,6 +5,7 @@ class ParupaintLayer;
 
 #include <QObject>
 #include <QImage>
+#include <QBrush>
 #include <QColor>
 
 class ParupaintFrame : public QObject
@@ -39,7 +40,7 @@ Q_OBJECT
 	QRect drawLine (const QLineF & line, const QColor, const qreal s1, const qreal s2);
 	QRect drawLine (const QLineF & line, QPen);
 	QRect drawImage(const QPointF & pos, const QImage &);
-	QRect drawFill (const QPointF & pos, QColor to_color, QColor from_color = QColor());
+	QRect drawFill (const QPointF & pos, QColor to_color, const QBrush & brush = QBrush());
 };
 
 #endif

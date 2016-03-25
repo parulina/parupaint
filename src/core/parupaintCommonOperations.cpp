@@ -173,6 +173,7 @@ bool ParupaintCommonOperations::BrushOp(ParupaintBrush * brush, QLineF & line, c
 	if(data["p"].type() == QVariant::Double) brush->setPressure(data["p"].toDouble());
 	if(data["c"].type() == QVariant::Color)  brush->setColor(data["c"].value<QColor>());
 	if(data["t"].type() == QVariant::Int)    brush->setTool(data["t"].toInt());
+	if(data["a"].type() == QVariant::Int)    brush->setPattern(data["a"].toInt());
 	if(data["l"].type() == QVariant::Int)    brush->setLayer(data["l"].toInt());
 	if(data["f"].type() == QVariant::Int)    brush->setFrame(data["f"].toInt());
 

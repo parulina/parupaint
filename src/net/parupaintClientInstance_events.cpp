@@ -99,6 +99,7 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 			if(object["l"].isDouble()) map["l"] = object["l"].toInt();
 			if(object["f"].isDouble()) map["f"] = object["f"].toInt();
 			if(object["t"].isDouble()) map["t"] = object["t"].toInt();
+			if(object["a"].isDouble()) map["a"] = object["a"].toInt();
 			if(object["d"].isBool())   map["d"] = object["d"].toBool();
 			if(object["c"].isString()) map["c"] = QColor(object["c"].toString());
 

@@ -97,6 +97,7 @@ ParupaintVisualCursor::ParupaintVisualCursor(QGraphicsItem * parent) :
 
 	connect(this, &ParupaintBrush::onColorChange, this, &ParupaintVisualCursor::updateChanges);
 	connect(this, &ParupaintBrush::onToolChange, this, &ParupaintVisualCursor::updateChanges);
+	connect(this, &ParupaintBrush::onPatternChange, this, &ParupaintVisualCursor::updateChanges);
 	// needed because setPos is overloaded.
 	connect(this, &ParupaintBrush::onPositionChange, [this](const QPointF & pos){
 		this->setPos(pos);
@@ -137,7 +138,7 @@ void ParupaintVisualCursor::paint(QPainter* painter, const QStyleOptionGraphicsI
 {
 	qreal p = this->pressure(),
 	      w = this->size();
-	if(this->tool() == ParupaintBrushToolTypes::BrushToolFloodFill)
+	if(this->tool() == ParupaintBrushTool::BrushToolFloodFill)
 		w = 1;
 
 	QRectF cp((-QPointF((w*p)/2, (w*p)/2)),	QSizeF(w*p, w*p)),
@@ -157,9 +158,21 @@ void ParupaintVisualCursor::paint(QPainter* painter, const QStyleOptionGraphicsI
 
 		painter->restore();
 	}
+
+	// draw pattern
+	if(w > 1 && this->pattern() != ParupaintBrushPattern::BrushPatternNone){
+		painter->save();
+
+		painter->setBrush(QBrush(this->patternImage()));
+		painter->drawEllipse(cc);
+
+		painter->restore();
+	}
+
 	// draw outer ring
 	if(true){
 		painter->save();
+
 
 		QPen outer_pen(Qt::white);
 		outer_pen.setWidth(1);

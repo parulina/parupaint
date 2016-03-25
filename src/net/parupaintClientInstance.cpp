@@ -144,6 +144,9 @@ void ParupaintClientInstance::doBrushUpdate(ParupaintBrush * brush)
 	if(brush->tool() != shadow_brush.tool())
 		obj["t"] = brush->tool();
 
+	if(brush->pattern() != shadow_brush.pattern())
+		obj["a"] = brush->pattern();
+
 	if(obj.length()){
 		this->send("brush", obj);
 	}

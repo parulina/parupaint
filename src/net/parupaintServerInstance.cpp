@@ -338,6 +338,7 @@ QJsonObject ParupaintServerInstance::connectionObj(ParupaintConnection * con) co
 		obj["y"] = brush->y();
 		obj["s"] = brush->size();
 		obj["t"] = brush->tool();
+		obj["a"] = brush->pattern();
 		obj["l"] = brush->layer();
 		obj["f"] = brush->frame();
 	}

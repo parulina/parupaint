@@ -90,6 +90,8 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 
 		"brush_eraser=E",
 		"brush_pencil=B",
+		"brush_tool=Q",
+		"brush_pattern=W",
 		"brush_fillpreview=T",
 		"brush_sizeinc=.",
 		"brush_sizedec=,",
@@ -97,11 +99,6 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 		"pick_layer_color=R",
 		"pick_canvas_color=Shift+R",
 		"color_picker=C",
-
-		"tool_fill=Q",
-		"tool_opacity=Shift+Q",
-		"tool_dotpattern=W",
-		"tool_line=Shift+W",
 
 		"reload_canvas=Ctrl+Shift+R",
 		"reload_image=Ctrl+R",
@@ -407,9 +404,15 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 		if(scene->canvas()->hasPastePreview()){
 			scene->canvas()->setPastePreview();
 		} else if(brush){
-			if(brush->tool() != ParupaintBrushToolTypes::BrushToolNone){
+			if(brush->pattern() != ParupaintBrushPattern::BrushPatternNone){
 
-				brush->setTool(ParupaintBrushToolTypes::BrushToolNone);
+				brush->setPattern(ParupaintBrushPattern::BrushPatternNone);
+				scene->updateMainCursor(brush);
+				client->doBrushUpdate(brush);
+			}
+			if(brush->tool() != ParupaintBrushTool::BrushToolNone){
+
+				brush->setTool(ParupaintBrushTool::BrushToolNone);
 				scene->updateMainCursor(brush);
 				client->doBrushUpdate(brush);
 			}
@@ -527,6 +530,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			if(shortcut_name.endsWith("pencil")){
 				brushes->clearToggle();
 				brushes->setBrush(0);
+				brushes->brush()->setDrawing(false);
 
 				scene->updateMainCursor(brushes->brush());
 				client->doBrushUpdate(brushes->brush());
@@ -535,6 +539,8 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 
 			} else if(shortcut_name.endsWith("eraser")){
 				brushes->toggleBrush(1);
+				brushes->brush()->setDrawing(false);
+
 				scene->updateMainCursor(brushes->brush());
 				client->doBrushUpdate(brushes->brush());
 
@@ -546,45 +552,31 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 
 				ParupaintFillHelper help(fimg);
 				help.fill(brush->x(), brush->y(), brush->rgba());
-				QImage mask = help.mask();
+				this->scene->canvas()->setFillPreview(help.image());
 
-				this->scene->canvas()->setFillPreview(mask);
-			}
-		} else if(shortcut_name.startsWith("tool_")){
+			} else if(shortcut_name.endsWith("tool")){
 
-			ParupaintBrush * brush = brushes->brush();
-			int tool = ParupaintBrushToolTypes::BrushToolNone;
+				ParupaintBrush * brush = brushes->brush();
+				int tool = brush->tool() + 1;
+				if(tool == ParupaintBrushTool::BrushToolMax)
+					tool = ParupaintBrushTool::BrushToolNone;
 
-			if(shortcut_name.endsWith("fill")) {
-				if(brush->tool() == ParupaintBrushToolTypes::BrushToolNone)
-					tool = ParupaintBrushToolTypes::BrushToolFloodFill;
-			}
-			if(shortcut_name.endsWith("dotpattern")){
-				switch(brush->tool()){
+				qDebug() << "Tool" << tool;
+				brush->setTool(tool);
+				scene->updateMainCursor(brush);
+				client->doBrushUpdate(brush);
 
-					case ParupaintBrushToolTypes::BrushToolNone:
-						tool = ParupaintBrushToolTypes::BrushToolDotShadingPattern; break;
-					case ParupaintBrushToolTypes::BrushToolDotShadingPattern:
-						tool = ParupaintBrushToolTypes::BrushToolDotHighlightPattern; break;
-					case ParupaintBrushToolTypes::BrushToolDotHighlightPattern:
-						tool = ParupaintBrushToolTypes::BrushToolCrossPattern; break;
-					case ParupaintBrushToolTypes::BrushToolCrossPattern:
-						tool = ParupaintBrushToolTypes::BrushToolGrid; break;
-					case ParupaintBrushToolTypes::BrushToolGrid:
-						tool = ParupaintBrushToolTypes::BrushToolNone; break;
-				}
+			} else if(shortcut_name.endsWith("pattern")){
+				ParupaintBrush * brush = brushes->brush();
+				int pattern = brush->pattern() + 1;
+				if(pattern == ParupaintBrushPattern::BrushPatternMax)
+					pattern = ParupaintBrushPattern::BrushPatternNone;
+
+				qDebug() << "Pattern" << pattern;
+				brush->setPattern(pattern);
+				scene->updateMainCursor(brush);
+				client->doBrushUpdate(brush);
 			}
-			if(shortcut_name.endsWith("line")){
-				if(brush->tool() == ParupaintBrushToolTypes::BrushToolNone)
-					tool = ParupaintBrushToolTypes::BrushToolLine;
-			}
-			if(shortcut_name.endsWith("opacity")){
-				if(brush->tool() == ParupaintBrushToolTypes::BrushToolNone)
-					tool = ParupaintBrushToolTypes::BrushToolOpacityDrawing;
-			}
-			brush->setTool(tool);
-			scene->updateMainCursor(brush);
-			client->doBrushUpdate(brush);
 		}
 	}
 	// repeating hotkeys
@@ -685,6 +677,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 		ParupaintBrush * brush = brushes->setBrush(tool);
 		if(brush){
 			brushes->clearToggle();
+			brush->setDrawing(false);
 
 			scene->updateMainCursor(brush);
 			client->doBrushUpdate(brush);

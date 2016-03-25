@@ -14,11 +14,12 @@ ParupaintBrushGlass::ParupaintBrushGlass(QObject * parent) : QObject(parent),
 {
 	this->addBrush(new ParupaintBrush(this,  1, Qt::black, "pencil"));
 	this->addBrush(new ParupaintBrush(this, 30, Qt::transparent, "eraser"));
-	this->addBrush(new ParupaintBrush(this,  4, Qt::black, "brush"));
-	this->addBrush(new ParupaintBrush(this, 30, Qt::white, "cotape"));
-	this->addBrush(new ParupaintBrush(this, 10, Qt::red, "red"));
-	this->addBrush(new ParupaintBrush(this, 10, Qt::green, "green"));
-	this->addBrush(new ParupaintBrush(this, 10, Qt::blue, "blue"));
+
+	this->addBrush(new ParupaintBrush(this,  4, Qt::black, "custom1"));
+	this->addBrush(new ParupaintBrush(this, 30, Qt::white, "custom2"));
+	this->addBrush(new ParupaintBrush(this, 10, Qt::red, "custom3"));
+	this->addBrush(new ParupaintBrush(this, 10, Qt::green, "custom4"));
+	this->addBrush(new ParupaintBrush(this, 10, Qt::blue, "custom5"));
 }
 
 void ParupaintBrushGlass::color_change(QColor color)
@@ -89,13 +90,14 @@ void ParupaintBrushGlass::saveBrushes()
 
 	int i = 0;
 	foreach(ParupaintBrush * b, brushes){
-		QString key = QString("%1_%2").
-			arg(i, 3, 10, QChar('0')).arg(b->name());
+		QString key = QString("%1").arg(i, 3, 10, QChar('0'));
 
 		cfg.setValue(key, QStringList{
+			b->name(),
 			b->colorString(),
 			QString::number(b->size()),
-			QString::number(b->tool())
+			QString::number(b->tool()),
+			QString::number(b->pattern()),
 		});
 		i++;
 	}
@@ -112,20 +114,16 @@ void ParupaintBrushGlass::loadBrushes()
 	brushes.clear();
 
 	foreach(const QString & key, cfg.childKeys()){
-		if(!key.contains('_')) continue;
-
-		int num = key.section('_', 0, 0).toInt();
-		QString name = key.section('_', 1);
-
 		QStringList val = cfg.value(key).toStringList();
-		if(val.size() != 3) continue;
+		if(val.size() != 5) continue;
 
-		QColor col = QColor(val[0]);
-		qreal size = val[1].toDouble();
-		int tool = val[2].toInt();
+		QString name =  val.takeFirst();
+		QColor col =    QColor(val.takeFirst());
+		qreal size =    val.takeFirst().toDouble();
+		int tool =      val.takeFirst().toInt();
+		int pattern =   val.takeFirst().toInt();
 
-		// color, size, tool
-		this->addBrush(new ParupaintBrush(this, size, col, name, tool));
+		this->addBrush(new ParupaintBrush(this, size, col, name, tool, pattern));
 
 	}
 }
