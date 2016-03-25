@@ -36,15 +36,15 @@ ParupaintServerInstance::ParupaintServerInstance(quint16 port, QObject * parent)
 	QSettings server_cfg("server.ini", QSettings::IniFormat, this);
 	this->setPassword(server_cfg.value("password").toString());
 	this->setParupaintWebServeDir(server_cfg.value("ppweb").toString());
-	this->setParupaintLogDir(server_cfg.value("server_logfile", ".").toString());
+	this->setServerDir(server_cfg.value("server_dir", ".").toString());
 }
 
 void ParupaintServerInstance::startRecord()
 {
-	if(!parupaintlog_dir.exists()) return;
+	if(!server_dir.exists()) return;
 
 	QStringList list;
-	QFileInfo log(parupaintlog_dir, ".parupaint.log");
+	QFileInfo log(server_dir, ".parupaint.log");
 
 	if(log.exists()){
 		// append it - aka don't reset the file
@@ -300,14 +300,14 @@ const QDir & ParupaintServerInstance::parupaintWebServeDir() const
 	return ppweb_serve;
 }
 
-void ParupaintServerInstance::setParupaintLogDir(QDir dir)
+void ParupaintServerInstance::setServerDir(QDir dir)
 {
 	if(!dir.exists()) return;
-	this->parupaintlog_dir = dir;
+	this->server_dir = dir;
 }
-const QDir & ParupaintServerInstance::parupaintLogDir() const
+const QDir & ParupaintServerInstance::serverDir() const
 {
-	return parupaintlog_dir;
+	return server_dir;
 }
 
 void ParupaintServerInstance::setPassword(const QString & password)

@@ -5,6 +5,7 @@
 #include <QPainter>
 #include <QBuffer>
 #include <QMovie>
+#include <QMimeDatabase>
 
 // PPA
 #include <QJsonParseError>
@@ -150,15 +151,15 @@ bool ParupaintPanvasInputOutput::loadPanvas(ParupaintPanvas * panvas, const QStr
 	if(!file.exists())
 		return (errorStr = "File " + filename + " doesn't exist.").isEmpty();
 
-	const QString filepath = file.filePath();
-	if(filepath.endsWith(".png") || filepath.endsWith(".jpg")){
-		return ParupaintPanvasInputOutput::loadImage(panvas, filepath, errorStr);
-	} else if(filepath.endsWith(".gif")){
-		return ParupaintPanvasInputOutput::loadGIF(panvas, filepath, errorStr);
-	} else if(filepath.endsWith(".ora")){
-		return ParupaintPanvasInputOutput::loadORA(panvas, filepath, errorStr);
-	} else if(filepath.endsWith(".ppa")){
-		return ParupaintPanvasInputOutput::loadPPA(panvas, filepath, errorStr);
+	QMimeType type = QMimeDatabase().mimeTypeForFile(file);
+	if(type.name().endsWith("png") || type.name().endsWith("jpg")){
+		return ParupaintPanvasInputOutput::loadImage(panvas, file.filePath(), errorStr);
+	} else if(type.name().endsWith("gif")){
+		return ParupaintPanvasInputOutput::loadGIF(panvas, file.filePath(), errorStr);
+	} else if(type.name().endsWith("openraster")){
+		return ParupaintPanvasInputOutput::loadORA(panvas, file.filePath(), errorStr);
+	} else if(type.name().endsWith("zip")){
+		return ParupaintPanvasInputOutput::loadPPA(panvas, file.filePath(), errorStr);
 	}
 	return (errorStr = "File format not recognized.").isEmpty();
 }

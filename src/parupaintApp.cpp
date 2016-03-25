@@ -93,7 +93,7 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 		QDir appdata(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
 		appdata.mkpath(appdata.path());
 
-		server->setParupaintLogDir(appdata.path());
+		server->setServerDir(appdata.path());
 		server->startRecord();
 
 		connect(main_window, &ParupaintWindow::doLocalSessionPassword, server, &ParupaintBundledServer::setPassword);

@@ -26,7 +26,7 @@ Q_OBJECT
 	int connectid;
 	QString server_password;
 	QDir ppweb_serve;
-	QDir parupaintlog_dir;
+	QDir server_dir;
 
 	ParupaintRecordManager record_manager;
 
@@ -58,8 +58,8 @@ Q_OBJECT
 	void setParupaintWebServeDir(QDir dir);
 	const QDir & parupaintWebServeDir() const;
 
-	void setParupaintLogDir(QDir dir);
-	const QDir & parupaintLogDir() const;
+	void setServerDir(QDir dir);
+	const QDir & serverDir() const;
 
 	void setPassword(const QString & password);
 	const QString & password();

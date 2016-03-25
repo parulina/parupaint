@@ -20,6 +20,7 @@
 #include "../bundled/qcompressor.h"
 
 #include <QDir>
+#include <QTemporaryFile>
 #include <QSettings>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -349,17 +350,12 @@ void ParupaintServerInstance::doMessage(const QString & id, QJsonObject obj)
 			this->sendAll(id, obj, con);
 		}
 	}
-	/*
 	if(id == "save") {
-		if(brushes.find(c) == brushes.end()) return;
+		if(!obj.contains("filename") || !obj.value("filename").isString()) return;
 
-		// TODO clean this up
-		QSettings cfg;
-		QString name = obj["filename"].toString();
-		QString load_dir = cfg.value("canvas/directory", ".").toString();
-
+		const QString name = obj["filename"].toString();
 		if(!name.isEmpty()){
-			QString err, fname(load_dir + "/" + name);
+			QString err, fname(server_dir.path() + "/" + name);
 			bool ret = false;
 			if((ret = ParupaintPanvasInputOutput::savePanvas(canvas, fname, err))){
 				QString msg = QString("Server saved canvas successfully at: \"%1\"").arg(name);
@@ -369,40 +365,34 @@ void ParupaintServerInstance::doMessage(const QString & id, QJsonObject obj)
 				this->sendChat(msg);
 			}
 		}
+	}
+	if(id == "load") {
+		if(!obj.contains("filename") || !obj.value("filename").isString()) return;
 
-	} else if(id == "load") {
-		if(brushes.find(c) == brushes.end()) return;
+		QString name = obj["filename"].toString();
+		if(!name.isEmpty()){
+			QTemporaryFile temp_file;
+			QFileInfo file_load(server_dir, name);
 
-		QSettings cfg;
-		QString load_dir = cfg.value("server/directory", ".").toString();
+			// if there's a file embedded, then name should contain the extension
+			if(obj.contains("file") && obj.value("file").isString() && name.indexOf('.') == -1){
 
-		// TODO clean this up
-		if(obj["file"].isString() && obj["filename"].isString()){
+				// base64 gzip file
+				QByteArray data = QByteArray::fromBase64(obj["file"].toString().toUtf8());
+				QByteArray uncompressed;
+				QCompressor::gzipDecompress(data, uncompressed);
 
-			// a gzipped base64 encoded file is sent, uncompress it and write to temp file
-			QByteArray data = QByteArray::fromBase64(obj["file"].toString().toUtf8());
-			QByteArray uncompressed;
-			QCompressor::gzipDecompress(data, uncompressed);
+				temp_file.setFileTemplate(server_dir.path() + "/.load.XXXXXX." + name);
+				if(temp_file.open()){
+					temp_file.write(uncompressed);
+					temp_file.close();
 
-			obj["filename"] = "temp_load" + QFileInfo(obj["filename"].toString()).suffix();
+					file_load.setFile(temp_file.fileName());
+				}
 
-			load_dir = QDir::temp().path();
-			QFileInfo ff(load_dir, obj["filename"].toString());
-
-			QFile file(ff.filePath());
-			if(!file.open(QIODevice::WriteOnly)){
-				obj["filename"] = QJsonValue::Undefined;
-				return;
 			}
-			file.write(uncompressed);
-			file.close();
-		}
-
-		if(obj["filename"].isString()){
-			QString name = obj["filename"].toString();
-			if(name.isEmpty()) return;
-
-			QString err, fname(load_dir + "/" + name);
+			QString err, fname = file_load.absoluteFilePath();
+			qDebug() << "Load file" << fname;
 			bool ret = false;
 			if((ret = ParupaintPanvasInputOutput::loadPanvas(canvas, fname, err))){
 				this->sendChat("Server loaded file successfully!");
@@ -412,7 +402,7 @@ void ParupaintServerInstance::doMessage(const QString & id, QJsonObject obj)
 				this->sendChat(msg);
 			}
 		}
-	*/
+	}
 	emit OnMessage(id, obj);
 }
 

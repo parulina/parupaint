@@ -264,7 +264,7 @@ void ParupaintClientInstance::doLoadLocal(const QString & filename)
 
 	QJsonObject obj;
 	obj["file"] = QString(compressed.toBase64());
-	obj["filename"] = QFileInfo(filename).fileName();
+	obj["filename"] = QFileInfo(file).suffix();
 	this->send("load", obj);
 }
 void ParupaintClientInstance::doLoad(const QString & filename)
