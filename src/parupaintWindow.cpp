@@ -15,6 +15,8 @@
 #include <QScrollBar>
 
 #include "parupaintKeys.h"
+#include "parupaintPatternPopup.h"
+#include "parupaintToolPopup.h"
 
 #include <algorithm>
 
@@ -194,6 +196,17 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	connect(project_info, &ParupaintProjectInfo::projectNameChanged, client, &ParupaintClientInstance::doProjectName);
 	connect(project_info, &ParupaintProjectInfo::frameRateChanged, client, &ParupaintClientInstance::doProjectFramerate);
 	connect(project_info, &ParupaintProjectInfo::backgroundColorChanged, client, &ParupaintClientInstance::doProjectBackgroundColor);
+
+	// set up various little windows
+	pattern_popup = new ParupaintPatternPopup(this);
+	tool_popup = new ParupaintToolPopup(this);
+
+	connect(pattern_popup, &ParupaintPopupSelector::selectIndex, this, &ParupaintWindow::patternPopupSelect);
+	connect(tool_popup, &ParupaintPopupSelector::selectIndex, this, &ParupaintWindow::toolPopupSelect);
+
+	connect(pattern_popup, &ParupaintPopupSelector::done, pattern_popup, &ParupaintPopupSelector::hide);
+	connect(tool_popup, &ParupaintPopupSelector::done, tool_popup, &ParupaintPopupSelector::hide);
+
 
 	// set up the overlay layout
 	QVBoxLayout * main_layout = new QVBoxLayout;
@@ -557,25 +570,12 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			} else if(shortcut_name.endsWith("tool")){
 
 				ParupaintBrush * brush = brushes->brush();
-				int tool = brush->tool() + 1;
-				if(tool == ParupaintBrushTool::BrushToolMax)
-					tool = ParupaintBrushTool::BrushToolNone;
-
-				qDebug() << "Tool" << tool;
-				brush->setTool(tool);
-				scene->updateMainCursor(brush);
-				client->doBrushUpdate(brush);
+				tool_popup->focusIndex(brush->tool());
 
 			} else if(shortcut_name.endsWith("pattern")){
-				ParupaintBrush * brush = brushes->brush();
-				int pattern = brush->pattern() + 1;
-				if(pattern == ParupaintBrushPattern::BrushPatternMax)
-					pattern = ParupaintBrushPattern::BrushPatternNone;
 
-				qDebug() << "Pattern" << pattern;
-				brush->setPattern(pattern);
-				scene->updateMainCursor(brush);
-				client->doBrushUpdate(brush);
+				ParupaintBrush * brush = brushes->brush();
+				pattern_popup->focusIndex(brush->pattern());
 			}
 		}
 	}
@@ -965,4 +965,24 @@ QString ParupaintWindow::saveName() const
 void ParupaintWindow::setLocalServer(const QString & server)
 {
 	this->local_server = server;
+}
+
+void ParupaintWindow::patternPopupSelect(int pattern)
+{
+	ParupaintBrush * brush = brushes->brush();
+	if(brush){
+		brush->setPattern(pattern);
+		scene->updateMainCursor(brush);
+		client->doBrushUpdate(brush);
+	}
+}
+
+void ParupaintWindow::toolPopupSelect(int tool)
+{
+	ParupaintBrush * brush = brushes->brush();
+	if(brush){
+		brush->setTool(tool);
+		scene->updateMainCursor(brush);
+		client->doBrushUpdate(brush);
+	}
 }

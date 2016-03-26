@@ -1,4 +1,5 @@
 #include "parupaintBrush.h"
+#include "parupaintPatterns.h"
 
 // brush!
 
@@ -119,35 +120,10 @@ QRectF ParupaintBrush::localRect()
 	return QRectF(-pressureSize(), -pressureSize(), pressureSize(), pressureSize());
 }
 
-// Lifted from:
-// src/gui/painting/qbrush.cpp
-static uchar patterns[][8] = {
-	{},
-	{0xaa, 0x44, 0xaa, 0x11, 0xaa, 0x44, 0xaa, 0x11}, // Dense5Pattern
-	{0x00, 0x11, 0x00, 0x44, 0x00, 0x11, 0x00, 0x44}, // Dense6Pattern (modified to interweave Dense5Pattern)
-	{0x81, 0x42, 0x24, 0x18, 0x18, 0x24, 0x42, 0x81}, // DiagCrossPattern
-	{0xFF, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80}  // Custom checker pattern
-};
-
-// QBitmap (inherits QPixmap) does not work on non-gui builds.
-// Qt segfaults (???) if you attempt to do it anyways...
-// so we end up using QImage instead as a brush texture.
-inline QImage customPatternToImage(int pattern, const QColor & col = QColor(Qt::black))
-{
-	QImage img(QSize(8, 8), QImage::Format_MonoLSB);
-	img.setColor(0, QColor(Qt::transparent).rgba());
-	img.setColor(1, QColor(Qt::white).rgba());
-	if(col.alpha() != 0) img.setColor(1, col.rgba());
-
-	for(int y = 0; y < 8; ++y){
-		memcpy(img.scanLine(y), patterns[pattern] + y, 1);
-	}
-	return img;
-}
-
 QImage ParupaintBrush::patternImage()
 {
-	return customPatternToImage(this->pattern(), this->color());
+	if(this->pattern() == ParupaintBrushPattern::BrushPatternNone) return QImage();
+	return parupaintPattern(this->pattern()-1, this->color());
 }
 
 void ParupaintBrush::copyTo(ParupaintBrush & brush)

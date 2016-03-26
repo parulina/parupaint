@@ -175,6 +175,16 @@ ParupaintScrollBar::down-arrow {
 }
 
 
+ParupaintPopupSelector {
+	background:black;
+}
+ParupaintPopupSelector * {
+	background:#FFF;
+}
+ParupaintPopupSelector *:hover {
+	background:#EA6;
+}
+
 
 ParupaintProjectInfo {
 }

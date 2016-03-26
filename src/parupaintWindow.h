@@ -23,6 +23,8 @@ class ParupaintNetJoinPrompt;
 class ParupaintNetInfo;
 
 class ParupaintKeys;
+class ParupaintPatternPopup;
+class ParupaintToolPopup;
 
 class QDropEvent;
 
@@ -75,6 +77,9 @@ Q_OBJECT
 	ParupaintCanvasView * 	view;
 	ParupaintCanvasScene * 	scene;
 	ParupaintClientInstance * client;
+
+	ParupaintPatternPopup * pattern_popup;
+	ParupaintToolPopup *	tool_popup;
 
 	void closeEvent(QCloseEvent * event);
 	void keyPressEvent(QKeyEvent * event);
@@ -131,6 +136,9 @@ Q_OBJECT
 	void OnPenRelease(const penInfo &);
 	void OnPenPointer(const penInfo &);
 	void OnPenScroll(QWheelEvent *);
+
+	void patternPopupSelect(int pattern);
+	void toolPopupSelect(int tool);
 
 	void OnNetworkConnect();
 	void OnNetworkDisconnect(QString reason = "");
