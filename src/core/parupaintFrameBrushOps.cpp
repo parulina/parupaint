@@ -49,7 +49,7 @@ QRect ParupaintFrameBrushOps::stroke(ParupaintPanvas * panvas, ParupaintBrush * 
 	pen.setWidthF(size);
 	pen.setMiterLimit(size);
 
-	if(brush->tool() != ParupaintBrushTool::BrushToolLine){
+	if(brush->tool() == ParupaintBrushTool::BrushToolNone){
 		pen.setMiterLimit((s1 > -1) ? s1 : size);
 	}
 	if(brush->pattern() != ParupaintBrushPattern::BrushPatternNone){
