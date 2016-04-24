@@ -5,31 +5,173 @@
 #include <QStyleOptionGraphicsItem> // paint
 #include <QTimer>
 
+ParupaintCanvasModel::ParupaintCanvasModel(ParupaintVisualCanvas * panvas) :
+	QAbstractTableModel(panvas)
+{
+}
+
+int ParupaintCanvasModel::rowCount(const QModelIndex & index) const
+{
+	ParupaintPanvas * panvas = qobject_cast<ParupaintPanvas*>(this->parent());
+	if(panvas){
+		return panvas->layerCount();
+	}
+	return 0;
+}
+int ParupaintCanvasModel::columnCount(const QModelIndex & index) const
+{
+	ParupaintPanvas * panvas = qobject_cast<ParupaintPanvas*>(this->parent());
+	if(panvas){
+		return 3 + panvas->totalFrameCount();
+	}
+	return 3;
+}
+QVariant ParupaintCanvasModel::data(const QModelIndex & index, int role) const
+{
+	ParupaintPanvas * panvas = qobject_cast<ParupaintPanvas*>(this->parent());
+	if(!panvas) return QVariant();
+
+	if(role == Qt::SizeHintRole){
+		switch(index.column()){
+			case 0: return QSize(20, 20);
+			case 1: return QSize(80, 20);
+			case 2: return QSize(100, 20);
+			default: return QSize(60, 20);
+		}
+	}
+
+	ParupaintLayer * layer = panvas->layerAt((this->rowCount() > 0 ? this->rowCount()-1 : 0) - index.row());
+	if(!layer) return QVariant();
+
+	ParupaintFrame * frame = nullptr;
+	if(index.column() >= 3)
+		frame = layer->frameAt(index.column()-3);
+
+	if(role == Qt::EditRole){
+		switch(index.column()){
+			case 1: return layer->mode();
+			case 2: return layer->name();
+		}
+	}
+	if(role == Qt::CheckStateRole){
+		if(index.column() == 0) {
+			return (layer->visible() ? Qt::Checked : Qt::Unchecked);
+		}
+
+	} else if(role == Qt::DisplayRole){
+		switch(index.column()){
+			case 1: return layer->modeString();
+			case 2: return layer->name();
+		}
+	} else if(role == Qt::ForegroundRole){
+		if(index.column() >= 3) {
+			if(frame && layer->isFrameExtended(frame)) return QColor("#99a9cc");
+			else if(frame && !layer->isFrameExtended(frame)) return QColor("#DDD");
+			else return QColor(Qt::transparent);
+		}
+	} else if(role == Qt::ToolTipRole){
+		if(index.column() == 2){
+			return layer->name();
+		}
+	}
+	return QVariant();
+}
+
+bool ParupaintCanvasModel::setData(const QModelIndex & index, const QVariant & value, int role)
+{
+	ParupaintPanvas * panvas = qobject_cast<ParupaintPanvas*>(this->parent());
+	if(!panvas) return false;
+
+	ParupaintLayer * layer = panvas->layerAt((this->rowCount() > 0 ? this->rowCount()-1 : 0) - index.row());
+	if(!layer) return false;
+
+	if(role == Qt::CheckStateRole) {
+		if(index.column() == 0) {
+			bool visible = value.toBool();
+			layer->setVisible(visible);
+			emit onLayerVisibilityChange(panvas->layerIndex(layer), visible);
+			emit dataChanged(index, index);
+			return true;
+		}
+	}
+	if(role == Qt::EditRole) {
+		switch(index.column()){
+			case 1: {
+				int mode = value.toInt();
+				layer->setMode(mode);
+				emit onLayerModeChange(panvas->layerIndex(layer), mode);
+				emit dataChanged(index, index);
+				return true;
+			}
+			case 2: {
+				QString name = value.toString();
+				layer->setName(name);
+				emit onLayerNameChange(panvas->layerIndex(layer), name);
+				emit dataChanged(index, index);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+Qt::ItemFlags ParupaintCanvasModel::flags(const QModelIndex & index) const
+{
+	if(index.column() == 0)
+		return QAbstractTableModel::flags(index) | Qt::ItemIsUserCheckable;
+	else if(index.column() == 1)
+		return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
+	else if(index.column() == 2)
+		return Qt::ItemIsEnabled | Qt::ItemIsEditable;
+	else
+		return QAbstractTableModel::flags(index) | Qt::ItemIsSelectable;
+}
+
+void ParupaintCanvasModel::updateLayout()
+{
+	emit this->layoutChanged();
+}
+
+void ParupaintCanvasModel::updateLayer(int l)
+{
+	ParupaintPanvas * panvas = qobject_cast<ParupaintPanvas*>(this->parent());
+	ParupaintLayer * layer = panvas->layerAt(l);
+
+	if(!panvas) return;
+	if(layer){
+		int row = panvas->layerIndex(layer) - (this->rowCount() > 0 ? this->rowCount()-1 : 0);
+
+		emit this->dataChanged(this->index(row, 0), this->index(row, this->columnCount(this->index(row, 0))));
+	}
+}
+
+
 ParupaintVisualCanvas::ParupaintVisualCanvas(QGraphicsItem * parent) :
 	QGraphicsItem(parent),
+	canvas_model(this),
 	current_layer(0), current_frame(0),
 	canvas_preview(true),
-	checker_pixmap("#cccccc", "#ffffff")
+	checker_pixmap("#cccccc", "#ffffff"),
+	flash_timeout(new QTimer(this)), fillpreview_timeout(new QTimer(this))
 {
+	this->setFlag(QGraphicsItem::ItemUsesExtendedStyleOption);
 	this->resize(QSize(500, 500));
-
-	flash_timeout = new QTimer(this);
-	fillpreview_timeout = new QTimer(this);
 
 	flash_timeout->setSingleShot(true);
 	fillpreview_timeout->setSingleShot(true);
+
 	connect(flash_timeout, &QTimer::timeout, this, &ParupaintVisualCanvas::timeoutRedraw);
 	connect(fillpreview_timeout, &QTimer::timeout, this, &ParupaintVisualCanvas::timeoutRedraw);
-
 	connect(fillpreview_timeout, &QTimer::timeout, [&](){
 		this->setFillPreview();
 	});
 
-
 	this->connect(this, &ParupaintPanvas::onCanvasResize, this, &ParupaintVisualCanvas::newCache);
 	this->connect(this, &ParupaintPanvas::onCanvasBackgroundChange, this, &ParupaintVisualCanvas::timeoutRedraw);
 
-	this->setFlag(QGraphicsItem::ItemUsesExtendedStyleOption);
+	this->connect(this, &ParupaintPanvas::onCanvasContentChange, &canvas_model, &ParupaintCanvasModel::updateLayout);
+	this->connect(this, &ParupaintPanvas::onCanvasLayerChange, &canvas_model, &ParupaintCanvasModel::updateLayer);
+
 }
 void ParupaintVisualCanvas::timeoutRedraw()
 {
@@ -211,7 +353,7 @@ void ParupaintVisualCanvas::setFillPreview(const QImage & image)
 	fillpreview_timeout->start(500);
 	this->redraw();
 }
-void ParupaintVisualCanvas::current_lf_update(int l, int f)
+void ParupaintVisualCanvas::setCurrentLayerFrame(int l, int f)
 {
 	this->setCurrentLayerFrame(l, f, true);
 }
@@ -275,4 +417,9 @@ bool ParupaintVisualCanvas::isPreview()
 const QPixmap & ParupaintVisualCanvas::canvasCache() const
 {
 	return canvas_cache;
+}
+
+ParupaintCanvasModel * ParupaintVisualCanvas::model()
+{
+	return &canvas_model;
 }

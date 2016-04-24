@@ -4,12 +4,36 @@
 #include "core/parupaintPanvas.h"
 #include "parupaintCheckerboardPixmap.h"
 
+#include <QAbstractTableModel>
 #include <QGraphicsObject>
+
+
+class ParupaintVisualCanvas;
+class ParupaintCanvasModel : public QAbstractTableModel
+{
+Q_OBJECT
+	public:
+	ParupaintCanvasModel(ParupaintVisualCanvas * panvas);
+	
+	int rowCount(const QModelIndex & index = QModelIndex()) const;
+	int columnCount(const QModelIndex & index = QModelIndex()) const;
+	QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
+	bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
+	Qt::ItemFlags flags(const QModelIndex & index) const;
+
+	Q_SLOT void updateLayout();
+	Q_SLOT void updateLayer(int l);
+
+	Q_SIGNAL void onLayerVisibilityChange(int layer, bool visible);
+	Q_SIGNAL void onLayerModeChange(int layer, int mode);
+	Q_SIGNAL void onLayerNameChange(int layer, QString name);
+};
 
 class ParupaintVisualCanvas : public ParupaintPanvas, public QGraphicsItem
 {
 Q_OBJECT
 	private:
+	ParupaintCanvasModel canvas_model;
 	int current_layer;
 	int current_frame;
 
@@ -36,9 +60,6 @@ Q_OBJECT
 	private slots:
 	void timeoutRedraw();
 
-	public slots:
-	void current_lf_update(int l, int f);
-
 	public:
 	ParupaintVisualCanvas(QGraphicsItem * = nullptr);
 
@@ -51,7 +72,8 @@ Q_OBJECT
 	void redraw(QRect = QRect());
 
 	void setFillPreview(const QImage & = QImage());
-	void setCurrentLayerFrame(int l, int f, bool flash = true);
+	void setCurrentLayerFrame(int l, int f);
+	void setCurrentLayerFrame(int l, int f, bool flash);
 	void addCurrentLayerFrame(int lc, int fc, bool flash = true);
 	void adjustCurrentLayerFrame(bool flash = false);
 
@@ -69,6 +91,8 @@ Q_OBJECT
 	bool isPreview();
 
 	const QPixmap & canvasCache() const;
+
+	ParupaintCanvasModel * model();
 };
 
 #endif

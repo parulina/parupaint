@@ -155,32 +155,37 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 		QString("press [%1] to chat.").arg(key_shortcuts->keyString("chat")).toLower()
 	);
 	connect(chat, &ParupaintChat::onActivity, client, &ParupaintClientInstance::doTyping);
-	
-	connect(flayer, &ParupaintFlayer::onHighlightChange, scene->canvas(), &ParupaintVisualCanvas::current_lf_update);
-	connect(flayer, &ParupaintFlayer::onLayerVisibleChange, client, &ParupaintClientInstance::doLayerVisibility);
-	connect(flayer, &ParupaintFlayer::onLayerNameChange, client, &ParupaintClientInstance::doLayerName);
-	connect(flayer, &ParupaintFlayer::onLayerModeChange, client, &ParupaintClientInstance::doLayerMode);
-	connect(flayer, &ParupaintFlayer::onHighlightChange, [&](int l, int f){
+
+	netinfo->setCursorListModel(scene->cursorList());
+
+	ParupaintCanvasModel * canvas_model = scene->canvas()->model();
+	flayer->setCanvasModel(canvas_model);
+	connect(canvas_model, &ParupaintCanvasModel::onLayerVisibilityChange, client, &ParupaintClientInstance::doLayerVisibility);
+	connect(canvas_model, &ParupaintCanvasModel::onLayerModeChange, client, &ParupaintClientInstance::doLayerMode);
+	connect(canvas_model, &ParupaintCanvasModel::onLayerNameChange, client, &ParupaintClientInstance::doLayerName);
+
+	// flayer select -> canvas
+	// should probably revise the lf update mechanism someday and make it all connect from brushglass
+	// aka flayer/key select -> brush -> brushglass signal -> vc/flayer update
+	connect(flayer, &ParupaintFlayer::onLayerFrameSelect, scene->canvas(),
+			static_cast<void(ParupaintVisualCanvas::*)(int, int)>(&ParupaintVisualCanvas::setCurrentLayerFrame));
+	connect(flayer, &ParupaintFlayer::onLayerFrameSelect, scene->canvas(), [&](int l, int f){
 		ParupaintBrush * brush = this->brushes->brush();
 		brush->setLayerFrame(l, f);
 		this->client->doBrushUpdate(brush);
 	});
 
-	netinfo->setCursorListModel(scene->cursorList());
-
-	connect(scene->canvas(), &ParupaintVisualCanvas::onCurrentLayerFrameChange, flayer, &ParupaintFlayer::setHighlightLayerFrame);
+	connect(scene->canvas(), &ParupaintVisualCanvas::onCurrentLayerFrameChange, flayer, &ParupaintFlayer::selectLayerFrame);
 	connect(scene->canvas(), &ParupaintVisualCanvas::onCurrentLayerFrameChange, [&](int l, int f){
 		ParupaintBrush * brush = this->brushes->brush();
 		brush->setLayerFrame(l, f);
 		this->client->doBrushUpdate(brush);
 	});
 
-	// canvas content -> flayer content
+	// canvas content -> project info
 	connect(scene->canvas(), &ParupaintPanvas::onCanvasChange, project_info, &ParupaintProjectInfo::updateCanvasSlot);
 	connect(scene->canvas(), &ParupaintPanvas::onCanvasContentChange, project_info, &ParupaintProjectInfo::updateCanvasSlot);
 
-	connect(scene->canvas(), &ParupaintPanvas::onCanvasChange, flayer, &ParupaintFlayer::updateCanvasSlot);
-	connect(scene->canvas(), &ParupaintPanvas::onCanvasContentChange, flayer, &ParupaintFlayer::reloadCanvasSlot);
 
 	// chat message -> chat message
 	connect(chat, &ParupaintChat::Message, this, &ParupaintWindow::doChat);

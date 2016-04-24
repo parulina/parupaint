@@ -26,7 +26,7 @@ QTabBar::tab:selected, QTabBar::tab:hover {
 	color:white;
 }
 
-QLineEdit,
+QTableView QLineEdit, QLineEdit,
 QComboBox,
 QSpinBox, QDoubleSpinBox {
 	padding:4px 0;
@@ -43,20 +43,27 @@ QListView {
 QComboBox, QComboBox::on {
 	background:#75653A;
 }
-QComboBox QListView::item:hover,
-QComboBox QListView::item:selected {
-	background:#333;
-}
 QComboBox QListView {
-	background:#aaa;
-	color:black;
-	font-size:14px;
+	background:#555;
+	color:white;
+	font-size:16px;
 }
-QComboBox::down-arrow {
+QComboBox QListView::item:hover,
+QComboBox QListView::item:selected,
+QComboBox::item::selected {
+	font-weight:bold;
+	border:1px solid transparent;
+	background:#75653A;
 }
 QComboBox::drop-down {
 	border-width:1px;
 	outline:none;
+}
+QComboBox::indicator {
+	background-color:transparent;
+	selection-background-color:transparent;
+	color:transparent;
+	selection-color:transparent;
 }
 
 QPushButton {
@@ -102,7 +109,8 @@ ParupaintPlayerList, ParupaintFlayer {
 }
 ParupaintScrollBar::handle:hover { background:#de9a3c; }
 
-QLineEdit, QTextEdit, QLabel, QComboBox, QSpinBox, QDoubleSpinBox {
+QTableView QLineEdit, QLineEdit, QTextEdit,
+QLabel, QComboBox, QSpinBox, QDoubleSpinBox {
 	selection-background-color:#de9a3c;
 	selection-color:black;
 }
@@ -195,31 +203,47 @@ ParupaintProjectInfo #ProjectQuickInfo{
 }
 
 
+ParupaintFlayer {
+	font-size:14px;
+	color:white;
+}
+ParupaintFlayer QLineEdit {
+	font-size:14px;
+	background:black;
+	border:none;
+	padding:0;
+}
+
+ParupaintFlayer::item:selected {
+	background:#75653A;
+	color:white;
+}
+
+ParupaintFlayer::indicator {
+	width:16px !important;
+	height:16px !important;
+	margin:0 1px;
+}
+ParupaintFlayer::indicator::checked {
+	image:none;
+	background:url(":/resources/uicons.png");
+	background-position:top left;
+}
+ParupaintFlayer::indicator::unchecked {
+	image:none;
+	background:url(":/resources/uicons.png");
+	background-position:top right;
+}
+
+/*
 ParupaintFlayer::item:selected {
 	padding:0 2px;
 	background:rgba(0, 0, 0, 0.2)
 }
 
 ParupaintFlayerLayer {
-	font-size:12px;
-	color:#CCC;
 }
 
-ParupaintFlayerLayer #FlayerLayerVisible::indicator {
-	width:16px !important;
-	height:16px !important;
-	margin:0 3px;
-}
-ParupaintFlayerLayer #FlayerLayerVisible::indicator::checked {
-	image:none;
-	background:url(":/resources/uicons.png");
-	background-position:top left;
-}
-ParupaintFlayerLayer #FlayerLayerVisible::indicator::unchecked {
-	image:none;
-	background:url(":/resources/uicons.png");
-	background-position:top right;
-}
 ParupaintFlayerLayer #FlayerLayerVisible {
 	background:none;
 	spacing:0;
@@ -262,6 +286,8 @@ ParupaintFlayerFrame:checked {
 	border:2px solid #222;
 	border-bottom-width:4px;
 }
+*/
+
 
 ParupaintNetJoinPrompt {
 	background:rgba(0, 0, 0, 0.8);

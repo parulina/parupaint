@@ -74,6 +74,7 @@ Q_OBJECT
 	void setMode(int mode);
 	void setMode(const QString & textmode);
 	int mode() const;
+	QString modeString() const;
 	void setName(const QString & name);
 	QString name() const;
 	void setVisible(bool b);

@@ -27,12 +27,15 @@ Q_OBJECT
 
 	private slots:
 	void removeLayerObject(QObject*);
+	void updateLayerObject();
 
 	signals:
 	void onCanvasResize(const QSize &);
 	void onCanvasBackgroundChange();
 	void onCanvasChange();
 	void onCanvasContentChange();
+
+	void onCanvasLayerChange(int layer);
 
 	public:
 	ParupaintPanvas(QObject * = nullptr, const QSize & = QSize(), int layers = 0, int frames = 0);
