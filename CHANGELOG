@@ -1,3 +1,22 @@
+0.93
++ Much better font.
++ Smooth brush strokes and lines.
++ Added tool/pattern menus, replacing many hotkeys.
++ Layer mode, visiblity and names are now changeable and syncable.
++ Added a project info panel that can change the project name, framerate, and background color.
++ Standardized drawing operations. The server and client should now draw completely identical, keeping errors to a minimum.
++ Reordered interface, particularly the top half of the overlay.
++ Added a list of all painters in the upper-right.
++ Fill tool is now able to erase-fill.
++ Added onionskin.
++ Upgraded the recording file format.
++ Upgraded PPA specification, probably final design.
++ When the overlay is hidden, press C to toggle the color picker's visibility.
++ Able to serve parupaint-web through HTTP.
++ Zoomouts now have less of an annoying moire effect, snapping to different levels.
+* Fixed a bug where not all keys in the key change dialog would appear.
+2016-04-24
+
 0.92
 + Keys can be rebound in a dialog now.
 + Replaced hotkey list in infobar with a quickstart guide.
@@ -14,6 +33,7 @@
 + Fixed a bug in exporting images, would create junk pixels at the top.
 + Able to change frame opacity.
 + Fixed parupaint dialogs lagging.
+2016-01-27
 
 0.91
 ! Almost-full cleanup of code!
@@ -27,6 +47,7 @@
 + Better layer list.
 + Cursors hide correctly when hovering over them.
 + Fix fill tool crash.
+2015-12-22
 
 0.85
 + Session log and recovery: a session log is now written while drawing to allow recovery and playback.
@@ -38,7 +59,7 @@
 * Mac layout fixes
 * < 1 brushwidth fix
 * User interface improvements
-
+2015-10-31
 
 0.84
 + Mac build!!
@@ -51,3 +72,31 @@
 * Disconnect message
 + Small message appears when switching preview modes and other similar things.
 * Flood fill works faster.
+2015-09-18
+
+0.80
++ Added tools.
++ Custom brushes are now available.
++ Dialogs for creating a new canvas, connecting, saving and opening files.
++ Fixed chat and made it transparent to the mouse when it's not focused.
++ Replaced the dummy color picker with one i made
++ The old font (as seen in parupaint v1) is now here.
++ Name tags are now attached to cursors.
++ Preview mode is fixed.
++ Dropping files in to the program loads them.
+!  The flood fill tool is currently broken, sorry.
+2015-07-04
+
+0.75
++ Switched the built-in websocket version to a separate one.
++ Added several save targets: ORA, PPA, PNG, ZIP, PNG sequence.
++ Save and load dialogs.
++ Added update checker.
+2015-06-06
+
+0.7a
++ Layer and frames can now be removed, inserted and added.
++ Color picker and chat works now.
+2015-06-03
+
+Parupaint v2 repository opened 2015-05-16.
