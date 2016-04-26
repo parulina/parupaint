@@ -141,29 +141,17 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		ParupaintCommonOperations::LayerFrameFillOp(pool->canvas(), l, f, c);
 		pool->canvas()->redraw();
 
-	} else if (id == "new") {
-		if(!object["w"].isDouble()) return;
-		if(!object["h"].isDouble()) return;
-		if(!object["r"].isBool()) return;
-
-		bool r = object["r"].toBool();
-		int w = object["w"].toInt(),
-		    h = object["h"].toInt();
-
-		ParupaintCommonOperations::CanvasResizeOp(pool->canvas(), w, h, r);
-
-		// adjust selected layer/frame
-		pool->canvas()->adjustCurrentLayerFrame();
-
-		pool->canvas()->redraw();
-
 	} else if (id == "canvas") {
-		pool->canvas()->loadJson(object);
+		if(object["resize"].isBool() && object["resize"].toBool(false)){
+			int w = object["canvasWidth"].toInt(), h = object["canvasHeight"].toInt();
+			ParupaintCommonOperations::CanvasResizeOp(pool->canvas(), w, h, true);
+			pool->canvas()->redraw();
+		} else {
+			pool->canvas()->loadJson(object);
+			this->doReloadImage();
+			pool->canvas()->adjustCurrentLayerFrame();
+		}
 
-		// reload all images
-		this->doReloadImage();
-
-		pool->canvas()->adjustCurrentLayerFrame();
 	} else if (id == "image") {
 
 		int l = object["l"].toInt(),

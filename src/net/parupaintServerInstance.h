@@ -47,6 +47,7 @@ Q_OBJECT
 	void doLine(const QString & line);
 	void doLines(const QStringList & lines);
 
+	void resetCanvasLog();
 	void joinConnection(ParupaintConnection * con);
 	void leaveConnection(ParupaintConnection * con);
 	ParupaintConnection * getConnection(int id);

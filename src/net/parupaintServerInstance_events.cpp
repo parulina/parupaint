@@ -241,13 +241,16 @@ void ParupaintServerInstance::doMessage(const QString & id, QJsonObject obj)
 		    h = obj["h"].toInt();
 
 		if(ParupaintCommonOperations::CanvasResizeOp(canvas, w, h, r)){
+
 			foreach(ParupaintBrush * brush, this->brushes){
 				ParupaintCommonOperations::AdjustBrush(brush, canvas);
 			}
-			this->objMessage(id, {
-				{"w", obj["w"]}, {"h", obj["h"]},
-				{"r", obj["r"]},
-			});
+
+			if(!r) this->resetCanvasLog();
+
+			QJsonObject canvas = this->canvasObj();
+			canvas["resize"] = obj["r"];
+			this->sendAll("canvas", canvas);
 		}
 	}
 	if(id == "paste"){

@@ -19,6 +19,7 @@ class ParupaintRecordManager
 
 	void writeLogFile(QString name, QJsonObject data);
 	void writeLogFile(const QString & name, const QString & data = QString());
+	void resetLog();
 
 	bool logLine(QString * str = nullptr);
 	bool logLines(QStringList & list);

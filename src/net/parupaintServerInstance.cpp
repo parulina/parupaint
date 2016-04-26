@@ -59,11 +59,7 @@ void ParupaintServerInstance::startRecord()
 	record_manager.setLogFile(log.filePath());
 	// set initial values
 	qDebug() << "Log file:" << log.filePath();
-	record_manager.writeLogFile("new", {
-		{"w", canvas->dimensions().width()},
-		{"h", canvas->dimensions().height()},
-		{"r", false}
-	});
+	this->resetCanvasLog();
 
 	if(!list.isEmpty()){
 		// and play back the recovery log if there was one.
@@ -219,6 +215,19 @@ void ParupaintServerInstance::browserVisit(QTcpSocket * socket, const QString & 
 				file.close();
 			}
 		}
+	}
+}
+
+void ParupaintServerInstance::resetCanvasLog()
+{
+	record_manager.resetLog();
+	record_manager.writeLogFile("new", {
+		{"w", canvas->dimensions().width()},
+		{"h", canvas->dimensions().height()},
+		{"r", false}
+	});
+	foreach(ParupaintConnection * con, this->brushes.keys()){
+		this->record_manager.writeLogFile("join", this->connectionObj(con));
 	}
 }
 

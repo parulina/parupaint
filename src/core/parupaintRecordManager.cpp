@@ -55,6 +55,11 @@ void ParupaintRecordManager::writeLogFile(const QString & name, const QString & 
 	log.writeLog(name, data);
 }
 
+void ParupaintRecordManager::resetLog()
+{
+	log.seek(0);
+}
+
 bool ParupaintRecordManager::logLine(QString * str)
 {
 	bool r;
