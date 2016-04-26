@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="theme-color" content="#CCBC80" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes"/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<link href="style.css" rel="stylesheet"></link>
+		<link rel="icon" type="image/png" href="parupaint.png" />
+		<title>PARUPAINT history</title>
+	</head>
+	<body>
+		<h1>PARUPAINT HISTORY</h1>
+		<h2>HOW IT ALL STARTED</H2>
+		<p>The year was 2012. I was an ambitious artist with two years of artistry under my belt growing frustrated at the state of simple animation programs, and for that matter, collaborative art programs too. Flash was too complex and the interface bad. Pencil was too simple and uninitiutive. Drawpile back then was old and difficult to find a binary for, as it wasn't the state of quality as it is today. MyPaint served me well back then, but the animation fork of it didn't work for me for some reason. Aseprite's animations worked well, but only for pixel sprites. Flockdraw worked okay as a collaborative whiteboard, but left me wanting more. Couldn't there be a <i>better</i> program? Couldn't there be a simple, straightforward program that, when you open it, is ready to let you make an animation? And lets you draw with others without any obstacles? The idea grew more and more with me, but having just a few years of experience with programming left me unsure if i could do this. It seemed intimidating to design and create an art program from scratch. But i couldn't just sit there and wait for someone to create my idea, no, it was up to me to make my dream come true! And on a silent November afternoon, i sat down and started working on it.</p>
+		<a title="Older version of parupaint v1." class="side-link" href="parupaint_2012-11-10 06-33-48-71.png" target="_blank"><img class="example" src="parupaint_2012-11-10 06-33-48-71.png"></img></a>
+		<h2>THE OLD PARUPAINT</H2>
+		<p>The initial parupaint was very, very different. Originally i had designed it with a faster flow to it, almost a game-like mechanic to it, but it was quickly dropped as i realized the focus on it was to make arts, not to play with the interface. The usual features were there, like layers and frames, and the typical color wheel on the upper-left and a layer list at the bottom. But the program itself was very unstable. It would crash regularly because of my poor programming, which ultimately led me to remake it. It had sound effects, animations, randomly colored buttons and other silly things that existed mostly for eye-candy.</p>
+		<p>The old Parupaint used the relatively low-level library Allegro. As i had experimented with game programming before parupaint, i went along with this library again for this project because i was used to it - it turned out to make things so much more harder and complex than it needed to be. The old network code was also not based on websockets - it was actually a mixture of TCP and UDP. Though the network side was very efficient, it was prone to errors and required a lot of attention code-wise. And when it came to the interface, i had no knowledge of existing GUI frameworks, or even the basic technique behind them, so after a lot of trial and error i managed to do a very basic user interface framework. I even used the raw Wintab library, and somehow i got it working. Attempted network threading, HTTP parsing using TCP function calls... what a mess. Porting the application was obviously a nightmare, so i didn't do it.</p>
+		<p>Luckily it taught me a lot of how a program like this is structured, but honestly it's quite useless because almost no art programs (with the notable exception Aseprite) are written with this kind of low level language. If anything it gave me a little bit more experience for the games i made after the old parupaint. But the fact remained that this program was held together by duck-tape, and it was falling apart.</p>
+		<a title="Newer version of parupaint v1." class="side-link" href="parupaint 2013-12-08 22-46-44-80.png" target="_blank"><img class="example" src="parupaint 2013-12-08 22-46-44-80.png"></img></a>
+		<h2>OLD PARUPAINT ENDTIMES</h2>
+		<p>I used the old parupaint as my main art program for about a year before i switched programs. The crashes was not such a big problem at the end but the program lacked something. It lacked consistency, full stability and portability - i had switched to linux by then. However it had served me very well and i was happy with what i had created. But i knew i could do better. I stopped working on it around the year shift 2014/2015, but i officially plugged life support from it a few months later. In May 2015, i decided that the program needed to be reborn, so i stashed away everything related to the old parupaint and started anew.</p>
+		<h2>QT PARUPAINT</H2>
+		<p>With inspiration and help from Drawpile, i began working on the new parupaint that was going to be more stable, consistent and portable than ever before. I was a little sad throwing two years of program code away, but i knew that the idea in me would live on to be done in an even better way. I however kept the basic design, icon and font and upgraded them. And today, a year later, things are looking very good. The vision of an awesome multiplayer animation/art program has been fulfilled, but i don't stop here - there are many more things to be done. My vision today is to tune the user experience of this program in to something even more initiutive and to make parupaint the best version of it as it can be. Fine tuning! The future is exciting.</p>
+		<br/>
+		<br/>
+	</body>
+</html>

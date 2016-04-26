@@ -7,7 +7,7 @@ a,a:visited {
 }
 @font-face {
 	font-family: "parufont";
-	src: url("parufont.ttf");
+	src: url("parufont.ttf?");
 }
 
 html {
@@ -15,7 +15,7 @@ html {
 }
 body{
 }
-h1,h2,h3,p,a,ul {
+h1,h2,h3,p,ul {
 	font-family:"DejaVu Sans", Helvetica, sans-serif;
 	font-size:15px;
 }
@@ -40,6 +40,9 @@ ul > li {
 ul > li.b {
 	font-weight:bold;
 }
+h1 > a {
+	color:inherit !important;
+}
 h1 {
 	font-size:24px;
 	background:black;
@@ -50,7 +53,7 @@ h2 {
 	padding-top:20px;
 	text-decoration:none;
 }
-a { padding: 4px; }
+a:not(.r) { padding: 4px; }
 .pic-email:after {
 	width:128px;
 	height:18px;

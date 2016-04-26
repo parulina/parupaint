@@ -35,7 +35,7 @@
 			<li class="b">Hold <kbd>Space</kbd> to move the canvas, and <kbd>Ctrl+Space</kbd> to zoom.
 			<li>Press <kbd>H</kbd> to flip the canvas horizontally, and <kbd>Shift+H</kbd> to flip vertically.
 			<li>Press <kbd>G</kbd> to toggle preview mode. Preview mode is useful if you want to preview how the exported canvas looks like, with all of its layers rendered.
-			<li>Press <kbd>Ctrl+G</kbd> to reset the view.
+			<li>Press <kbd>Ctrl+G</kbd> to reset the view, twice to reset the view flips.
 		</ul>
 		<p>Brushes work differently than how normal painting programs does. Each brush is customizable (color, size, tool) and keeps the settings through program restart. Even the eraser is a brush by itself. The eraser can be toggled globally with <kbd>E</kbd> from any brush, and then toggled back to the previous brush. The main brush is at <kbd>B</kbd>. If the color alpha is 0.0, the brush is treated like an eraser (destination-out) and is shown with a dashed outline.</p>
 		<ul>
@@ -44,10 +44,8 @@
 			<li class="b">Press <kbd>B</kbd> to switch to the main brush.
 			<li>Press any key from <kbd>1</kbd> to <kbd>5</kbd> for custom brushes. These are useful if you don't want to keep changing the main brush all the time.
 			<li class="b">Press <kbd>R</kbd> to pick color from the current layer (including transparency), and <kbd>Shift+R</kbd> to sample color from what you actually see.
-			<li>Press <kbd>W</kbd> for 3 different dither patterns. (tip: they can be combined!)
-			<li>Press <kbd>Q</kbd> for fill tool. You can also test-fill with <kbd>T</kbd> - this shows you a preview of the area that would be filled.
-			<li>Press <kbd>Shift+Q</kbd> for opacity drawing. The opacity of the brush is then determined by the pressure.
-			<li>Press <kbd>Shift+W</kbd> for line tool.
+			<li class="b">Press <kbd>W</kbd> to select 3 different dither patterns.
+				<li><b>Press <kbd>Q</kbd> to select tools</b>: fill tool, opacity brush, and line tool. If you have the fill tool selected, you can test-fill with <kbd>T</kbd> - this shows you a preview of the area that would be filled.
 		</ul>
 		<p>Navigating layers and frames is done entirely with keys, so it can be a bit disorienting sometimes. Check the bottom part of the overlay to see which layer/frame you are on.</p>
 		<ul>

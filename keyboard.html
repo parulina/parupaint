@@ -109,18 +109,18 @@
 		}
 
 		.highlight_possible_keys,
-		#keyboard.shift-on .key[shift-mode],
 		#keyboard.tab-on .key[tab-mode],
-		#keyboard.ctrl-on .key[ctrl-mode],
+		#keyboard.shift-on:not(.tab-on) .key[shift-mode],
+		#keyboard.ctrl-on:not(.tab-on) .key[ctrl-mode],
 		#keyboard.alt-on .key[alt-mode] {
 			background-color:#f2ae99;
 			background-color:#FCB;
 		}
 
-		#keyboard.shift-on .key.shift {
+		#keyboard.tab-on .key.tab {
 			background-color:#AAA;
 		}
-		#keyboard.tab-on .key.tab {
+		#keyboard.shift-on .key.shift {
 			background-color:#AAA;
 		}
 		#keyboard.ctrl-on .key.ctrl {
@@ -133,15 +133,15 @@
 		#keyboard .key.active {
 			background-color:#AAA;
 		}
-		#keyboard.shift-on .key[shift-mode]:after {
-			display:block;
-			content:attr(shift-mode);
-		}
 		#keyboard.tab-on .key[tab-mode]:after {
 			display:block;
 			content:attr(tab-mode);
 		}
-		#keyboard.ctrl-on .key[ctrl-mode]:after {
+		#keyboard.shift-on:not(.tab-on) .key[shift-mode]:after {
+			display:block;
+			content:attr(shift-mode);
+		}
+		#keyboard.ctrl-on:not(.tab-on) .key[ctrl-mode]:after {
 			display:block;
 			content:attr(ctrl-mode);
 		}
@@ -153,14 +153,14 @@
 			display:block;
 			content:attr(tabshift-mode);
 		}
-		#keyboard.ctrl-on.shift-on .key[ctrlshift-mode]:after {
+		#keyboard.ctrl-on.shift-on:not(.tab-on) .key[ctrlshift-mode]:after {
 			display:block;
 			content:attr(ctrlshift-mode);
 		}
 
 	</style>
 	<h1>PARUPAINT KEYS</h1>
-	<p>This is a javascript enabled keyboard that shows you the different key combinations available in parupaint. Try holding Tab, Shift, Control and Alt.</p>
+	<p>This is a javascript enabled keyboard that shows you the default key combinations in parupaint. Try holding Tab, Shift, Control and Alt.</p>
 	<div class="center-keyboard">
 		<div id="keyboard">
 			<div class="row numbers">
@@ -259,16 +259,19 @@
 				<label for="key-83" class="key"
 					normal-mode="next frame"
 					tab-mode="add frame"
+					tabctrl-mode="extend frame"
 					tabshift-mode="insert frame">s</label>
 				<input type="button" id="key-83"></input>
 				<label for="key-68" class="key"
 					normal-mode="previous layer"
 					tab-mode="delete layer"
+     					tabctrl-mode=""
 					tabshift-mode="delete prev layer">d</label>
 				<input type="button" id="key-68"></input>
 				<label for="key-70" class="key"
 					normal-mode="next layer"
 					tab-mode="add layer"
+     					tabctrl-mode=""
 					tabshift-mode="insert layer">f</label>
 				<input type="button" id="key-70"></input>
 				<label for="key-71" class="key"
