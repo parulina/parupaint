@@ -213,6 +213,9 @@ ParupaintFlayer QLineEdit {
 	border:none;
 	padding:0;
 }
+ParupaintFlayer QComboBox {
+	font-size:14px;
+}
 
 ParupaintFlayer::item:selected {
 	background:#75653A;

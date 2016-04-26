@@ -5,6 +5,7 @@
 #include <QMouseEvent>
 #include <QComboBox>
 #include <QLineEdit>
+#include <QTimer>
 #include <QDebug>
 
 #include "../parupaintVisualCanvas.h"
@@ -21,6 +22,18 @@ void FlayerComboBox::hidePopup()
 	// this always clears the focus so that the cel
 	// is not kept focused when clicking out of popup
 	this->clearFocus();
+	QAbstractItemView * view = qobject_cast<QAbstractItemView*>(this->parent()->parent());
+	if(view){
+		// I tried everything. But nothing worked
+		// Having the editing finished when clicking outside the combo box should be simple,
+		// but it's very hard. Clicking outside generates one call to hidePopup, while clicking
+		// an item generates two of them. So it's very difficult to figure out what happened
+		// I'm just resorting to a one millisecond timer now.
+		QTimer * timer = new QTimer(this);
+		timer->setSingleShot(true);
+		connect(timer, QTimer::timeout, this, &FlayerComboBox::onPopupHide);
+		timer->start(1);
+	}
 	QComboBox::hidePopup();
 }
 
