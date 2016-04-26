@@ -7,7 +7,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QApplication>
+#include <QCoreApplication>
 
 #include "parupaintConnection.h"
 #include "../core/parupaintRecordManager.h"
@@ -119,7 +119,7 @@ void ParupaintServerInstance::playLogFile(const QString & logfile, int limit)
 		QElapsedTimer timer;
 		timer.start();
 		while(timer.elapsed() < 200)
-			QApplication::processEvents();
+			QCoreApplication::processEvents();
 
 		if(limit != -1 && (++i) > limit) break;
 	}
