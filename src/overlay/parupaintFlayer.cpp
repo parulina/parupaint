@@ -220,7 +220,7 @@ void ParupaintFlayer::mousePressEvent(QMouseEvent * event)
 	if(event->button() == Qt::LeftButton){
 		QModelIndex index = this->indexAt(event->pos());
 		int rc = (this->model()->rowCount() > 0 ? this->model()->rowCount()-1 : 0);
-		int l = (index.row() - rc);
+		int l = (rc - index.row());
 		int f = (index.column() - 3);
 
 		emit onLayerFrameSelect(l, f);
