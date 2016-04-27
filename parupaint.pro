@@ -6,6 +6,15 @@ CONFIG += 		c++11 debug_and_release
 QMAKE_CXXFLAGS +=	-std=c++11 -Wfatal-errors
 TARGET = 		parupaint
 
+target.path = /usr/local/bin
+desktop.path = /usr/local/share/applications
+icon.path = /usr/local/share/icons/hicolor/128x128/apps
+
+desktop.files += resources/parupaint.desktop
+icon.files = resources/parupaint.png
+
+INSTALLS +=		target desktop icon
+
 # Colored output for unix
 # TODO check if compiler supports this switch
 unix:QMAKE_CXXFLAGS += -fdiagnostics-color=auto
