@@ -7,7 +7,7 @@
 + Standardized drawing operations. The server and client should now draw completely identical, keeping errors to a minimum.
 + Reordered interface, particularly the top half of the overlay.
 + Added a list of all painters in the upper-right.
-+ Fill tool is now able to erase-fill.
++ Fill tool is now able to erase-fill and pattern-fill.
 + Added onionskin.
 + Upgraded the recording file format.
 + Upgraded PPA specification, probably final design.
