@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Parupaint
+Comment=Multipainter animation program
+Exec=parupaint %f
+Icon=parupaint
+MimeType=image/openraster;image/png;image/jpeg;
+Categories=Graphics;Network;RasterGraphics;
+Terminal=false
