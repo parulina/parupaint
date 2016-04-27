@@ -31,7 +31,7 @@ void FlayerComboBox::hidePopup()
 		// I'm just resorting to a one millisecond timer now.
 		QTimer * timer = new QTimer(this);
 		timer->setSingleShot(true);
-		connect(timer, QTimer::timeout, this, &FlayerComboBox::onPopupHide);
+		connect(timer, &QTimer::timeout, this, &FlayerComboBox::onPopupHide);
 		timer->start(1);
 	}
 	QComboBox::hidePopup();
