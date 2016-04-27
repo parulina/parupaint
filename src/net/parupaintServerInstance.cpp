@@ -43,6 +43,8 @@ void ParupaintServerInstance::startRecord()
 {
 	if(!server_dir.exists()) return;
 
+	qDebug() << "Starting log.";
+
 	QStringList list;
 	QFileInfo log(server_dir, ".parupaint.log");
 
@@ -312,6 +314,7 @@ const QDir & ParupaintServerInstance::parupaintWebServeDir() const
 void ParupaintServerInstance::setServerDir(QDir dir)
 {
 	if(!dir.exists()) return;
+	qDebug() << "Server directory:" << dir.path();
 	this->server_dir = dir;
 }
 const QDir & ParupaintServerInstance::serverDir() const
