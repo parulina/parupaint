@@ -183,15 +183,95 @@ QRect ParupaintFrame::drawImage(const QPointF & pos, const QImage & image)
 	emit onChange(changed_rect);
 	return changed_rect;
 }
+
+QRegion imageToRegion(const QImage & img)
+{
+	QImage image = img.convertToFormat(QImage::Format_MonoLSB);
+	QRegion region;
+	QRect xr;
+
+
+	// From Qt's sources: src/gui/painting/qregion.cpp
+	// As with the case with brush patterns, i'd like to avoid
+	// including the gui module to keep the server filesize down.
+	// QRegion can only take QBitmap, which is dependent on the
+	// gui module, which is dumb because internally it just converts
+	// it back to QImage.
+
+#define AddSpan \
+	{ \
+		xr.setCoords(prev1, y, x-1, y); \
+		region = region.united(xr); \
+	}
+
+	const uchar zero = 0;
+	bool little = image.format() == QImage::Format_MonoLSB;
+
+	int x,
+	    y;
+	for (y = 0; y < image.height(); ++y) {
+		const uchar *line = image.constScanLine(y);
+		int w = image.width();
+		uchar all = zero;
+		int prev1 = -1;
+		for (x = 0; x < w;) {
+			uchar byte = line[x / 8];
+			if (x > w - 8 || byte!=all) {
+				if (little) {
+					for (int b = 8; b > 0 && x < w; --b) {
+						if (!(byte & 0x01) == !all) {
+							// More of the same
+						} else {
+							// A change.
+							if (all!=zero) {
+								AddSpan
+									all = zero;
+							} else {
+								prev1 = x;
+								all = ~zero;
+							}
+						}
+						byte >>= 1;
+						++x;
+					}
+				} else {
+					for (int b = 8; b > 0 && x < w; --b) {
+						if (!(byte & 0x80) == !all) {
+							// More of the same
+						} else {
+							// A change.
+							if (all != zero) {
+								AddSpan
+									all = zero;
+							} else {
+								prev1 = x;
+								all = ~zero;
+							}
+						}
+						byte <<= 1;
+						++x;
+					}
+				}
+			} else {
+				x += 8;
+			}
+		}
+		if (all != zero) {
+			AddSpan
+		}
+	}
+#undef AddSpan
+
+	return region;
+}
+
 QRect ParupaintFrame::drawFill(const QPointF & pos, QColor to_color, const QBrush & brush)
 {
 	ParupaintFillHelper help(frame);
 	QRect rect = help.fill(pos.x(), pos.y(), to_color.rgba());
 
-	QPixmap bm = QPixmap::fromImage(help.mask());
-
 	QPainter painter(&frame);
-	painter.setClipRegion(QRegion(bm));
+	painter.setClipRegion(imageToRegion(help.mask()));
 
 	QBrush nb = brush;
 	if(nb.color().alpha() == 0){
