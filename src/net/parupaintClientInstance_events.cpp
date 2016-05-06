@@ -185,20 +185,20 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		    f = object["f"].toInt(),
 		    lc = object["lc"].toInt(),
 		    fc = object["fc"].toInt();
-		// TODO change ext -> extended
 		bool ext = object["ext"].toBool();
 
-		ParupaintCommonOperations::LayerFrameChangeOp(pool->canvas(), l, f, lc, fc, ext);
-		foreach(ParupaintBrush * brush, this->brushes){
-			ParupaintCommonOperations::AdjustBrush(brush, pool->canvas());
+		if(ParupaintCommonOperations::LayerFrameChangeOp(pool->canvas(), l, f, lc, fc, ext)){
+			foreach(ParupaintBrush * brush, this->brushes){
+				ParupaintCommonOperations::AdjustBrush(brush, pool->canvas());
+			}
 		}
 
 		ParupaintBrush * brush = pool->mainCursor();
 
-		if(l <= brush->layer()) {
+		if(l-1 <= brush->layer()) {
 			brush->setLayer(brush->layer() + lc);
 		}
-		if(f <= brush->frame()) {
+		if(f-1 <= brush->frame()) {
 			brush->setFrame(brush->frame() + fc);
 		}
 

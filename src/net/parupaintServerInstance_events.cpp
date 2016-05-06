@@ -203,8 +203,8 @@ void ParupaintServerInstance::doMessage(const QString & id, QJsonObject obj)
 
 		if(ParupaintCommonOperations::LayerFrameChangeOp(canvas, l, f, lc, fc, ext)){
 			foreach(ParupaintBrush * brush, this->brushes){
-				if(l <= brush->layer()) brush->setLayer(brush->layer() + lc);
-				if(f <= brush->frame()) brush->setFrame(brush->frame() + fc);
+				if(l-1 <= brush->layer()) brush->setLayer(brush->layer() + lc);
+				if(f-1 <= brush->frame()) brush->setFrame(brush->frame() + fc);
 				ParupaintCommonOperations::AdjustBrush(brush, canvas);
 			}
 			this->objMessage(id, {
