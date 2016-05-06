@@ -77,12 +77,12 @@ void ParupaintPanvas::newCanvas(const QList<ParupaintLayer*> & layerlist)
 	emit onCanvasContentChange();
 }
 
-void ParupaintPanvas::insertLayer(int i, int f)
+bool ParupaintPanvas::insertLayer(int i, int f)
 {
-	this->insertLayer(new ParupaintLayer(this, this->dimensions(), f), i);
+	return this->insertLayer(new ParupaintLayer(this, this->dimensions(), f), i);
 }
 
-void ParupaintPanvas::insertLayer(ParupaintLayer* l, ParupaintLayer* at)
+bool ParupaintPanvas::insertLayer(ParupaintLayer* l, ParupaintLayer* at)
 {
 	Q_ASSERT_X(l, "insertLayer(at)", "layer to insert is null");
 	int i = -1;
@@ -92,9 +92,9 @@ void ParupaintPanvas::insertLayer(ParupaintLayer* l, ParupaintLayer* at)
 			i = ii;
 		}
 	}
-	this->insertLayer(l, i);
+	return this->insertLayer(l, i);
 }
-void ParupaintPanvas::insertLayer(ParupaintLayer* l, int i)
+bool ParupaintPanvas::insertLayer(ParupaintLayer* l, int i)
 {
 	Q_ASSERT_X(l, "insertLayer(i)", "layer to insert is null");
 
@@ -110,25 +110,27 @@ void ParupaintPanvas::insertLayer(ParupaintLayer* l, int i)
 
 		this->connect(l, &QObject::destroyed, this, &ParupaintPanvas::removeLayerObject);
 		emit onCanvasContentChange();
+		return true;
 	} else {
 		qDebug() << "insertLayer(i)" << i << "is out of range";
 	}
+	return false;
 }
-void ParupaintPanvas::appendLayer(ParupaintLayer* l)
+bool ParupaintPanvas::appendLayer(ParupaintLayer* l)
 {
-	this->insertLayer(l, this->layerCount());
+	return this->insertLayer(l, this->layerCount());
 }
 
-void ParupaintPanvas::removeLayer(ParupaintLayer* l)
+bool ParupaintPanvas::removeLayer(ParupaintLayer* l)
 {
-	this->removeLayer(this->layerIndex(l));
+	return this->removeLayer(this->layerIndex(l));
 }
 
-void ParupaintPanvas::removeLayer(int i)
+bool ParupaintPanvas::removeLayer(int i)
 {
 	if(i < 0) i += layers.size();
 	if(layers.isEmpty()) i = 0;
-	if(i >= 0 && i <= layers.size()){
+	if(i >= 0 && i <= layers.size()-1){
 		ParupaintLayer * l = layers.takeAt(i);
 		l->setParent(nullptr);
 		this->disconnect(l, &ParupaintLayer::onContentChange, this, &ParupaintPanvas::onCanvasContentChange);
@@ -140,9 +142,11 @@ void ParupaintPanvas::removeLayer(int i)
 		// i'm not sure if this is okay...
 		delete l;
 		emit onCanvasContentChange();
+		return true;
 	} else {
 		qDebug() << "removeLayer(i)" << i << "is out of range";
 	}
+	return false;
 }
 int ParupaintPanvas::layerIndex(ParupaintLayer* l)
 {
@@ -154,6 +158,7 @@ int ParupaintPanvas::layerIndex(ParupaintLayer* l)
 ParupaintLayer * ParupaintPanvas::layerAt(int i) const
 {
 	if(layers.isEmpty()) return nullptr;
+	if(i < 0 || i >= layers.size()) return nullptr;
 	return layers.at(i);
 }
 

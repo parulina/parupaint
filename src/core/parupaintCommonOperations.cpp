@@ -89,15 +89,13 @@ bool ParupaintCommonOperations::LayerFrameChangeOp(ParupaintPanvas * canvas, int
 	bool changed = false;
 	if(lc != 0){
 		if(lc < 0 && canvas->layerCount() > 1){
-			for(int i = 0; i < -lc; i++){
-				canvas->removeLayer(l);
-			}
-			changed = true;
+			for(int i = 0; i < -lc; i++)
+				if(canvas->removeLayer(l))
+					changed = true;
 		} else if(lc > 0){
-			for(int i = 0; i < lc; i++){
-				canvas->insertLayer(l, 1);
-			}
-			changed = true;
+			for(int i = 0; i < lc; i++)
+				if(canvas->insertLayer(l, 1))
+					changed = true;
 		}
 	}
 	if(fc != 0){
@@ -106,21 +104,23 @@ bool ParupaintCommonOperations::LayerFrameChangeOp(ParupaintPanvas * canvas, int
 			if(fc < 0 && ff->frameCount() > 1){
 				if(extend){
 					for(int i = 0; i < -fc; i++)
-						ff->redactFrame(f);
+						if(ff->redactFrame(f))
+							changed = true;
 				} else {
 					for(int i = 0; i < -fc; i++)
-						ff->removeFrame(f);
+						if(ff->removeFrame(f))
+							changed = true;
 				}
-				changed = true;
 			} else if(fc > 0){
 				if(extend){
 					for(int i = 0; i < fc; i++)
-						ff->extendFrame(f);
+						if(ff->extendFrame(f))
+							changed = true;
 				} else {
 					for(int i = 0; i < fc; i++)
-						ff->insertFrame(canvas->dimensions(), f);
+						if(ff->insertFrame(canvas->dimensions(), f))
+							changed = true;
 				}
-				changed = true;
 			}
 		}
 	}

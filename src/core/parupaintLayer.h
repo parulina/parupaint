@@ -44,18 +44,19 @@ Q_OBJECT
 
 	void resize(const QSize &);
 
-	void insertFrame(const QSize &, ParupaintFrame * at);
-	void insertFrame(const QSize &, int i);
-	void insertFrame(ParupaintFrame* f, ParupaintFrame* at);
-	void insertFrame(ParupaintFrame* f, int i = -1);
-	void appendFrame(ParupaintFrame* f);
+	bool insertFrame(const QSize &, ParupaintFrame * at);
+	bool insertFrame(const QSize &, int i);
+	bool insertFrame(ParupaintFrame* f, ParupaintFrame* at);
+	bool insertFrame(ParupaintFrame* f, int i = -1);
+	bool appendFrame(ParupaintFrame* f);
 
-	void removeFrame(ParupaintFrame* f);
-	void removeFrame(int i);
-	void extendFrame(ParupaintFrame* f);
-	void extendFrame(int i);
-	void redactFrame(ParupaintFrame* f);
-	void redactFrame(int i);
+	bool removeFrame(ParupaintFrame* f);
+	bool removeFrame(int i);
+	bool extendFrame(ParupaintFrame* f);
+	bool extendFrame(int i);
+	bool redactFrame(ParupaintFrame* f);
+	bool redactFrame(int i);
+
 	bool isFrameExtended(ParupaintFrame* f);
 	bool isFrameExtended(int i);
 	bool isFrameReal(ParupaintFrame* f);

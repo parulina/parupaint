@@ -45,13 +45,13 @@ Q_OBJECT
 	void newCanvas(int l, int f = 0);
 	void newCanvas(const QList<ParupaintLayer*> &);
 
-	void insertLayer(int i, int f = 0);
-	void insertLayer(ParupaintLayer* l, ParupaintLayer* at);
-	void insertLayer(ParupaintLayer* l, int i = -1);
-	void appendLayer(ParupaintLayer* l);
+	bool insertLayer(int i, int f = 0);
+	bool insertLayer(ParupaintLayer* l, ParupaintLayer* at);
+	bool insertLayer(ParupaintLayer* l, int i = -1);
+	bool appendLayer(ParupaintLayer* l);
 
-	void removeLayer(ParupaintLayer * l);
-	void removeLayer(int i);
+	bool removeLayer(ParupaintLayer * l);
+	bool removeLayer(int i);
 	int layerIndex(ParupaintLayer*);
 	ParupaintLayer * layerAt(int) const;
 

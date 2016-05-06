@@ -33,16 +33,16 @@ void ParupaintLayer::resize(const QSize & size)
 		f->resize(size);
 	}
 }
-void ParupaintLayer::insertFrame(const QSize & size, ParupaintFrame* at)
+bool ParupaintLayer::insertFrame(const QSize & size, ParupaintFrame* at)
 {
-	this->insertFrame(new ParupaintFrame(size, this), at);
+	return this->insertFrame(new ParupaintFrame(size, this), at);
 }
-void ParupaintLayer::insertFrame(const QSize & size, int i)
+bool ParupaintLayer::insertFrame(const QSize & size, int i)
 {
-	this->insertFrame(new ParupaintFrame(size, this), i);
+	return this->insertFrame(new ParupaintFrame(size, this), i);
 }
 
-void ParupaintLayer::insertFrame(ParupaintFrame* f, ParupaintFrame* at)
+bool ParupaintLayer::insertFrame(ParupaintFrame* f, ParupaintFrame* at)
 {
 	Q_ASSERT_X(f, "insertFrame(at)", "frame to insert is null");
 	int i = -1;
@@ -52,9 +52,9 @@ void ParupaintLayer::insertFrame(ParupaintFrame* f, ParupaintFrame* at)
 			i = ii;
 		}
 	}
-	this->insertFrame(f, i);
+	return this->insertFrame(f, i);
 }
-void ParupaintLayer::insertFrame(ParupaintFrame* f, int i)
+bool ParupaintLayer::insertFrame(ParupaintFrame* f, int i)
 {
 	Q_ASSERT_X(f, "insertFrame(i)", "frame to insert is null");
 
@@ -65,42 +65,48 @@ void ParupaintLayer::insertFrame(ParupaintFrame* f, int i)
 		f->setParent(this);
 		this->connect(f, &QObject::destroyed, this, &ParupaintLayer::removeFrameObject);
 		emit onContentChange();
+		return true;
 	} else {
 		qDebug() << "insertFrame(i)" << i << "is out of range";
 	}
+	return false;
 }
-void ParupaintLayer::appendFrame(ParupaintFrame* f)
+bool ParupaintLayer::appendFrame(ParupaintFrame* f)
 {
-	this->insertFrame(f, this->frameCount());
+	return this->insertFrame(f, this->frameCount());
 }
 
-void ParupaintLayer::removeFrame(ParupaintFrame* f)
+bool ParupaintLayer::removeFrame(ParupaintFrame* f)
 {
-	this->removeFrame(this->frameIndex(f));
+	return this->removeFrame(this->frameIndex(f));
 }
 
-void ParupaintLayer::removeFrame(int i)
+bool ParupaintLayer::removeFrame(int i)
 {
 	if(i < 0) i += frames.size();
 	if(frames.isEmpty()) i = 0;
-	if(i >= 0 && (i <= frames.size())){
-		ParupaintFrame * f = frames.takeAt(i);
-		if(!this->isFrameExtended(f)){
+	if(i >= 0 && (i <= frames.size()-1)){
+		if(!this->isFrameExtended(i)){
+			ParupaintFrame * f = frames.takeAt(i);
+
 			f->setParent(nullptr);
 			this->disconnect(f, &QObject::destroyed, this, &ParupaintLayer::removeFrameObject);
 			delete f;
+
+			emit onContentChange();
+			return true;
 		}
-		emit onContentChange();
 	} else {
 		qDebug() << "removeFrame(i)" << i << "is out of range";
 	}
+	return false;
 }
 
-void ParupaintLayer::extendFrame(ParupaintFrame* f)
+bool ParupaintLayer::extendFrame(ParupaintFrame* f)
 {
-	this->extendFrame(this->frameIndex(f));
+	return this->extendFrame(this->frameIndex(f));
 }
-void ParupaintLayer::extendFrame(int i)
+bool ParupaintLayer::extendFrame(int i)
 {
 	if(i < 0) i += frames.size();
 	if(frames.isEmpty()) i = 0;
@@ -108,21 +114,23 @@ void ParupaintLayer::extendFrame(int i)
 		ParupaintFrame * frame = this->frameAt(i);
 		frames.insert(i, frame);
 		emit onContentChange();
+		return true;
 	} else {
 		qDebug() << "extendFrame(i)" << i << "is out of range";
 	}
+	return false;
 }
 
-void ParupaintLayer::redactFrame(ParupaintFrame* f)
+bool ParupaintLayer::redactFrame(ParupaintFrame* f)
 {
-	this->redactFrame(this->frameIndex(f));
+	return this->redactFrame(this->frameIndex(f));
 }
-void ParupaintLayer::redactFrame(int i)
+bool ParupaintLayer::redactFrame(int i)
 {
 	if(i < 0) i += frames.size();
 	if(frames.isEmpty()) i = 0;
 	if(i >= 0 && (i <= frames.size())){
-		if(!this->isFrameExtended(i)) return;
+		if(!this->isFrameExtended(i)) return false;
 
 		ParupaintFrame * frame = this->frameAt(i);
 		switch(this->frameExtendedDirection(frame)){
@@ -130,9 +138,11 @@ void ParupaintLayer::redactFrame(int i)
 			default: frames.removeAt(i + 1); break;
 		}
 		emit onContentChange();
+		return true;
 	} else {
 		qDebug() << "redactFrame(i)" << i << "is out of range";
 	}
+	return false;
 }
 
 bool ParupaintLayer::isFrameExtended(ParupaintFrame* f)
