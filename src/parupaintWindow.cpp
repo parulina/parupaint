@@ -345,6 +345,8 @@ void ParupaintWindow::showOverlay(overlayStates state)
 	picker->show();
 	netinfo->show();
 
+	flayer->selectLayerFrame(scene->canvas()->currentLayer(), scene->canvas()->currentFrame());
+
 	this->updateOverlay();
 }
 
