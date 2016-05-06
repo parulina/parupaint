@@ -276,7 +276,7 @@ QRect ParupaintFrame::drawFill(const QPointF & pos, QColor to_color, const QBrus
 	QBrush nb = brush;
 	if(nb.color().alpha() == 0){
 		nb.setColor(Qt::white);
-		painter.setCompositionMode(QPainter::CompositionMode_Clear);
+		painter.setCompositionMode(QPainter::CompositionMode_DestinationOut);
 	}
 	painter.setBrush(nb);
 
