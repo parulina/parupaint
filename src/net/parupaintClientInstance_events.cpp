@@ -70,7 +70,7 @@ void ParupaintClientInstance::message(const QString & id, const QByteArray & byt
 		if(c == this->me) return;
 
 		// default: nullptr
-		ParupaintVisualCursor * brush = brushes[c];
+		ParupaintVisualCursor * brush = brushes.value(c);
 
 		// create or destroy brush as they join/leave the server
 		if(object["exists"].isBool()){
