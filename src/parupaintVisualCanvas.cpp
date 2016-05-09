@@ -254,26 +254,36 @@ void ParupaintVisualCanvas::redraw(QRect area)
 		// do not show other layers when... (flashing & preview)
 		if((flash_timeout->isActive() && this->isPreview()) && (i != current_layer)) continue;
 
-		painter.setCompositionMode(static_cast<QPainter::CompositionMode>(layer->mode()));
+		// if layer is hidden or if debug is on, and if it's not the current layer, hide it
+		if((!layer->visible() || !this->isPreview()) && (i != current_layer)) continue;
+		bool debug_layer = !this->isPreview();
+
+
+		if(!debug_layer) painter.setCompositionMode(static_cast<QPainter::CompositionMode>(layer->mode()));
 		if(layer && current_frame < layer->frameCount()){
 			ParupaintFrame* frame = layer->frameAt(current_frame);
 			if(frame){
-				painter.setOpacity(this->isPreview() ? frame->opacity() : 0.6);
+				painter.setOpacity(this->isPreview() ? frame->opacity() : (debug_layer ? 1.0 : 0.2));
 				painter.drawImage(area, frame->image(), area);
 			}
-			// only draw onionskin if preview is off.
-			if((!this->isPreview()) && current_layer == i){
-
-				int prev_frame = current_frame - 1,
-				    next_frame = current_frame + 1;
-
-				// make the onionskin opaque
-				painter.setOpacity(0.3);
-				if((frame = layer->frameAt(prev_frame))){
-					painter.drawImage(area, frame->image(), area);
+			if(current_layer == i){
+				if(fillpreview_timeout->isActive()){
+					painter.drawPixmap(area, fillpreview_pixmap, area);
 				}
-				if((frame = layer->frameAt(next_frame))){
-					painter.drawImage(area, frame->image(), area);
+				// only draw onionskin if preview is off.
+				if(!this->isPreview()){
+
+					int prev_frame = current_frame - 1,
+					    next_frame = current_frame + 1;
+
+					// make the onionskin opaque
+					painter.setOpacity(0.2);
+					if((frame = layer->frameAt(prev_frame))){
+						painter.drawImage(area, frame->image(), area);
+					}
+					if((frame = layer->frameAt(next_frame))){
+						painter.drawImage(area, frame->image(), area);
+					}
 				}
 			}
 		}
@@ -281,23 +291,7 @@ void ParupaintVisualCanvas::redraw(QRect area)
 	// reset
 	painter.restore();
 
-	// now draw the focused frame
-	if(!this->isPreview() || flash_timeout->isActive()){
-		// always draw current frame with max op
-		ParupaintLayer * layer = this->layerAt(current_layer);
-		if(layer != nullptr){
-
-			ParupaintFrame* frame = layer->frameAt(current_frame);
-			if(frame != nullptr) {
-				painter.setOpacity(this->isPreview() ? frame->opacity() : 1.0);
-				painter.drawImage(area, frame->image(), area);
-			}
-		}
-	}
-
-	if(fillpreview_timeout->isActive()){
-		painter.drawPixmap(area, fillpreview_pixmap, area);
-	}
+	// todo move them in the correct layer pos?
 	if(!pastepreview_pixmap.isNull()){
 		painter.setOpacity(1.0);
 		painter.drawPixmap(QRectF(pastepreview_pos, pastepreview_pixmap.size()), 
