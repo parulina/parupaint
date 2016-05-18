@@ -75,12 +75,17 @@ QRect ParupaintFillHelper::fill(int x, int y, const QRgb orig, const QRgb to){
 		const int ty = p.y();
 		int tx = p.x(), tx2 = p.x();
 
+		// if this pixel has already been modified, discard this point
+		// in order to prevent a buildup of them
+		if(pixel(tx, ty) == to) continue;
+
 		if(ty > filled_rect.bottom()) filled_rect.setBottom(ty);
 		if(ty < filled_rect.top()) filled_rect.setTop(ty);
 
 		while(tx > 0){
 			tx--;
-			if(pixel(tx, ty) != orig){
+			const QRgb pix = pixel(tx, ty);
+			if(qAlpha(pix) != qAlpha(orig) || pix != orig){
 				tx++;
 				break;
 			}
@@ -88,7 +93,9 @@ QRect ParupaintFillHelper::fill(int x, int y, const QRgb orig, const QRgb to){
 		while(tx2 < ww){
 			tx2++;
 			if(tx2 >= ww) break; // .pixel(.width) doesn't work for some reason
-			if(pixel(tx2, ty) != orig){
+
+			const QRgb pix = pixel(tx2, ty);
+			if(qAlpha(pix) != qAlpha(orig) || pix != orig){
 				break;
 			}
 		}
@@ -107,16 +114,24 @@ QRect ParupaintFillHelper::fill(int x, int y, const QRgb orig, const QRgb to){
 			// first check if the above pixel is valid to change
 			// if it is, then check if the neighboring pixel to the above pixel is planned to change.
 			// i mean, if it is, there's no point adding it to the queue.
-			if(ty > 0 && pixel(x, ty-1) == orig){
-				above_pixels[x] = true;
-				if(!(x > 0 && above_pixels[x-1] == true)) { 
-					plist.append(QPoint(x, ty-1));
+
+			// if it's a transparent color but differs from the destination OR if it's just different
+			if(ty > 0){
+				const QRgb pix_above = pixel(x, ty-1);
+				if((qAlpha(pix_above) == qAlpha(orig)) && pix_above == orig){
+					above_pixels[x] = true;
+					if(!(x > 0 && above_pixels[x-1] == true)) { 
+						plist.append(QPoint(x, ty-1));
+					}
 				}
 			}
-			if(ty < hh-1 && pixel(x, ty+1) == orig) {
-				below_pixels[x] = true;
-				if(!(x > 0 && below_pixels[x-1] == true)) { 
-					plist.append(QPoint(x, ty+1));
+			if(ty < hh-1){
+				const QRgb pix_below = pixel(x, ty+1);
+				if((qAlpha(pix_below) == qAlpha(orig)) && pix_below == orig) {
+					below_pixels[x] = true;
+					if(!(x > 0 && below_pixels[x-1] == true)) { 
+						plist.append(QPoint(x, ty+1));
+					}
 				}
 			}
 		}
