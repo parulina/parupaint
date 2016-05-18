@@ -605,8 +605,25 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 				ll--;
 			}
 
+			bool shift = (event->modifiers() & Qt::ShiftModifier),
+			     control = (event->modifiers() & Qt::ControlModifier);
+
 			if(!overlay_button) {
 				// Do a local check for boundaries
+				int cl = scene->canvas()->currentLayer(), cf = scene->canvas()->currentFrame();
+				if(shift){
+					if(ff > 0 && cf == scene->canvas()->currentCanvasLayer()->frameCount()-1){
+						ff -= scene->canvas()->currentCanvasLayer()->frameCount();
+					} else if(ff < 0 && cf == 0){
+						ff += scene->canvas()->currentCanvasLayer()->frameCount();
+					}
+					if(ll > 0 && cl == scene->canvas()->layerCount()-1){
+						ll -= scene->canvas()->layerCount();
+					} else if(ll < 0 && cl == 0){
+						ll += scene->canvas()->layerCount();
+					}
+				}
+
 				scene->canvas()->addCurrentLayerFrame(ll, ff);
 
 				ParupaintBrush * brush = brushes->brush();
@@ -619,9 +636,6 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			} else {
 				int cl = scene->canvas()->currentLayer(),
 				     cf = scene->canvas()->currentFrame();
-
-				auto shift = (event->modifiers() & Qt::ShiftModifier),
-				     control = (event->modifiers() & Qt::ControlModifier);
 
 				if(ll > 0 && !shift) 		 cl ++;
 				if(ff > 0 && !shift && !control) cf ++;
