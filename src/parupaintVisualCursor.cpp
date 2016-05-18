@@ -160,11 +160,30 @@ void ParupaintVisualCursor::paint(QPainter* painter, const QStyleOptionGraphicsI
 	}
 
 	// draw pattern
-	if(w > 1 && this->pattern() != ParupaintBrushPattern::BrushPatternNone){
+	if(this->pattern() != ParupaintBrushPattern::BrushPatternNone){
+
 		painter->save();
 
+		QPointF pattern_offset = -QPoint(this->pixelPosition().x() % 8, this->pixelPosition().y() % 8) + (this->pixelPosition() - this->pos());
+		painter->setBrushOrigin(pattern_offset);
+
 		painter->setBrush(QBrush(this->patternImage()));
-		painter->drawEllipse(cc);
+
+		if(w <= 1){
+			painter->drawRect(QRect(QPoint(-crosshair_size/2, 1), QPoint(-1, crosshair_size/2)));
+
+		} else {
+			if(p){
+				painter->setOpacity(0.4);
+			}
+
+			painter->drawEllipse(cc);
+
+			if(p){
+				painter->setOpacity(1.0);
+				painter->drawEllipse(cp);
+			}
+		}
 
 		painter->restore();
 	}
