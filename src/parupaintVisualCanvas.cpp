@@ -239,7 +239,7 @@ void ParupaintVisualCanvas::redraw(QRect area)
 	// non preview shows the current frame with onionskin, with the layers in the background
 	// when navigating, only the current layer should be shown...
 
-	if(this->isPreview() && !flash_timeout->isActive()){
+	if(!(!this->isPreview() && flash_timeout->isActive())){
 		painter.setOpacity(1.0);
 		painter.fillRect(area, this->backgroundColor());
 	}
@@ -252,10 +252,10 @@ void ParupaintVisualCanvas::redraw(QRect area)
 		if(!layer->visible()) continue;
 
 		// do not show other layers when... (flashing & preview)
-		if((flash_timeout->isActive() && this->isPreview()) && (i != current_layer)) continue;
+		if((flash_timeout->isActive() && !this->isPreview()) && (i != current_layer)) continue;
 
 		// if layer is hidden or if debug is on, and if it's not the current layer, hide it
-		if((!layer->visible() || !this->isPreview()) && (i != current_layer)) continue;
+		if((!layer->visible()) && (i != current_layer)) continue;
 		bool debug_layer = !this->isPreview();
 
 
