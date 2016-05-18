@@ -48,6 +48,8 @@ Q_OBJECT
 	void onPositionChange(const QPointF &);
 	void onToolChange(int);
 	void onPatternChange(int);
+	void onLayerChange(int);
+	void onFrameChange(int);
 
 	public:
 	ParupaintBrush(QObject * = nullptr, qreal size = 1.0, const QColor = QColor(-1, -1, -1, -1), const QString & name = "", int tool = ParupaintBrushTool::BrushToolNone, int pattern = ParupaintBrushPattern::BrushPatternNone);

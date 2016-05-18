@@ -52,10 +52,16 @@ void ParupaintBrush::setLayerFrame(int l, int f) {
 	this->setFrame(f);
 }
 void ParupaintBrush::setLayer(int l) {
+	int old_layer = this->brush_layer;
+
 	this->brush_layer = l;
+	if(l != old_layer) emit onLayerChange(l);
 }
 void ParupaintBrush::setFrame(int f) {
+	int old_frame = this->brush_frame;
+
 	this->brush_frame = f;
+	if(f != old_frame) emit onFrameChange(f);
 }
 void ParupaintBrush::setDrawing(bool drawing) {
 	this->brush_drawing = drawing;

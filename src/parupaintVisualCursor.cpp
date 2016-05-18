@@ -38,7 +38,7 @@ void ParupaintStaticCursorName::setBackgroundColor(const QColor & color)
 }
 void ParupaintStaticCursorName::paint(QPainter* painter, const QStyleOptionGraphicsItem* so, QWidget* widget)
 {
-	painter->fillRect(this->boundingRect(), background_color);
+	if(painter->opacity() == 1.0) painter->fillRect(this->boundingRect(), background_color);
 
 	painter->save();
 		painter->setCompositionMode(QPainter::CompositionMode_Exclusion);

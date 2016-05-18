@@ -14,13 +14,14 @@ class ParupaintVisualCursor;
 class ParupaintCursorList : public QAbstractListModel
 {
 Q_OBJECT
-	QList<ParupaintVisualCursor*> cursors;
+	QList<ParupaintVisualCursor*> cursor_list;
 	public:
 	ParupaintCursorList(QObject * = nullptr);
 
 	void add(ParupaintVisualCursor * cursor);
 	void remove(ParupaintVisualCursor * cursor);
 	void clear();
+	QList<ParupaintVisualCursor*> cursors();
 
 	Q_SLOT void cursorUpdate();
 	int rowCount(const QModelIndex & index) const;
@@ -31,10 +32,8 @@ class ParupaintCanvasScene : public QGraphicsScene
 {
 Q_OBJECT
 	private:
-	ParupaintVisualCanvas * panvas;
-
+	ParupaintVisualCanvas * visual_canvas;
 	ParupaintVisualCursor * main_cursor;
-
 	ParupaintCursorList * cursors;
 
 	signals:
@@ -52,13 +51,7 @@ Q_OBJECT
 	void addCursor(ParupaintVisualCursor *);
 	void removeCursor(ParupaintVisualCursor *);
 	void clearCursors();
-
-	void setPreview(bool p);
-	bool isPreview();
+	void updateCursorsVisibility();
 };
-
-
-
-
 
 #endif
