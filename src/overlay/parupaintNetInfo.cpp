@@ -5,6 +5,7 @@
 #include <QDebug>
 
 #include "../widget/parupaintLabelIcon.h"
+#include "../core/parupaintPatterns.h"
 #include "../parupaintVisualCursor.h"
 
 // provide list of players, and a counter for spectators.
@@ -12,12 +13,6 @@
 ParupaintPlayerListPainter::ParupaintPlayerListPainter(QObject * parent) :
 	QStyledItemDelegate(parent)
 {
-	QImage image(":/resources/icons.png");
-	QVector<QRgb> colors = image.colorTable();
-	colors[1] = Qt::transparent;
-	image.setColorTable(colors);
-
-	icons = QPixmap::fromImage(image);
 }
 
 void ParupaintPlayerListPainter::paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
@@ -25,27 +20,41 @@ void ParupaintPlayerListPainter::paint(QPainter * painter, const QStyleOptionVie
 	QStyleOptionViewItem opt = option;
 	this->initStyleOption(&opt, index);
 
-	QRect status_rect(option.rect.topLeft(), QSize(option.rect.height(), option.rect.height()));
-	QRect text_rect = option.rect.adjusted(status_rect.width(), 0, 0, 0);
+	QRect icon_rect = QRect(option.rect.topLeft(), QSize(option.rect.height(), option.rect.height()));
+	QRect text_rect = option.rect.adjusted(icon_rect.width(), 0, 0, 0);
 
-	if(index.data(Qt::UserRole).isValid()){
-		QColor color = index.data(Qt::UserRole).value<QColor>();
-		painter->fillRect(text_rect, color);
+	QColor color = opt.backgroundBrush.color();
+	QColor fixed_color = QColor::fromHslF(color.hueF(), 0.8, color.lightnessF());
+
+	if(!index.data(Qt::UserRole).isValid()) return;
+	if(!index.data(Qt::UserRole+1).isValid()) return;
+
+	int icon = index.data(Qt::UserRole).toInt();
+	int pattern = index.data(Qt::UserRole+1).toInt()-1;
+
+	// draw pattern
+	if(pattern >= 0) {
+		painter->fillRect(icon_rect, parupaintPattern(pattern, fixed_color));
 	}
-	if(index.data(Qt::UserRole+1).isValid()){
 
+	// draw icon
+	if(!(icon == 0 && color.alpha() != 0)){
 		QSize icon_size(32, 32);
-		int icon = index.data(Qt::UserRole + 1).toInt();
 		int icon_h = icon < 0 ? icon_size.height() : 0;
 		if(icon < 0) icon = -icon;
 
 		QPoint icon_pos(icon_size.width() * icon, icon_h);
 
-		painter->drawPixmap(status_rect, icons, QRect(icon_pos, icon_size));
+		QImage image(":/resources/icons.png");
+		QVector<QRgb> colors = image.colorTable();
+		colors[1] = color.rgba();
+		image.setColorTable(colors);
+		
+		painter->drawImage(icon_rect, image, QRect(icon_pos, icon_size));
 	}
 
-	painter->setPen(Qt::white);
-	painter->setCompositionMode(QPainter::CompositionMode_Exclusion);
+
+	painter->setPen(fixed_color);
 	painter->drawText(text_rect, Qt::AlignLeft | Qt::AlignVCenter, opt.text);
 }
 QSize ParupaintPlayerListPainter::sizeHint(const QStyleOptionViewItem & , const QModelIndex & ) const

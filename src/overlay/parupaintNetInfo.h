@@ -8,8 +8,6 @@ class ParupaintLabelIcon;
 
 class ParupaintPlayerListPainter : public QStyledItemDelegate
 {
-	QPixmap icons;
-
 	public:
 	ParupaintPlayerListPainter(QObject * = nullptr);
 	void paint(QPainter *, const QStyleOptionViewItem &, const QModelIndex &) const;

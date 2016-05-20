@@ -26,6 +26,7 @@ void ParupaintCursorList::add(ParupaintVisualCursor * cursor)
 	connect(cursor, &ParupaintVisualCursor::onCursorNameChange, this, &ParupaintCursorList::cursorUpdate);
 	connect(cursor, &ParupaintVisualCursor::onCursorStatusChange, this, &ParupaintCursorList::cursorUpdate);
 	connect(cursor, &ParupaintBrush::onToolChange, this, &ParupaintCursorList::cursorUpdate);
+	connect(cursor, &ParupaintBrush::onPatternChange, this, &ParupaintCursorList::cursorUpdate);
 	connect(cursor, &ParupaintBrush::onColorChange, this, &ParupaintCursorList::cursorUpdate);
 }
 void ParupaintCursorList::remove(ParupaintVisualCursor * cursor)
@@ -68,6 +69,8 @@ QVariant ParupaintCursorList::data(const QModelIndex & index, int role) const
 	if(index.row() >= 0 && index.row() < cursor_list.size())
 		cursor = cursor_list.at(index.row());
 
+	if(!cursor) return QVariant();
+
 	if(role == Qt::FontRole){
 		QFont font;
 		if(cursor){
@@ -77,18 +80,17 @@ QVariant ParupaintCursorList::data(const QModelIndex & index, int role) const
 		}
 		return font;
 	}
-	if(role == Qt::DisplayRole){
-		return cursor ? cursor->cursorName() : "n/a";
+	if(role == Qt::ToolTipRole || role == Qt::DisplayRole){
+		return cursor->cursorName().length() ? cursor->cursorName() : "n/a";
+	}
+	if(role == Qt::BackgroundRole){
+		return cursor->color();
 	}
 	if(role == Qt::UserRole){
-		if(cursor){
-			return cursor->color();
-		}
-	}
-	if(role == Qt::UserRole + 1){
-		if(cursor){
-			return cursor->status() ? -cursor->status() : cursor->tool();
-		}
+		return cursor->status() ? -cursor->status() : cursor->tool();
+
+	} else if(role == Qt::UserRole+1){
+		return cursor->pattern();
 	}
 	return QVariant();
 }

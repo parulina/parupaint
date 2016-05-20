@@ -68,6 +68,8 @@ void ParupaintStaticCursorIcon::setIconRowColumn(int row, int column, QRgb col)
 	QRect area(QPoint(icon_size.width() * column, icon_size.height() * row), icon_size);
 	this->setPixmap(QPixmap::fromImage(icons.copy(area)));
 	this->setOffset(QPoint(0, -this->pixmap().height()) + QPoint(5, -5));
+
+	this->show();
 }
 
 
@@ -254,6 +256,9 @@ QString ParupaintVisualCursor::cursorName() const
 void ParupaintVisualCursor::updateChanges()
 {
 	tool_obj->setIconRowColumn(0, this->tool(), this->rgba());
+	if(this->tool() == 0 && qAlpha(this->rgba()) != 0){
+		tool_obj->hide();
+	}
 	name_obj->setBackgroundColor(this->color());
 
 	this->update();
