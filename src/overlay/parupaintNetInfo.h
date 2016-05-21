@@ -39,7 +39,7 @@ Q_OBJECT
 	void setNumSpectators(int num);
 
 	protected:
-	QSize minimumSizeHint() const;
+	QSize sizeHint() const;
 };
 
 #endif

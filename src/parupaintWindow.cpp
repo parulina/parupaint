@@ -386,11 +386,19 @@ void ParupaintWindow::updateOverlay()
 {
 	bool expanded = (overlay_state == overlayExpandedState);
 
-	infobar->setFixedHeight(expanded ? 200 : 30);
-	netinfo->setMaximumHeight(expanded ? 200 : 30);
+	if(!expanded){
+		infobar->setMaximumHeight(30);
+		netinfo->setMaximumHeight(30);
 
-	project_info->setMaximumHeight(expanded ? 200 : 30);
-	flayer->setMaximumHeight(expanded ? 200 : 30);
+		project_info->setMaximumHeight(30);
+		flayer->setMaximumHeight(30);
+	} else {
+		infobar->setMaximumHeight(65535);
+		netinfo->setMaximumHeight(65535);
+
+		project_info->setMaximumHeight(65535);
+		flayer->setMaximumHeight(65535);
+	}
 }
 
 void ParupaintWindow::keyReleaseEvent(QKeyEvent * event)

@@ -14,8 +14,6 @@ ParupaintColorPicker::ParupaintColorPicker(QWidget * parent) : QFrame(parent)
 {
 	this->setFocusPolicy(Qt::ClickFocus);
 
-	this->setMinimumSize(200, 200);
-
 	main_vlayout = new QVBoxLayout;
 	main_vlayout->setMargin(0);
 	main_vlayout->setSpacing(0);
@@ -144,4 +142,7 @@ void ParupaintColorPicker::SetColor(QColor c)
 	this->update();
 }
 
-
+QSize ParupaintColorPicker::sizeHint() const
+{
+	return QSize(200, 200);
+}

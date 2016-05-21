@@ -56,7 +56,7 @@ ParupaintProjectInfo::ParupaintProjectInfo(QWidget * parent) :
 			}
 	});
 
-	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 void ParupaintProjectInfo::updateCanvasSlot()

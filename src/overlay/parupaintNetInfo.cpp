@@ -70,6 +70,8 @@ ParupaintPlayerList::ParupaintPlayerList(QWidget * parent) :
 	this->setItemDelegate(new ParupaintPlayerListPainter);
 	this->setSelectionMode(QAbstractItemView::NoSelection);
 	this->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+	this->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 }
 
 QSize ParupaintPlayerList::minimumSizeHint() const
@@ -118,7 +120,7 @@ void ParupaintNetInfo::setNumSpectators(int num)
 	num_spectators->setText(QString::number(num));
 }
 
-QSize ParupaintNetInfo::minimumSizeHint() const
+QSize ParupaintNetInfo::sizeHint() const
 {
 	return QSize(200, 200);
 }

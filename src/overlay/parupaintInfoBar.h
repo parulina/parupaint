@@ -54,6 +54,9 @@ Q_OBJECT
 	public:
 	ParupaintInfoBar(QWidget * = nullptr);
 	void setConnectedText(const QString & text);
+
+	QSize minimumSizeHint() const;
+	QSize sizeHint() const;
 };
 
 #endif

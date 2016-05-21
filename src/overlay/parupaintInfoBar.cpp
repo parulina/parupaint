@@ -130,3 +130,13 @@ void ParupaintInfoBar::setConnectedText(const QString & text)
 {
 	info_status->setConnectedText(text);
 }
+
+QSize ParupaintInfoBar::minimumSizeHint() const
+{
+	return QSize(200, 20);
+}
+
+QSize ParupaintInfoBar::sizeHint() const
+{
+	return QSize(65535, 200);
+}

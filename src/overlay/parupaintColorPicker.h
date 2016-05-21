@@ -27,6 +27,8 @@ Q_OBJECT
 
 	public:
 	ParupaintColorPicker(QWidget * parent = nullptr);
+	QSize sizeHint() const;
+
 	void SetColor(QColor);
 
 	void SetHue(qreal);
