@@ -797,6 +797,7 @@ void ParupaintWindow::doConnect(const QString & url)
 {
 	if(url.isEmpty()) return;
 
+	client->setName(QSettings().value("client/username").toString());
 	client->Connect(url);
 }
 
