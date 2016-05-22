@@ -75,6 +75,7 @@ Q_OBJECT
 	bool isFlipped();
 
 	void moveView(const QPointF & move);
+	void resetView();
 
 
 	protected:

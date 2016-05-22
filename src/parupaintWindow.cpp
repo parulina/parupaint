@@ -89,7 +89,6 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 		"copy=Ctrl+C",
 		"paste=Ctrl+V",
 
-
 		"brush_eraser=E",
 		"brush_pencil=B",
 		"brush_tool=Q",
@@ -158,6 +157,7 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 
 	netinfo->setCursorListModel(scene->cursorList());
 
+	// canvas -> flayer/client
 	ParupaintCanvasModel * canvas_model = scene->canvas()->model();
 	flayer->setCanvasModel(canvas_model);
 	connect(canvas_model, &ParupaintCanvasModel::onLayerVisibilityChange, client, &ParupaintClientInstance::doLayerVisibility);
@@ -201,6 +201,10 @@ ParupaintWindow::ParupaintWindow(QWidget * parent) : QMainWindow(parent),
 	connect(project_info, &ParupaintProjectInfo::projectNameChanged, client, &ParupaintClientInstance::doProjectName);
 	connect(project_info, &ParupaintProjectInfo::frameRateChanged, client, &ParupaintClientInstance::doProjectFramerate);
 	connect(project_info, &ParupaintProjectInfo::backgroundColorChanged, client, &ParupaintClientInstance::doProjectBackgroundColor);
+
+	// some reset connections
+	connect(client, &ParupaintClientInstance::onConnect, scene->canvas(), &ParupaintVisualCanvas::stop);
+	connect(client, &ParupaintClientInstance::onConnect, view, &ParupaintCanvasView::resetView);
 
 	// set up various little windows
 	pattern_popup = new ParupaintPatternPopup(this);
@@ -546,7 +550,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 					view->resetFlip();
 				}
 			} else if(shortcut_name.endsWith("play")){
-				view->showToast("can't play animations yet - sorry!", 1000);
+				scene->canvas()->togglePlay();
 
 			} else if(shortcut_name.endsWith("preview")){
 				scene->canvas()->setPreview(!scene->canvas()->isPreview());

@@ -152,7 +152,8 @@ ParupaintVisualCanvas::ParupaintVisualCanvas(QGraphicsItem * parent) :
 	current_layer(0), current_frame(0),
 	canvas_preview(true),
 	checker_pixmap("#cccccc", "#ffffff"),
-	flash_timeout(new QTimer(this)), fillpreview_timeout(new QTimer(this))
+	flash_timeout(new QTimer(this)), fillpreview_timeout(new QTimer(this)),
+	play_timer(new QTimer(this))
 {
 	this->setFlag(QGraphicsItem::ItemUsesExtendedStyleOption);
 	this->resize(QSize(500, 500));
@@ -172,6 +173,12 @@ ParupaintVisualCanvas::ParupaintVisualCanvas(QGraphicsItem * parent) :
 	this->connect(this, &ParupaintPanvas::onCanvasContentChange, &canvas_model, &ParupaintCanvasModel::updateLayout);
 	this->connect(this, &ParupaintPanvas::onCanvasLayerChange, &canvas_model, &ParupaintCanvasModel::updateLayer);
 
+	this->connect(this, &ParupaintPanvas::onCanvasChange, this, &ParupaintVisualCanvas::updatePlayTimer);
+
+	play_timer->setSingleShot(false);
+	play_timer->stop();
+	this->connect(play_timer, &QTimer::timeout, this, &ParupaintVisualCanvas::nextFrame);
+
 }
 void ParupaintVisualCanvas::timeoutRedraw()
 {
@@ -187,6 +194,40 @@ void ParupaintVisualCanvas::paint(QPainter *painter, const QStyleOptionGraphicsI
 {
 	const QRect exposed = option->exposedRect.toAlignedRect();
 	painter->drawPixmap(exposed, canvas_cache, exposed);
+}
+
+void ParupaintVisualCanvas::updatePlayTimer()
+{
+	play_timer->setInterval(1000.0/this->frameRate());
+}
+
+void ParupaintVisualCanvas::play()
+{
+	if(this->totalFrameCount() == 1) return;
+	play_timer->start(1000.0/this->frameRate());
+}
+
+void ParupaintVisualCanvas::stop()
+{
+	play_timer->stop();
+}
+
+void ParupaintVisualCanvas::togglePlay()
+{
+	if(this->isPlaying()) this->stop();
+	else this->play();
+}
+
+bool ParupaintVisualCanvas::isPlaying()
+{
+	return play_timer->isActive();
+}
+
+void ParupaintVisualCanvas::nextFrame()
+{
+	int fc = 1;
+	if(this->currentFrame() == this->totalFrameCount()-1) fc = -this->totalFrameCount();
+	this->addCurrentLayerFrame(0, fc, false);
 }
 
 inline QRect lineToRect(const QLine & line)

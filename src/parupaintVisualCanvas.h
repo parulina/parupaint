@@ -54,6 +54,8 @@ Q_OBJECT
 	QTimer * flash_timeout;
 	QTimer * fillpreview_timeout;
 
+	QTimer * play_timer;
+
 	signals:
 	void onCurrentLayerFrameChange(int l, int f);
 
@@ -66,6 +68,12 @@ Q_OBJECT
 	QRectF boundingRect() const;
 	void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
 
+	void play();
+	void stop();
+	void togglePlay();
+	bool isPlaying();
+	Q_SLOT void updatePlayTimer();
+
 	void setPreviewLine(const QLine & = QLine(), qreal = 0.0, const QColor = QColor());
 
 	void newCache();
@@ -76,6 +84,7 @@ Q_OBJECT
 	void setCurrentLayerFrame(int l, int f, bool flash);
 	void addCurrentLayerFrame(int lc, int fc, bool flash = true);
 	void adjustCurrentLayerFrame(bool flash = false);
+	void nextFrame();
 
 	void setPastePreview(const QImage & = QImage(), const QPointF & pos = QPointF());
 	void setPastePreviewPosition(const QPointF &);

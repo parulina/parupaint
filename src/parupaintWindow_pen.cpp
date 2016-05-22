@@ -27,6 +27,10 @@ void ParupaintWindow::OnPenPress(const penInfo & info)
 		   (client->readOnly() || !client->isJoined()))
 			current_brush->setDrawing(false);
 
+		if(scene->canvas()->isPlaying()){
+			current_brush->setDrawing(false);
+		}
+
 		if(current_brush->drawing())
 			this->setCanvasState(canvasDrawingState);
 	}

@@ -127,6 +127,12 @@ void ParupaintCanvasView::moveView(const QPointF & move)
 	ver->setSliderPosition(ver->sliderPosition() + move.y());
 }
 
+void ParupaintCanvasView::resetView()
+{
+	this->setZoom(1.0);
+	this->resetTransform();
+}
+
 void ParupaintCanvasView::toastTimeout()
 {
 	this->viewport()->update();
