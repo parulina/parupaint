@@ -26,6 +26,11 @@ QTabBar::tab:selected, QTabBar::tab:hover {
 	color:white;
 }
 
+QHeaderView, QHeaderView::section, QTableCornerButton::section {
+	background:transparent;
+	border:none;
+}
+
 QTableView QLineEdit, QLineEdit,
 QComboBox,
 QSpinBox, QDoubleSpinBox {
@@ -203,18 +208,15 @@ ParupaintProjectInfo #ProjectQuickInfo{
 }
 
 
+
+
 ParupaintFlayer {
 	font-size:14px;
 	color:white;
-}
-ParupaintFlayer QLineEdit {
-	font-size:14px;
-	background:black;
 	border:none;
-	padding:0;
 }
-ParupaintFlayer QComboBox {
-	font-size:14px;
+ParupaintFlayer QHeaderView::section {
+	font-size:11px;
 }
 
 ParupaintFlayer::item:selected {
@@ -222,74 +224,52 @@ ParupaintFlayer::item:selected {
 	color:white;
 }
 
-ParupaintFlayer::indicator {
+ParupaintFlayerControlHeader, ParupaintFlayerControlHeader::section, QTableCornerButton::section {
+	background:transparent;
+}
+
+ParupaintFlayerControlHeader {
+	color:transparent;
+}
+
+ParupaintFlayerControl #FlayerVisible,
+ParupaintFlayerControl #FlayerMode {
+	background:rgba(0, 0, 0, 0.25);
+}
+
+ParupaintFlayerControl #FlayerVisible::indicator {
 	width:16px !important;
 	height:16px !important;
 	margin:0 1px;
 }
-ParupaintFlayer::indicator::checked {
+ParupaintFlayerControl #FlayerVisible::indicator::checked {
 	image:none;
 	background:url(":/resources/uicons.png");
 	background-position:top left;
 }
-ParupaintFlayer::indicator::unchecked {
+ParupaintFlayerControl #FlayerVisible::indicator::unchecked {
 	image:none;
 	background:url(":/resources/uicons.png");
 	background-position:top right;
 }
 
-/*
-ParupaintFlayer::item:selected {
-	padding:0 2px;
-	background:rgba(0, 0, 0, 0.2)
+ParupaintFlayerControl #FlayerMode {
+	font-size:14px;
+	border:none;
+	color:white;
 }
-
-ParupaintFlayerLayer {
-}
-
-ParupaintFlayerLayer #FlayerLayerVisible {
-	background:none;
-	spacing:0;
-	border:none; outline:none;
-}
-ParupaintFlayerLayer #FlayerLayerMode::drop-down {
+ParupaintFlayerControl #FlayerMode::drop-down {
 	width:0;
 }
-ParupaintFlayerLayer #FlayerLayerMode {
+ParupaintFlayerControl #FlayerName {
+	font-size:14px;
 	background:transparent;
-	border:none; outline: none;
-	text-decoration:underline;
-}
-ParupaintFlayer::item:selected #FlayerLayerVisible,
-ParupaintFlayer::item:selected #FlayerLayerMode {
-	background:#75653A;
-}
-ParupaintFlayerLayer #FlayerLayerLabel {
-	color:#FFF;
-	background:transparent;
-	border:none;
-	font-size:16px;
-	margin-left:8px;
-}
-ParupaintFlayerLayer #FlayerLayerLabel:focus {
 	color:white;
-	background:rgba(0, 0, 0, 0.2);
+	border:none;
+	padding:0;
 }
 
-ParupaintFlayerFrame {
-	background:#DDD;
-	border:none;
-	border-right:2px solid transparent;
-}
-ParupaintFlayerFrame[extended=true] {
-	background:#99a9cc;
-	border-right:2px solid #99a9cc;
-}
-ParupaintFlayerFrame:checked {
-	border:2px solid #222;
-	border-bottom-width:4px;
-}
-*/
+
 
 
 ParupaintNetJoinPrompt {

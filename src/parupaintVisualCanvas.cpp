@@ -22,109 +22,81 @@ int ParupaintCanvasModel::columnCount(const QModelIndex & index) const
 {
 	ParupaintPanvas * panvas = qobject_cast<ParupaintPanvas*>(this->parent());
 	if(panvas){
-		return 3 + panvas->totalFrameCount();
+		return panvas->totalFrameCount();
 	}
 	return 3;
 }
+QVariant ParupaintCanvasModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+	ParupaintPanvas * panvas = qobject_cast<ParupaintPanvas*>(this->parent());
+	if(!panvas) return QVariant();
+
+	if(orientation == Qt::Vertical){
+		ParupaintLayer * layer = panvas->layerAt((this->rowCount() > 0 ? this->rowCount()-1 : 0) - section);
+
+		if(role == LayerVisibleRole) return layer->visible();
+		if(role == LayerModeRole) return layer->mode();
+		if(role == LayerNameRole) return layer->name();
+
+	} else if(orientation == Qt::Horizontal){
+		if(role == Qt::DisplayRole) return QVariant("Frame " + QString::number(section+1));
+	}
+	return QVariant();
+}
+
 QVariant ParupaintCanvasModel::data(const QModelIndex & index, int role) const
 {
 	ParupaintPanvas * panvas = qobject_cast<ParupaintPanvas*>(this->parent());
 	if(!panvas) return QVariant();
 
 	if(role == Qt::SizeHintRole){
-		switch(index.column()){
-			case 0: return QSize(20, 20);
-			case 1: return QSize(80, 20);
-			case 2: return QSize(100, 20);
-			default: return QSize(60, 20);
-		}
+		return QSize(60, 20);
 	}
 
 	ParupaintLayer * layer = panvas->layerAt((this->rowCount() > 0 ? this->rowCount()-1 : 0) - index.row());
 	if(!layer) return QVariant();
 
-	ParupaintFrame * frame = nullptr;
-	if(index.column() >= 3)
-		frame = layer->frameAt(index.column()-3);
+	ParupaintFrame * frame = layer->frameAt(index.column());
 
-	if(role == Qt::EditRole){
-		switch(index.column()){
-			case 1: return layer->mode();
-			case 2: return layer->name();
-		}
-	}
-	if(role == Qt::CheckStateRole){
-		if(index.column() == 0) {
-			return (layer->visible() ? Qt::Checked : Qt::Unchecked);
-		}
-
-	} else if(role == Qt::DisplayRole){
-		switch(index.column()){
-			case 1: return layer->modeString();
-			case 2: return layer->name();
-		}
-	} else if(role == Qt::ForegroundRole){
-		if(index.column() >= 3) {
-			if(frame && layer->isFrameExtended(frame)) return QColor("#99a9cc");
-			else if(frame && !layer->isFrameExtended(frame)) return QColor("#DDD");
-			else return QColor(Qt::transparent);
-		}
-	} else if(role == Qt::ToolTipRole){
-		if(index.column() == 2){
-			return layer->name();
-		}
+	if(role == Qt::BackgroundRole){
+		if(frame && layer->isFrameExtended(frame)) return QBrush(QColor("#99a9cc"));
+		else if(frame && !layer->isFrameExtended(frame)) return QBrush(QColor("#DDD"));
+		else return QBrush(QColor(Qt::transparent));
 	}
 	return QVariant();
 }
 
-bool ParupaintCanvasModel::setData(const QModelIndex & index, const QVariant & value, int role)
+bool ParupaintCanvasModel::setHeaderData(int section, Qt::Orientation orientation, const QVariant & value, int role)
 {
 	ParupaintPanvas * panvas = qobject_cast<ParupaintPanvas*>(this->parent());
 	if(!panvas) return false;
+	if(orientation == Qt::Vertical){
+		ParupaintLayer * layer = panvas->layerAt(((this->rowCount() > 0 ? this->rowCount()-1 : 0)  - section));
+		if(!layer) return false;
 
-	ParupaintLayer * layer = panvas->layerAt((this->rowCount() > 0 ? this->rowCount()-1 : 0) - index.row());
-	if(!layer) return false;
-
-	if(role == Qt::CheckStateRole) {
-		if(index.column() == 0) {
-			bool visible = value.toBool();
-			layer->setVisible(visible);
-			emit onLayerVisibilityChange(panvas->layerIndex(layer), visible);
-			emit dataChanged(index, index);
-			return true;
+		if(role == LayerVisibleRole){
+			layer->setVisible(value.toBool());
+			emit onLayerVisibilityChange(panvas->layerIndex(layer), layer->visible());
+			emit headerDataChanged(orientation, section, section);
+		}
+		if(role == LayerModeRole){
+			layer->setMode(value.toInt());
+			emit onLayerModeChange(panvas->layerIndex(layer), layer->mode());
+			emit headerDataChanged(orientation, section, section);
+		}
+		if(role == LayerNameRole){
+			layer->setName(value.toString());
+			emit onLayerNameChange(panvas->layerIndex(layer), layer->name());
+			emit headerDataChanged(orientation, section, section);
 		}
 	}
-	if(role == Qt::EditRole) {
-		switch(index.column()){
-			case 1: {
-				int mode = value.toInt();
-				layer->setMode(mode);
-				emit onLayerModeChange(panvas->layerIndex(layer), mode);
-				emit dataChanged(index, index);
-				return true;
-			}
-			case 2: {
-				QString name = value.toString();
-				layer->setName(name);
-				emit onLayerNameChange(panvas->layerIndex(layer), name);
-				emit dataChanged(index, index);
-				return true;
-			}
-		}
-	}
+
 	return false;
 }
 
 Qt::ItemFlags ParupaintCanvasModel::flags(const QModelIndex & index) const
 {
-	if(index.column() == 0)
-		return QAbstractTableModel::flags(index) | Qt::ItemIsUserCheckable;
-	else if(index.column() == 1)
-		return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
-	else if(index.column() == 2)
-		return Qt::ItemIsEnabled | Qt::ItemIsEditable;
-	else
-		return QAbstractTableModel::flags(index) | Qt::ItemIsSelectable;
+	return QAbstractTableModel::flags(index) | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
 }
 
 void ParupaintCanvasModel::updateLayout()
@@ -139,9 +111,8 @@ void ParupaintCanvasModel::updateLayer(int l)
 
 	if(!panvas) return;
 	if(layer){
-		int row = panvas->layerIndex(layer) - (this->rowCount() > 0 ? this->rowCount()-1 : 0);
-
-		emit this->dataChanged(this->index(row, 0), this->index(row, this->columnCount(this->index(row, 0))));
+		int row = (this->rowCount() > 0 ? this->rowCount()-1 : 0) - panvas->layerIndex(layer);
+		emit this->headerDataChanged(Qt::Vertical, row, row);
 	}
 }
 

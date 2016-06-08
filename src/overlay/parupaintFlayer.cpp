@@ -5,135 +5,137 @@
 #include <QMouseEvent>
 #include <QComboBox>
 #include <QLineEdit>
-#include <QTimer>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QEvent>
 #include <QDebug>
 
 #include "../parupaintVisualCanvas.h"
 #include "../widget/parupaintScrollBar.h"
 #include "../core/parupaintLayerModes.h"
 
-FlayerComboBox::FlayerComboBox(QWidget * parent) :
-	QComboBox(parent)
-{
-}
-
-void FlayerComboBox::hidePopup()
-{
-	// this always clears the focus so that the cel
-	// is not kept focused when clicking out of popup
-	this->clearFocus();
-	QAbstractItemView * view = qobject_cast<QAbstractItemView*>(this->parent()->parent());
-	if(view){
-		// I tried everything. But nothing worked
-		// Having the editing finished when clicking outside the combo box should be simple,
-		// but it's very hard. Clicking outside generates one call to hidePopup, while clicking
-		// an item generates two of them. So it's very difficult to figure out what happened
-		// I'm just resorting to a one millisecond timer now.
-		QTimer * timer = new QTimer(this);
-		timer->setSingleShot(true);
-		connect(timer, &QTimer::timeout, this, &FlayerComboBox::onPopupHide);
-		timer->start(1);
-	}
-	QComboBox::hidePopup();
-}
-
+#include "parupaintFlayerControl.h"
 
 ParupaintFlayerPainter::ParupaintFlayerPainter(QObject * parent) :
 	QStyledItemDelegate(parent)
 {
 }
-bool ParupaintFlayerPainter::eventFilter(QObject * editor, QEvent * event)
-{
-	if(event->type() == QEvent::KeyPress) {
-		QKeyEvent * key_event = static_cast<QKeyEvent*>(event);
-		if(key_event && (key_event->key() == Qt::Key_Tab || key_event->key() == Qt::Key_Backtab)){
-			return false;
-		}
-	}
-	return QStyledItemDelegate::eventFilter(editor, event);
-}
 void ParupaintFlayerPainter::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-	if(index.column() >= 3){
-		painter->fillRect(option.rect, index.data(Qt::ForegroundRole).value<QColor>());
-		if(option.state & QStyle::State_Selected){
-			painter->setPen(QPen(Qt::black, 2));
-			painter->drawRect(option.rect.adjusted(3, 3, -3, -3));
-		}
-		return;
-	} else if(index.column() <= 1){
-		if(option.state & QStyle::State_Selected){
-			painter->fillRect(option.rect, QColor(0, 0, 0, qreal(0.5)));
-		}
+	QStyleOptionViewItem opt(option);
+	opt.state &= ~QStyle::State_Selected;
+	QStyledItemDelegate::paint(painter, opt, index);
+
+	if(option.state & QStyle::State_Selected){
+		painter->save();
+
+		painter->setPen(QPen(Qt::white, 1));
+		painter->setCompositionMode(QPainter::CompositionMode_Difference);
+		painter->drawRect(option.rect.adjusted(2, 2, -2, -2));
+
+		painter->restore();
 	}
-	QStyledItemDelegate::paint(painter, option, index);
 }
 
-QWidget * ParupaintFlayerPainter::createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const
+ParupaintFixedViewport::ParupaintFixedViewport(QWidget * parent) : 
+	QAbstractScrollArea(parent)
 {
-	if(index.column() == 2){
-		QLineEdit * edit = new QLineEdit(parent);
-		edit->setMaxLength(64);
-		this->connect(edit, &QLineEdit::textEdited, this, &ParupaintFlayerPainter::commitEdit, Qt::UniqueConnection);
-		return edit;
-	}
-	if(index.column() == 1){
-		FlayerComboBox * combo = new FlayerComboBox(parent);
-		connect(combo, &FlayerComboBox::onPopupHide, this, &ParupaintFlayerPainter::commitEdit);
-		return combo;
-	}
-	return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
-void ParupaintFlayerPainter::setEditorData(QWidget * editor, const QModelIndex & index) const
+bool ParupaintFixedViewport::viewportEvent(QEvent * event)
 {
-	QComboBox * combo = qobject_cast<QComboBox*>(editor);
-	if(combo && index.column() == 1){
-		foreach(QString svgMode, svgLayerModes){
-			QPainter::CompositionMode mode = svgLayerModeToCompositionMode(svgMode);
-			combo->addItem(compositionModeToString(mode), static_cast<int>(mode));
-		}
-
-		int mode = index.data(Qt::EditRole).toInt();
-		int index = combo->findData(mode);
-		if(index >= 0){
-			combo->setCurrentIndex(index);
-		}
-
-		this->connect(combo, static_cast<void(QComboBox::*)(int)>(&QComboBox::activated),
-				this, &ParupaintFlayerPainter::commitEdit, Qt::UniqueConnection);
-
-		combo->showPopup();
-		return;
+	// scrollContentsBy doesn't seem to get called. (QT bug?)
+	// I'm using this instead
+	if(event->type() == QEvent::Move){
+		QMoveEvent * move_event = static_cast<QMoveEvent*>(event);
+		const QPoint dif = move_event->pos() - move_event->oldPos();
+		emit contentsScrolledBy(dif.x(), dif.y());
 	}
-	QStyledItemDelegate::setEditorData(editor, index);
+	return this->QAbstractScrollArea::viewportEvent(event);
 }
 
-void ParupaintFlayerPainter::setModelData(QWidget * editor, QAbstractItemModel * model, const QModelIndex & index) const
+ParupaintFlayerControlHeader::ParupaintFlayerControlHeader(QWidget * parent) :
+	QHeaderView(Qt::Vertical, parent)
 {
-	QComboBox * combo = qobject_cast<QComboBox*>(editor);
-	if(combo && index.column() == 1){
-		model->setData(index, combo->currentData(), Qt::EditRole);
-		return;
-	}
-	QStyledItemDelegate::setModelData(editor, model, index);
+	this->setSectionResizeMode(QHeaderView::Fixed);
+	this->setDefaultSectionSize(20);
+
+	this->setMinimumWidth(160);
+	this->setAutoFillBackground(false);
+
+	ParupaintFixedViewport * viewport = new ParupaintFixedViewport(this);
+	this->setViewport(viewport);
+	connect(viewport, &ParupaintFixedViewport::contentsScrolledBy, this, &ParupaintFlayerControlHeader::fixControlPositions);
 }
 
-void ParupaintFlayerPainter::commitEdit()
+void ParupaintFlayerControlHeader::fixControlPositions()
 {
-	QComboBox * combo = qobject_cast<QComboBox*>(sender());
-	QLineEdit * edit = qobject_cast<QLineEdit*>(sender());
-	if(combo){
-		emit commitData(combo);
-		emit closeEditor(combo);
-	}
-	if(edit){
-		emit commitData(edit);
+	for(int i = 0; i < layer_controls.size(); i++){
+		ParupaintFlayerControl * control = layer_controls.at(i);
+		control->setGeometry(0, this->sectionViewportPosition(i), this->width(), this->sectionSize(i));
 	}
 }
+
+void ParupaintFlayerControlHeader::paintSection(QPainter *painter, const QRect & rect, int logicalIndex) const
+{
+	if(this->currentIndex().row() == logicalIndex){
+		const QColor highlight_color("#75653A");
+		painter->fillRect(rect, highlight_color);
+	}
+	this->QHeaderView::paintSection(painter, rect, logicalIndex);
+}
+void ParupaintFlayerControlHeader::setModel(QAbstractItemModel * model)
+{
+	this->QHeaderView::setModel(model);
+	connect(model, &QAbstractItemModel::layoutChanged, this, &ParupaintFlayerControlHeader::layoutChange);
+	connect(model, &QAbstractItemModel::headerDataChanged, this, &ParupaintFlayerControlHeader::headerDataChange);
+}
+
+void ParupaintFlayerControlHeader::layoutChange(const QList<QPersistentModelIndex> & parents)
+{
+	qDeleteAll(layer_controls);
+	layer_controls.clear();
+
+	for(int i = 0; i < this->count(); i++){
+		ParupaintFlayerControl * control = new ParupaintFlayerControl(this);
+
+		connect(control, &ParupaintFlayerControl::onLayerVisibilityChange, [this, i](bool visible){
+			this->model()->setHeaderData(i, this->orientation(), visible, ParupaintCanvasModel::LayerVisibleRole);
+		});
+		connect(control, &ParupaintFlayerControl::onLayerModeChange, [this, i](int mode){
+			this->model()->setHeaderData(i, this->orientation(), mode, ParupaintCanvasModel::LayerModeRole);
+		});
+		connect(control, &ParupaintFlayerControl::onLayerNameChange, [this, i](const QString & name){
+			this->model()->setHeaderData(i, this->orientation(), name, ParupaintCanvasModel::LayerNameRole);
+		});
+
+		control->setLayerVisible(this->model()->headerData(i, this->orientation(), ParupaintCanvasModel::LayerVisibleRole).toBool());
+		control->setLayerMode(this->model()->headerData(i, this->orientation(), ParupaintCanvasModel::LayerModeRole).toInt());
+		control->setLayerName(this->model()->headerData(i, this->orientation(), ParupaintCanvasModel::LayerNameRole).toString());
+		this->setIndexWidget(this->model()->index(i, -1), control);
+
+		control->show();
+
+		layer_controls << control;
+	}
+	this->fixControlPositions();
+}
+
+void ParupaintFlayerControlHeader::headerDataChange(Qt::Orientation orientation, int first, int last)
+{
+	ParupaintFlayerControl * control = layer_controls.at(first);
+	if(control){
+		control->setLayerVisible(this->model()->headerData(first, this->orientation(), ParupaintCanvasModel::LayerVisibleRole).toBool());
+		control->setLayerMode(this->model()->headerData(first, this->orientation(), ParupaintCanvasModel::LayerModeRole).toInt());
+		control->setLayerName(this->model()->headerData(first, this->orientation(), ParupaintCanvasModel::LayerNameRole).toString());
+	}
+}
+
 
 ParupaintFlayer::ParupaintFlayer(QWidget * parent) : QTableView(parent)
 {
+	this->setItemDelegate(new ParupaintFlayerPainter);
+
 	this->setFocusPolicy(Qt::NoFocus);
 	this->setContextMenuPolicy(Qt::NoContextMenu);
 	this->setAutoFillBackground(false);
@@ -144,56 +146,71 @@ ParupaintFlayer::ParupaintFlayer(QWidget * parent) : QTableView(parent)
 
 	this->setSelectionMode(QAbstractItemView::SingleSelection);
 	this->setSelectionBehavior(QAbstractItemView::SelectItems);
-	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+	this->setDragDropMode(QAbstractItemView::InternalMove);
+	this->setDragEnabled(true);
+	this->setDropIndicatorShown(true);
+
+	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
 
 	this->setTabKeyNavigation(false);
 	this->setShowGrid(false);
 
 	QHeaderView * horizontal_header = this->horizontalHeader();
-	QHeaderView * vertical_header = this->verticalHeader();
+	horizontal_header->setSectionResizeMode(QHeaderView::Fixed);
+	horizontal_header->setContentsMargins(0, 0, 0, 0);
+	horizontal_header->setFixedHeight(10);
+	horizontal_header->setHighlightSections(false);
 
-	if(horizontal_header) horizontal_header->hide();
-	if(vertical_header) vertical_header->hide();
+	this->setVerticalHeader(new ParupaintFlayerControlHeader(this));
+}
 
-	if(horizontal_header)
-		horizontal_header->setSectionResizeMode(QHeaderView::ResizeToContents);
+// FIXME a way to sort the rows in reverse order would be wonderful
+// but i can't figure out a way to do that. help?
+int ParupaintFlayer::modelLayer(int layer)
+{
+	int rc = (this->model()->rowCount() > 0 ? this->model()->rowCount()-1 : 0);
+	return rc - layer;
+}
 
-	this->setItemDelegate(new ParupaintFlayerPainter);
+void ParupaintFlayer::itemActivated(const QModelIndex & current, const QModelIndex & previous)
+{
+	int l = this->modelLayer(current.row());
+	int f = (current.column());
+	emit onLayerFrameSelect(l, f);
 }
 
 void ParupaintFlayer::setCanvasModel(ParupaintCanvasModel * model)
 {
 	this->setModel(model);
 	this->selectLayerFrame(0, 0);
+
+	connect(this->selectionModel(), &QItemSelectionModel::currentChanged, this, &ParupaintFlayer::itemActivated);
 }
 
 void ParupaintFlayer::selectLayerFrame(int layer, int frame)
 {
 	if(layer < 0) return;
 	if(layer > this->model()->rowCount()) return;
-
 	if(!this->model()->rowCount()) return;
 
-	// how to make this work in a better way?
-	int rc = (this->model()->rowCount() > 0 ? this->model()->rowCount()-1 : 0);
-	int l = (rc - layer);
-	int f = (frame + 3);
-
-	this->selectLayerFrameItem(this->model()->index(l, f));
+	layer = this->modelLayer(layer);
+	this->selectLayerFrameItem(this->model()->index(layer, frame));
 }
+
 void ParupaintFlayer::selectLayerFrameItem(const QModelIndex & index)
 {
-	QModelIndex leftmost = this->model()->index(index.row(), 0),
-		    leftmost2 = this->model()->index(index.row(), 1);
-	QItemSelection leftmost_selection(leftmost, leftmost2);
+	this->selectionModel()->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
 
-	QItemSelection selection(index, index);
-	selection.merge(leftmost_selection, QItemSelectionModel::Select);
+	int tc = this->model()->columnCount(index)-1;
+	int tt = 2;
 
-	this->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
-	if(index.column() <= 6) {
-		// snap to left
-		this->scrollTo(leftmost);
+	// sticky the view to the left or right based on where we are
+	if(index.column() <= tt) {
+		this->scrollTo(this->model()->index(index.row(), 0));
+
+	} else if(index.column() >= tc-tt){
+		this->scrollTo(this->model()->index(index.row(), tc));
+
 	} else {
 		this->scrollTo(index);
 	}
@@ -202,8 +219,6 @@ void ParupaintFlayer::selectLayerFrameItem(const QModelIndex & index)
 void ParupaintFlayer::mouseMoveEvent(QMouseEvent * event)
 {
 	if(old_pos.isNull()) old_pos = event->pos();
-
-	if(event->buttons() & Qt::LeftButton) return;
 
 	if(event->buttons() & Qt::MiddleButton) {
 		QPoint dif = (old_pos - event->pos());
@@ -219,27 +234,9 @@ void ParupaintFlayer::mouseMoveEvent(QMouseEvent * event)
 }
 void ParupaintFlayer::mousePressEvent(QMouseEvent * event)
 {
-	if(event->button() == Qt::RightButton) return;
-
-	QModelIndex index = this->indexAt(event->pos());
-	if(index.column() < 3) {
-		if(index.flags() & Qt::ItemIsEditable) this->edit(index);
+	if(event->button() != Qt::RightButton){
 		return;
 	}
-
-	if(index.data(Qt::ForegroundRole).value<QColor>() == Qt::transparent)
-		return;
-
-	if(event->button() == Qt::LeftButton){
-		QModelIndex index = this->indexAt(event->pos());
-		int rc = (this->model()->rowCount() > 0 ? this->model()->rowCount()-1 : 0);
-		int l = (rc - index.row());
-		int f = (index.column() - 3);
-
-		emit onLayerFrameSelect(l, f);
-		return this->selectLayerFrameItem(index);
-	}
-
 	QTableView::mousePressEvent(event);
 }
 
@@ -249,6 +246,16 @@ void ParupaintFlayer::mouseReleaseEvent(QMouseEvent * event)
 		old_pos = QPoint();
 	}
 	QTableView::mouseReleaseEvent(event);
+}
+
+void ParupaintFlayer::resizeEvent(QResizeEvent * event)
+{
+	qDebug() << event;
+
+	bool small_view = (event->size().height() <= 20);
+	this->setHorizontalScrollBarPolicy(small_view ? Qt::ScrollBarAlwaysOff : Qt::ScrollBarAlwaysOn);
+
+	this->QTableView::resizeEvent(event);
 }
 
 QSize ParupaintFlayer::minimumSizeHint() const
