@@ -150,7 +150,7 @@ ParupaintVisualCanvas::ParupaintVisualCanvas(QGraphicsItem * parent) :
 	QGraphicsItem(parent),
 	canvas_model(this),
 	current_layer(0), current_frame(0),
-	canvas_preview(true),
+	canvas_preview(false),
 	checker_pixmap("#cccccc", "#ffffff"),
 	flash_timeout(new QTimer(this)), fillpreview_timeout(new QTimer(this)),
 	play_timer(new QTimer(this))
@@ -292,19 +292,18 @@ void ParupaintVisualCanvas::redraw(QRect area)
 		ParupaintLayer* layer = this->layerAt(i);
 		if(!layer->visible()) continue;
 
-		// do not show other layers when... (flashing & preview)
+		// do not show other layers when... (flashing & debug)
 		if((flash_timeout->isActive() && !this->isPreview()) && (i != current_layer)) continue;
 
 		// if layer is hidden or if debug is on, and if it's not the current layer, hide it
 		if((!layer->visible()) && (i != current_layer)) continue;
-		bool debug_layer = !this->isPreview();
-
+		bool debug_layer = this->flash_timeout->isActive() && !this->isPreview();
 
 		if(!debug_layer) painter.setCompositionMode(static_cast<QPainter::CompositionMode>(layer->mode()));
 		if(layer && current_frame < layer->frameCount()){
 			ParupaintFrame* frame = layer->frameAt(current_frame);
 			if(frame){
-				painter.setOpacity(this->isPreview() ? frame->opacity() : (debug_layer ? 1.0 : 0.2));
+				painter.setOpacity(debug_layer ? 1.0 : frame->opacity());
 				painter.drawImage(area, frame->image(), area);
 			}
 			if(current_layer == i){
@@ -441,8 +440,10 @@ ParupaintFrame * ParupaintVisualCanvas::currentCanvasFrame()
 
 void ParupaintVisualCanvas::setPreview(bool b)
 {
+	if(b){
+		this->addCurrentLayerFrame(0, 0, true);
+	}
 	this->canvas_preview = b;
-	this->redraw();
 }
 bool ParupaintVisualCanvas::isPreview()
 {
