@@ -41,10 +41,13 @@ void ParupaintPopupSelector::focusIndex(int index)
 	QWidget * item_widget = item->widget();
 	if(!item_widget) return;
 
-	QPoint offset = item_widget->pos() + QPoint(item_widget->width()/2, item_widget->height()/2);
-	this->move(QCursor::pos()-offset);
 	this->show();
 	this->setFocus();
+
+	QPoint offset = item_widget->pos() + QPoint(item_widget->width()/2, item_widget->height()/2);
+	this->move(QCursor::pos()-offset);
+
+	item_widget->update();
 }
 int ParupaintPopupSelector::focusedIndex()
 {
@@ -79,8 +82,26 @@ void ParupaintPopupSelector::mousePressEvent(QMouseEvent * event)
 
 void ParupaintPopupSelector::keyPressEvent(QKeyEvent * event)
 {
-	if(!event->isAutoRepeat()){
-		if(event->key() != Qt::Key_Escape) {
+	if((event->key() != Qt::Key_Shift && event->key() != Qt::Key_Control) && !event->isAutoRepeat()){
+
+		int focused_widget = this->focusedIndex();
+		if(event->key() == Qt::Key_Left || event->key() == Qt::Key_Backtab) focused_widget--;
+		if(event->key() == Qt::Key_Right || event->key() == Qt::Key_Tab) focused_widget++;
+
+		if(focused_widget != this->focusedIndex()){
+			if(focused_widget < 0) focused_widget = this->layout()->count()-1;
+			if(focused_widget > this->layout()->count()-1) focused_widget = 0;
+			this->focusIndex(focused_widget);
+			return;
+		}
+
+		if(event->key() >= Qt::Key_1 && event->key() <= Qt::Key_9){
+			int slot = event->key() - Qt::Key_1;
+			if(slot < this->layout()->count()){
+				emit selectIndex(slot);
+			}
+
+		} else if(event->key() != Qt::Key_Escape) {
 			int focused_widget = this->focusedIndex();
 			if(focused_widget != -1)
 				emit selectIndex(focused_widget);
