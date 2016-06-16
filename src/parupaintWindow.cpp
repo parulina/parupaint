@@ -899,16 +899,10 @@ void ParupaintWindow::doCommand(const QString & cmd, const QString & params)
 		if(params.isEmpty()) return chat->AddMessage("Usage: /save file<br/>Saves to a file on the server.");
 		client->doSave(params);
 	}
-	/*
 	else if(cmd == "play"){
 		if(params.isEmpty()) return chat->AddMessage("Usage: /play file<br/>Plays a record on the server.");
-		client->PlayRecord(params, false);
+		client->doPlay(params, -1);
 	}
-	else if(cmd == "script"){
-		if(params.isEmpty()) return chat->AddMessage("Usage: /script file<br/>Plays a script (might be laggy!).");
-		client->PlayRecord(params, true);
-	}
-	*/
 	else if(cmd == "connect"){
 		if(params.isEmpty()) return chat->AddMessage("Usage: /connect hostname [port]<br/>Reconnect to a different server.");
 

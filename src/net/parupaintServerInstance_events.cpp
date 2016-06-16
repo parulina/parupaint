@@ -116,6 +116,22 @@ void ParupaintServerInstance::message(ParupaintConnection * c, const QString & i
 		}
 		this->sendInfo();
 	}
+	if(id == "play") {
+		if(brushes.find(c) == brushes.end()) return;
+		if(!obj.contains("filename") || !obj.value("filename").isString()) return;
+
+		QString name = obj["filename"].toString();
+		int limit = obj.value("limit").toInt(-1);
+		if(!name.isEmpty()){
+
+			QFileInfo file_load(server_dir, name);
+			qDebug() << "Playback log" << file_load.absolutePath() << "with limit" << limit;
+
+			if(file_load.exists()){
+				this->playLogFile(file_load.absoluteFilePath(), limit);
+			}
+		}
+	}
 	if(id == "chat") {
 		if(!obj.contains("name")){
 			obj["name"] = c->name();

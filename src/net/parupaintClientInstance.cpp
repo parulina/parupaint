@@ -289,14 +289,13 @@ void ParupaintClientInstance::doSave(const QString & filename)
 	this->send("save", obj);
 }
 
-/*
-void ParupaintClientInstance::PlayRecord(QString filename, bool as_script)
+void ParupaintClientInstance::doPlay(const QString & filename, int limit)
 {
+	if(this->readOnly()) return;
 	if(filename.isEmpty()) return;
 
 	QJsonObject obj;
 	obj["filename"] = filename;
-	obj["as_script"] = as_script;
+	obj["limit"] = limit;
 	this->send("play", obj);
 }
-*/

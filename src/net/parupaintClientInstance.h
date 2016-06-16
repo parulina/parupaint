@@ -73,8 +73,7 @@ Q_OBJECT
 	void doLoadLocal(const QString & filename);
 	void doLoad(const QString & filename);
 	void doSave(const QString & filename);
-
-	//void PlayRecord(QString, bool as_script);
+	void doPlay(const QString & filename, int limit = -1);
 };
 
 #endif
