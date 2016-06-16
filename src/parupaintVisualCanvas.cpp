@@ -269,13 +269,14 @@ void ParupaintVisualCanvas::redraw(QRect area)
 		// if layer is hidden or if debug is on, and if it's not the current layer, hide it
 		if((!layer->visible()) && (i != current_layer)) continue;
 		bool debug_layer = this->flash_timeout->isActive() && !this->isPreview();
+		bool temp_hide = (fillpreview_timeout->isActive());
 
 		if(!debug_layer) painter.setCompositionMode(static_cast<QPainter::CompositionMode>(layer->mode()));
 		if(layer && current_frame < layer->frameCount()){
 			ParupaintFrame* frame = layer->frameAt(current_frame);
 			if(frame){
 				painter.setOpacity(debug_layer ? 1.0 : frame->opacity());
-				painter.drawImage(area, frame->image(), area);
+				if(!temp_hide) painter.drawImage(area, frame->image(), area);
 			}
 			if(current_layer == i){
 				if(fillpreview_timeout->isActive()){
