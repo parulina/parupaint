@@ -184,10 +184,10 @@ void ParupaintServerInstance::browserVisit(QTcpSocket * socket, const QString & 
 			"Connection: close",
 			"\r\n"
 		};
-		// if(url.query() == "refresh") http_response.insert(http_response.length()-1, "Refresh: 1");
+		if(url.query() == "refresh") http_response.insert(http_response.length()-1, "Refresh: 5");
 
 		socket->write(http_response.join("\r\n").toUtf8());
-		canvas->mergedImageFrames(false).first().save(socket, "png");
+		canvas->mergedImageFrames(true).first().save(socket, "png");
 
 	} else if(path == "/ping"){
 
