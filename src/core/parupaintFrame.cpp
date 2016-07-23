@@ -102,12 +102,14 @@ QRect ParupaintFrame::drawLine(const QLineF & line, QPen pen)
 	}
 
 	if(line.length() == 0){
-		painter.setPen(Qt::NoPen);
-		painter.setBrush(new_brush);
+		pen.setBrush(new_brush);
+		pen.setWidthF(ps/2);
+		painter.setPen(pen);
+
 		if(pen.width() == 1){
 			painter.drawPoint(pixel_line.p2());
 		} else {
-			painter.drawEllipse(QRectF(line.p2() + QPointF(-ps/2, -ps/2), QSizeF(ps, ps)));
+			painter.drawEllipse(QRectF(line.p2() + QPointF(-ps/4, -ps/4), QSizeF(ps/2, ps/2)));
 		}
 
 	} else {
