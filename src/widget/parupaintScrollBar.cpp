@@ -6,20 +6,18 @@
 
 class AbsoluteBarStyle : public QProxyStyle
 {
-	int absolute_pos = 1;
 	public:
 	AbsoluteBarStyle(const QString& baseStyle) : QProxyStyle(baseStyle) { }
 	AbsoluteBarStyle(QStyle* baseStyle) : QProxyStyle(baseStyle) { }
-	void setAbsolutePos(int i) { this->absolute_pos = i; }
 
 	int styleHint(QStyle::StyleHint hint, const QStyleOption* option = 0, const QWidget* widget = 0, QStyleHintReturn* returnData = 0) const
 	{
 		if (hint == QStyle::SH_ScrollBar_ContextMenu)
 			return 0;
 		if (hint == QStyle::SH_ScrollBar_LeftClickAbsolutePosition)
-			return absolute_pos;
+			return true;
 		if (hint == QStyle::SH_ScrollBar_ScrollWhenPointerLeavesControl)
-			return 1;
+			return true;
 		return QProxyStyle::styleHint(hint, option, widget, returnData);
 	}
 };
@@ -33,11 +31,9 @@ ParupaintScrollBar::ParupaintScrollBar(Qt::Orientation orientation, QWidget * pa
 	this->setCursor(Qt::OpenHandCursor);
 	this->setUseDirection(direction);
 }
+// Don't move the scrollbars internally
+// move them by yourself
 void ParupaintScrollBar::setUseDirection(bool direction){
-	AbsoluteBarStyle * barstyle = static_cast<AbsoluteBarStyle*>(this->style());
-	if(barstyle){
-		barstyle->setAbsolutePos(direction ? 1 : 0);
-	}
 	use_direction_signal = direction;
 }
 
@@ -59,7 +55,10 @@ void ParupaintScrollBar::mouseMoveEvent(QMouseEvent * event)
 		emit directionMove(dif);
 		old_pos = event->globalPos();
 
-		if(use_direction_signal) return;
+		if(use_direction_signal){
+			event->accept();
+			return;
+		}
 	}
 	QScrollBar::mouseMoveEvent(event);
 }
