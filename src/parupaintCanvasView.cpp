@@ -225,6 +225,9 @@ void ParupaintCanvasView::showEvent(QShowEvent * event)
 
 void ParupaintCanvasView::tabletEvent(QTabletEvent * event)
 {
+	if(this->verticalScrollBar()->isSliderDown()) return;
+	if(this->horizontalScrollBar()->isSliderDown()) return;
+
 	pen_info.old_pos = pen_info.pos;
 	pen_info.pos = mapToSceneF(this, event->pos());
 
