@@ -15,6 +15,8 @@ Q_OBJECT
 	void pixelgridChanged(bool);
 	void nameChanged(const QString &);
 	void sessionPasswordChanged(const QString &);
+	void cursorModeChanged(bool);
+	void viewportFastUpdateChanged(bool);
 	void keyBindOpen();
 	void configCleared();
 };

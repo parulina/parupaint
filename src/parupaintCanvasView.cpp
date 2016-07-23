@@ -58,6 +58,9 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 	cfg.setValue("client/pixelgrid", this->pixelGrid());
 	cfg.setValue("client/smoothzoom", this->smoothZoom());
 
+	this->setViewportCursor(cfg.value("client/cursor", true).toBool());
+	this->setFastViewport(cfg.value("client/fastviewport", false).toBool());
+
 	connect(toast_timer, &QTimer::timeout, this, &ParupaintCanvasView::toastTimeout);
 	this->showToast("");
 
@@ -179,6 +182,18 @@ void ParupaintCanvasView::setSmoothZoom(bool sz)
 void ParupaintCanvasView::setPixelGrid(bool pg)
 {
 	pixel_grid = pg;
+	this->viewport()->update();
+}
+void ParupaintCanvasView::setViewportCursor(bool cursor)
+{
+ 	this->setCursor(cursor ? Qt::CrossCursor : Qt::BlankCursor);
+	this->viewport()->update();
+}
+void ParupaintCanvasView::setFastViewport(bool fast)
+{
+	this->setViewportUpdateMode(fast ?
+			QGraphicsView::FullViewportUpdate :
+			QGraphicsView::MinimalViewportUpdate);
 	this->viewport()->update();
 }
 

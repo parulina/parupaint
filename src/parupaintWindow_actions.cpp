@@ -65,6 +65,9 @@ void ParupaintWindow::showSettingsDialog()
 	connect(dialog, &ParupaintSettingsDialog::sessionPasswordChanged, this, &ParupaintWindow::doLocalSessionPassword);
 	connect(dialog, &ParupaintSettingsDialog::nameChanged, this, &ParupaintWindow::doUserName);
 
+	connect(dialog, &ParupaintSettingsDialog::cursorModeChanged, view, &ParupaintCanvasView::setViewportCursor);
+	connect(dialog, &ParupaintSettingsDialog::viewportFastUpdateChanged, view, &ParupaintCanvasView::setFastViewport);
+
 	dialog->activateWindow();
 }
 

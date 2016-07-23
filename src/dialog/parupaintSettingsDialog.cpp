@@ -59,6 +59,24 @@ ParupaintSettingsDialog::ParupaintSettingsDialog(QWidget * parent):
 		emit pixelgridChanged(check_pixelgrid->isChecked());
 	});
 
+	QCheckBox * check_cursor = new QCheckBox("Show cursor pointer", this);
+	check_cursor->setToolTip("Toggle the visiblity of the canvas pointer.");
+	connect(check_cursor, &QCheckBox::stateChanged, [=](int){
+		QSettings cfg;
+		cfg.setValue("client/cursor", check_cursor->isChecked());
+
+		emit cursorModeChanged(check_cursor->isChecked());
+	});
+
+	QCheckBox * check_viewport = new QCheckBox("Fast viewport", this);
+	check_viewport->setToolTip("Toggle the 'full' update mode of the viewport. Less rendering artifacts, but may fix some problems.");
+	connect(check_viewport, &QCheckBox::stateChanged, [=](int){
+		QSettings cfg;
+		cfg.setValue("client/fastviewport", check_viewport->isChecked());
+
+		emit viewportFastUpdateChanged(check_viewport->isChecked());
+	});
+
 	QPushButton * ok_button = new QPushButton("Done", this);
 	connect(ok_button, &QPushButton::pressed, this, &QDialog::close);
 
@@ -87,6 +105,8 @@ ParupaintSettingsDialog::ParupaintSettingsDialog(QWidget * parent):
 			form_layout->addRow("Save directory:", line_savedir);
 			form_layout->addRow(check_frameless);
 			form_layout->addRow(check_pixelgrid);
+			form_layout->addRow(check_cursor);
+			form_layout->addRow(check_viewport);
 
 		layout->addLayout(form_layout);
 		QHBoxLayout * hlayout = new QHBoxLayout;
@@ -102,8 +122,10 @@ ParupaintSettingsDialog::ParupaintSettingsDialog(QWidget * parent):
 	line_username->setText(cfg.value("client/username").toString());
 	line_sessionpw->setText(cfg.value("client/sessionpassword").toString());
 	line_savedir->setText(cfg.value("client/directory").toString());
-	check_frameless->setChecked(cfg.value("client/frameless").toBool());
-	check_pixelgrid->setChecked(cfg.value("client/pixelgrid").toBool());
+	check_frameless->setChecked(cfg.value("client/frameless", true).toBool());
+	check_pixelgrid->setChecked(cfg.value("client/pixelgrid", true).toBool());
+	check_cursor->setChecked(cfg.value("client/cursor", true).toBool());
+	check_viewport->setChecked(cfg.value("client/fastviewport", false).toBool());
 }
 void ParupaintSettingsDialog::confirmConfigClear()
 {

@@ -64,6 +64,8 @@ Q_OBJECT
 	void setZoom(qreal z);
 	void setSmoothZoom(bool sz);
 	void setPixelGrid(bool pg);
+	void setViewportCursor(bool);
+	void setFastViewport(bool);
 
 	void addZoom(qreal z);
 
