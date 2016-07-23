@@ -321,13 +321,6 @@ void ParupaintWindow::OnNetworkDisconnect(QString reason)
 void ParupaintWindow::setCanvasState(canvasStates state)
 {
 	if(canvas_state == state) return;
-
-	if(state == canvasDrawingState)            view->setCursor(Qt::BlankCursor);
-	else if(state == canvasMovingState)        view->setCursor(Qt::ClosedHandCursor);
-	else if(state == canvasZoomingState)       view->setCursor(Qt::SizeVerCursor);
-	else {
-		view->setCursor(Qt::BlankCursor);
-	}
 	canvas_state = state;
 }
 

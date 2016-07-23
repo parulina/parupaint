@@ -83,7 +83,6 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 		this->setBackgroundBrush(brush);
 	}
 
-	this->setCursor(Qt::BlankCursor);
 	this->setZoom(1.0);
 	this->show();
 }
@@ -209,45 +208,34 @@ void ParupaintCanvasView::showEvent(QShowEvent * event)
 	QGraphicsView::showEvent(event);
 }
 
-bool ParupaintCanvasView::viewportEvent(QEvent * event)
+void ParupaintCanvasView::tabletEvent(QTabletEvent * event)
 {
-	if(event->type() == QEvent::TabletMove ||
-	   event->type() == QEvent::TabletPress ||
-	   event->type() == QEvent::TabletRelease) {
+	pen_info.old_pos = pen_info.pos;
+	pen_info.pos = mapToSceneF(this, event->pos());
 
-		QTabletEvent * tablet = static_cast<QTabletEvent*>(event);
-		tablet->accept();
+	pen_info.old_gpos = pen_info.gpos;
+	pen_info.gpos = event->globalPos();
 
-		pen_info.old_pos = pen_info.pos;
-		pen_info.pos = mapToSceneF(this, tablet->pos());
-
-		pen_info.old_gpos = pen_info.gpos;
-		pen_info.gpos = tablet->globalPos();
-
-		if(tablet->pointerType() != pen_info.pointer){
-			pen_info.pointer = tablet->pointerType();
-			emit pointerPointer(pen_info);
-		}
-		pen_info.buttons = tablet->buttons();
-		pen_info.modifiers = tablet->modifiers();
-		pen_info.pressure = tablet->pressure();
-
-		if(event->type() == QEvent::TabletRelease){
-			if(tablet->pointerType() != QTabletEvent::Cursor) tablet_active = false;
-			emit pointerRelease(pen_info);
-		}
-		if(event->type() == QEvent::TabletPress){
-			if(tablet->pointerType() != QTabletEvent::Cursor) tablet_active = true;
-			emit pointerPress(pen_info);
-		}
-		if(event->type() == QEvent::TabletMove){
-			emit pointerMove(pen_info);
-		}
-		return true;
+	if(event->pointerType() != pen_info.pointer){
+		pen_info.pointer = event->pointerType();
+		emit pointerPointer(pen_info);
 	}
-	return QGraphicsView::viewportEvent(event);
-}
+	pen_info.buttons = event->buttons();
+	pen_info.modifiers = event->modifiers();
+	pen_info.pressure = event->pressure();
 
+	if(event->type() == QEvent::TabletRelease){
+		if(event->pointerType() != QTabletEvent::Cursor) tablet_active = false;
+		emit pointerRelease(pen_info);
+	}
+	if(event->type() == QEvent::TabletPress){
+		if(event->pointerType() != QTabletEvent::Cursor) tablet_active = true;
+		emit pointerPress(pen_info);
+	}
+	if(event->type() == QEvent::TabletMove){
+		emit pointerMove(pen_info);
+	}
+}
 
 // following functions redirect mouse events to tablet events.
 
@@ -268,23 +256,30 @@ void ParupaintCanvasView::mouseDoubleClickEvent(QMouseEvent * event)
 void ParupaintCanvasView::mousePressEvent(QMouseEvent * event)
 {
 	if(tablet_active) return;
+
 	QTabletEvent tablet = MouseToTabletEvent(QEvent::TabletPress, event);
-	this->viewportEvent(&tablet);
+	this->tabletEvent(&tablet);
+
 	event->accept();
 }
 void ParupaintCanvasView::mouseReleaseEvent(QMouseEvent * event)
 {
 	if(tablet_active) return;
+
 	QTabletEvent tablet = MouseToTabletEvent(QEvent::TabletRelease, event);
-	this->viewportEvent(&tablet);
+	this->tabletEvent(&tablet);
+
 	event->accept();
 }
 void ParupaintCanvasView::mouseMoveEvent(QMouseEvent * event)
 {
 	if(tablet_active) return;
+
 	QTabletEvent tablet = MouseToTabletEvent(QEvent::TabletMove, event);
-	this->viewportEvent(&tablet);
-	QGraphicsView::mouseMoveEvent(event);
+	this->tabletEvent(&tablet);
+
+	event->accept();
+	this->QGraphicsView::mouseMoveEvent(event);
 }
 void ParupaintCanvasView::wheelEvent(QWheelEvent * event)
 {

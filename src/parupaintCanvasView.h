@@ -79,7 +79,7 @@ Q_OBJECT
 
 
 	protected:
-	bool viewportEvent(QEvent *event);
+	void tabletEvent(QTabletEvent *event);
 	void showEvent(QShowEvent * event);
 	void mouseDoubleClickEvent(QMouseEvent *event);
 	void mousePressEvent(QMouseEvent *event);
