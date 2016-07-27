@@ -186,7 +186,7 @@ void ParupaintCanvasView::setPixelGrid(bool pg)
 }
 void ParupaintCanvasView::setViewportCursor(bool cursor)
 {
- 	this->setCursor(cursor ? Qt::CrossCursor : Qt::BlankCursor);
+ 	this->setCursor(cursor ? Qt::ArrowCursor : Qt::BlankCursor);
 	this->viewport()->update();
 }
 void ParupaintCanvasView::setFastViewport(bool fast)
