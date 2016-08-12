@@ -251,7 +251,7 @@ void ParupaintVisualCanvas::redraw(QRect area)
 	// non preview shows the current frame with onionskin, with the layers in the background
 	// when navigating, only the current layer should be shown...
 
-	if(!(!this->isPreview() && flash_timeout->isActive())){
+	if(!(!this->isPreview() && (flash_timeout->isActive() || fillpreview_timeout->isActive()))){
 		painter.setOpacity(1.0);
 		painter.fillRect(area, this->backgroundColor());
 	}
@@ -275,11 +275,13 @@ void ParupaintVisualCanvas::redraw(QRect area)
 		if(layer && current_frame < layer->frameCount()){
 			ParupaintFrame* frame = layer->frameAt(current_frame);
 			if(frame){
-				painter.setOpacity(debug_layer ? 1.0 : frame->opacity());
+				painter.setOpacity((debug_layer || temp_hide) ? 1.0 : frame->opacity());
 				if(!temp_hide) painter.drawImage(area, frame->image(), area);
 			}
 			if(current_layer == i){
 				if(fillpreview_timeout->isActive()){
+					painter.setOpacity(1.0);
+					painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
 					painter.drawPixmap(area, fillpreview_pixmap, area);
 				}
 				// only draw onionskin if preview is off.
