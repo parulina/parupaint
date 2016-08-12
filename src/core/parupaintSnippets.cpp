@@ -85,7 +85,7 @@ QRect ParupaintFillHelper::fill(int x, int y, const QRgb orig, const QRgb to){
 		while(tx > 0){
 			tx--;
 			const QRgb pix = pixel(tx, ty);
-			if(qAlpha(pix) != qAlpha(orig) || pix != orig){
+			if(qAlpha(pix) != qAlpha(orig) && pix != orig){
 				tx++;
 				break;
 			}
@@ -95,7 +95,7 @@ QRect ParupaintFillHelper::fill(int x, int y, const QRgb orig, const QRgb to){
 			if(tx2 >= ww) break; // .pixel(.width) doesn't work for some reason
 
 			const QRgb pix = pixel(tx2, ty);
-			if(qAlpha(pix) != qAlpha(orig) || pix != orig){
+			if(qAlpha(pix) != qAlpha(orig) && pix != orig){
 				break;
 			}
 		}
@@ -118,7 +118,7 @@ QRect ParupaintFillHelper::fill(int x, int y, const QRgb orig, const QRgb to){
 			// if it's a transparent color but differs from the destination OR if it's just different
 			if(ty > 0){
 				const QRgb pix_above = pixel(x, ty-1);
-				if((qAlpha(pix_above) == qAlpha(orig)) && pix_above == orig){
+				if((qAlpha(pix_above) == qAlpha(orig)) || pix_above == orig){
 					above_pixels[x] = true;
 					if(!(x > 0 && above_pixels[x-1] == true)) { 
 						plist.append(QPoint(x, ty-1));
@@ -127,7 +127,7 @@ QRect ParupaintFillHelper::fill(int x, int y, const QRgb orig, const QRgb to){
 			}
 			if(ty < hh-1){
 				const QRgb pix_below = pixel(x, ty+1);
-				if((qAlpha(pix_below) == qAlpha(orig)) && pix_below == orig) {
+				if((qAlpha(pix_below) == qAlpha(orig)) || pix_below == orig) {
 					below_pixels[x] = true;
 					if(!(x > 0 && below_pixels[x-1] == true)) { 
 						plist.append(QPoint(x, ty+1));
