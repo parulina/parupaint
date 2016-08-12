@@ -31,6 +31,12 @@ void ParupaintWindow::OnPenPress(const penInfo & info)
 			current_brush->setDrawing(false);
 		}
 
+		ParupaintLayer * layer = scene->canvas()->layerAt(current_brush->layer());
+		if(layer && !layer->visible()){
+			current_brush->setDrawing(false);
+			this->setCursor(Qt::ForbiddenCursor);
+		}
+
 		if(current_brush->drawing())
 			this->setCanvasState(canvasDrawingState);
 	}
@@ -129,6 +135,8 @@ void ParupaintWindow::OnPenMove(const penInfo& info)
 
 void ParupaintWindow::OnPenRelease(const penInfo& info)
 {
+	this->unsetCursor();
+
 	ParupaintBrush * current_brush = brushes->brush();
 	if(current_brush->tool() == ParupaintBrushTool::BrushToolLine && current_brush->drawing()){
 
