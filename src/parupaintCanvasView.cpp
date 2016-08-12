@@ -26,6 +26,7 @@ ParupaintCanvasView::ParupaintCanvasView(QWidget * parent) : QGraphicsView(paren
 {
 	this->setObjectName("CanvasView");
 	this->setAcceptDrops(false);
+	this->setFrameStyle(QFrame::NoFrame);
 
 	// Cursors move quickly, creating artifacts
 	// The visualcursor bounds are correct and everything, but

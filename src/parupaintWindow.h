@@ -93,6 +93,8 @@ Q_OBJECT
 	ParupaintClientInstance * networkClient();
 
 	void setCanvasState(canvasStates state);
+	ParupaintCanvasView * canvasView() const;
+	void simulateCursorPositionUpdate();
 
 	void updateOverlay();
 	void showOverlay(overlayStates state);

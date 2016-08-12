@@ -11,6 +11,9 @@ Q_OBJECT
 	private:
 	ParupaintWindow * main_window;
 
+	protected:
+	bool event(QEvent * event);
+
 	public:
 	ParupaintApp(int &argc, char **argv);
 

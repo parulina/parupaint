@@ -126,3 +126,22 @@ ParupaintApp::ParupaintApp(int &argc, char **argv) : QApplication(argc, argv)
 		main_window->addChatMessage(list.join("<br/>"));
 	}
 }
+
+bool ParupaintApp::event(QEvent * event)
+{
+	if(event->type() == QEvent::TabletEnterProximity){
+		QTabletEvent * tablet_event = static_cast<QTabletEvent*>(event);
+		tablet_event->accept();
+
+		main_window->simulateCursorPositionUpdate();
+		return true;
+	}
+	if(event->type() == QEvent::TabletLeaveProximity){
+		QTabletEvent * tablet_event = static_cast<QTabletEvent*>(event);
+		tablet_event->accept();
+
+		main_window->simulateCursorPositionUpdate();
+		return true;
+	}
+	return this->QApplication::event(event);
+}

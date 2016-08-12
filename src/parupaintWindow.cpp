@@ -324,6 +324,17 @@ void ParupaintWindow::setCanvasState(canvasStates state)
 	canvas_state = state;
 }
 
+ParupaintCanvasView * ParupaintWindow::canvasView() const
+{
+	return view;
+}
+void ParupaintWindow::simulateCursorPositionUpdate()
+{
+	QPoint cpos = QCursor::pos();
+	QPoint kpos = view->mapFromGlobal(cpos);
+	QMouseEvent mouse_event((QEvent::MouseMove), kpos, cpos, Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+	QApplication::sendEvent(view->viewport(), &mouse_event);
+}
 
 void ParupaintWindow::showOverlay(overlayStates state)
 {
@@ -552,6 +563,8 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			}
 
 		} else if(shortcut_name.startsWith("brush_")){
+			this->simulateCursorPositionUpdate();
+
 			if(shortcut_name.endsWith("pencil")){
 				brushes->clearToggle();
 				brushes->setBrush(0);
@@ -648,6 +661,8 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 			}
 		}
 		else if(shortcut_name == "pick_layer_color" || shortcut_name == "pick_canvas_color"){
+			this->simulateCursorPositionUpdate();
+
 			bool global = (shortcut_name == "pick_canvas_color");
 			QColor col(255,255,255,0);
 
