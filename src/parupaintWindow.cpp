@@ -321,6 +321,9 @@ void ParupaintWindow::OnNetworkDisconnect(QString reason)
 void ParupaintWindow::setCanvasState(canvasStates state)
 {
 	if(canvas_state == state) return;
+	if(state != noCanvasState){
+		this->setFocus();
+	}
 	canvas_state = state;
 }
 
