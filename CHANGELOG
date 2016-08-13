@@ -1,3 +1,16 @@
+0.94
++ Added eraser icon
++ Play canvas now works (Shift+G)
++ Fixed clicking with pixel brush
++ Improved layer/frame managing and fixed bugs
++ Fixed drawing on hidden layers
++ Able to fill patterns with transparent color
++ Holding shift while scrolling layers/frames makes it loop
++ Flayer area uses grid now (scrolling left/right when many frames)
++ Removed custom cursors and added option in settings
++ Changed the preview mode
+2016-08-13
+
 0.93
 + Much better font.
 + Smooth brush strokes and lines.
