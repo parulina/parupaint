@@ -524,11 +524,21 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 							scene->canvas()->setPastePreview();
 							if(client){
 								int 	l = scene->canvas()->currentLayer(),
-									f = scene->canvas()->currentFrame();
+									f = scene->canvas()->currentFrame(),
+									w = scene->canvas()->dimensions().width(),
+									h = scene->canvas()->dimensions().height();
 
-								client->doPasteImage(l, f, p.x(), p.y(), img);
+								qreal x = p.x(), y = p.y(),
+								      x2 = ((x + img.width()) > w) ?  (x < 0 ? w : w-x) : (x + img.width()),
+								      y2 = ((y + img.height()) > h) ? (y < 0 ? h : h-y) : (y + img.height());
+
+								QImage cut_img = img.convertToFormat(QImage::Format_ARGB32).copy(QRect((x < 0 ? -x : 0), (y < 0 ? -y : 0), x2, y2));
+								// Cut the image so the whole image isn't transferred, and then check if it's even in the canvas
+								// This gurantees that the image's size will never be bigger than the canvas, thus wasting
+								if(!cut_img.size().isNull()){
+									client->doPasteImage(l, f, (x > 0 ? x : 0), (y > 0 ? y : 0), cut_img);
+								}
 							}
-							// skip view update for now
 						} else {
 							scene->canvas()->setPastePreview(img, p);
 						}

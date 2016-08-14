@@ -277,6 +277,9 @@ void ParupaintServerInstance::doMessage(const QString & id, QJsonObject obj)
 		QString image = obj["image"].toString();
 		QImage img = ParupaintSnippets::Base64GzipToImage(image);
 
+		if(img.size().width() > canvas->dimensions().width() ||
+		   img.size().height() > canvas->dimensions().height()) return;
+
 		int l = obj["l"].toInt(0),
 		    f = obj["f"].toInt(0),
 		    x = obj["x"].toInt(0),
