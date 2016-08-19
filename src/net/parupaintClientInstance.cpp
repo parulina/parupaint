@@ -250,7 +250,7 @@ void ParupaintClientInstance::doProjectFramerate(const qreal framerate)
 }
 void ParupaintClientInstance::doProjectBackgroundColor(const QColor & color)
 {
-	this->doInfo("project-bgc", color);
+	this->doInfo("project-bgc", color.name(QColor::HexArgb));
 }
 
 
