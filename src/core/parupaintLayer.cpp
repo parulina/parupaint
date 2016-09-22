@@ -210,7 +210,7 @@ QString ParupaintLayer::frameLabel(int i)
 {
 	if(i >= 0 && i < frames.length()) {
 
-		QString str = QString::number(i);
+		QString str = QString::number(i).rightJustified(3, '0');
 		if(this->frameExtendedDirection(i) == FRAME_EXTENDED_LEFT){
 			int end = i + 1;
 			while(this->frameExtendedDirection(end) != FRAME_EXTENDED_RIGHT){
