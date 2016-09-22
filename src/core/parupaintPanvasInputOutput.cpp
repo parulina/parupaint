@@ -6,6 +6,7 @@
 #include <QBuffer>
 #include <QMovie>
 #include <QMimeDatabase>
+#include <QImageWriter>
 
 // PPA
 #include <QJsonParseError>
@@ -27,6 +28,44 @@
 #ifndef PARUPAINT_NOFFMPEG
 #include "parupaintAVWriter.h"
 #endif
+
+#ifndef PARUPAINT_NOGIF
+#include <gif_lib.h>
+#include <string.h>
+#endif
+
+QImage convertToIndexed8(const QImage & img, bool * uses_alpha = nullptr)
+{
+	QList<QRgb> colors;
+
+	QImage image(img.width(), img.height(), QImage::Format_Indexed8);
+	image.fill(0);
+
+	for(int x = 0; x < img.width(); x++){
+		for(int y = 0; y < img.height(); y++){
+			QRgb c = img.pixel(x, y);
+			if(!colors.contains(c)){
+				colors << c;
+				if(qAlpha(c) == 0 && uses_alpha){
+					*uses_alpha = true;
+					colors.move(colors.size()-1, 0);
+				}
+			}
+		}
+	}
+	if(colors.size() > 255) return img.convertToFormat(QImage::Format_Indexed8);
+	for(int i = 0; i < colors.size(); i++){
+		image.setColor(i, colors[i]);
+	}
+
+	for(int x = 0; x < img.width(); x++){
+		for(int y = 0; y < img.height(); y++){
+			QRgb pix = img.pixel(x, y);
+			image.setPixel(x, y, colors.indexOf(pix));
+		}
+	}
+	return image;
+}
 
 const QByteArray imageToByteArray(const QImage & image)
 {
@@ -57,6 +96,8 @@ bool ParupaintPanvasInputOutput::savePanvas(ParupaintPanvas * panvas, QString & 
 	const QString filepath = file.filePath();
 	if(filepath.endsWith(".png") || filepath.endsWith(".jpg")){
 		return ParupaintPanvasInputOutput::saveImage(panvas, file.absoluteFilePath(), errorStr);
+	} else if(filepath.endsWith(".gif")){
+		return ParupaintPanvasInputOutput::exportGIF(panvas, file.absoluteFilePath(), errorStr);
 	} else if(filepath.endsWith(".ppa")){
 		return ParupaintPanvasInputOutput::savePPA(panvas, file.absoluteFilePath(), errorStr);
 	} else {
@@ -116,6 +157,104 @@ bool ParupaintPanvasInputOutput::savePPA(ParupaintPanvas * panvas, const QString
 	archive.close();
 
 	return true;
+}
+int BitSize(int n){
+	int i;
+	for(i = 1; i <= 8; i++){
+		if((1 << i) >= n) break;
+	}
+	return (i);
+}
+
+
+bool ParupaintPanvasInputOutput::exportGIF(ParupaintPanvas * panvas, const QString & filename, QString & errorStr)
+{
+	Q_ASSERT(panvas);
+	if(filename.isEmpty())
+		return (errorStr = "Enter a filename to save to.").isEmpty();
+
+#ifndef PARUPAINT_NOGIF
+	int error = 0;
+	GifFileType * gif = EGifOpenFileName(filename.toStdString().c_str(), false, &error);
+
+	foreach(const QImage & image, panvas->mergedImageFrames(true)){
+
+		error = 0;
+		bool alpha = false;
+		QImage toWrite = convertToIndexed8(image, &alpha);
+
+		QVector<QRgb> colorTable = toWrite.colorTable();
+		ColorMapObject cmap;
+
+		int numColors = 1 << BitSize(toWrite.colorCount());
+		numColors = 256;
+
+		cmap.ColorCount = numColors;
+		cmap.BitsPerPixel = 8;	/// @todo based on numColors (or not? we did ask for Format_Indexed8, so the data is always 8-bit, right?)
+		GifColorType* colorValues = (GifColorType*)malloc(cmap.ColorCount * sizeof(GifColorType));
+		cmap.Colors = colorValues;
+		int c = 0;
+		for(; c < toWrite.colorCount(); ++c)
+		{
+			//qDebug("color %d has %02X%02X%02X", c, qRed(colorTable[c]), qGreen(colorTable[c]), qBlue(colorTable[c]));
+			colorValues[c].Red = qRed(colorTable[c]);
+			colorValues[c].Green = qGreen(colorTable[c]);
+			colorValues[c].Blue = qBlue(colorTable[c]);
+		}
+		// In case we had an actual number of colors that's not a power of 2,
+		// fill the rest with something (black perhaps).
+		for (; c < numColors; ++c)
+		{
+			colorValues[c].Red = 0;
+			colorValues[c].Green = 0;
+			colorValues[c].Blue = 0;
+		}
+
+		/// @todo how to specify which version, or decide based on features in use
+		// Because of this call, libgif is not re-entrant
+		EGifSetGifVersion(gif, true);
+
+		if ((error = EGifPutScreenDesc(gif, toWrite.width(), toWrite.height(), numColors, 0, &cmap)) == GIF_ERROR)
+			qCritical("EGifPutScreenDesc returned error %d", error);
+
+		int fps = (100.0/panvas->frameRate());
+
+		char flags = 1 << 3;
+		if(alpha) flags |= 1;
+
+		char graphics_ext[] = {
+			flags,
+			(char)(fps % 256), (char)(fps / 256),
+			(char)(alpha ? 0x00 : 0xff)
+		};
+		EGifPutExtension(gif, GRAPHICS_EXT_FUNC_CODE, 4, graphics_ext);
+
+		if ((error = EGifPutImageDesc(gif, 0, 0, toWrite.width(), toWrite.height(), 0, &cmap)) == GIF_ERROR)
+			qCritical("EGifPutImageDesc returned error %d", error);
+
+		int lc = toWrite.height();
+		int llen = toWrite.bytesPerLine();
+		for (int l = 0; l < lc; ++l) {
+			uchar* line = toWrite.scanLine(l);
+			if ((error = EGifPutLine(gif, (GifPixelType*)line, llen)) == GIF_ERROR) {
+				qCritical("EGifPutLine returned error %d", error);
+			}
+		}
+
+		if(true){
+			// loop forever
+			unsigned char loopblock[3] = {1, 0, 0};
+			EGifPutExtensionLeader(gif, APPLICATION_EXT_FUNC_CODE);
+			EGifPutExtensionBlock(gif, 11, "NETSCAPE2.0");
+			EGifPutExtensionBlock(gif, 3, loopblock);
+			EGifPutExtensionTrailer(gif);
+		}
+	}
+
+	EGifCloseFile(gif, &error);
+	return true;
+#endif
+	return (errorStr = "GIF export not available.").isEmpty();
 }
 bool ParupaintPanvasInputOutput::exportAV(ParupaintPanvas * panvas, const QString & filename, QString & errorStr)
 {

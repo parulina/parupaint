@@ -30,7 +30,7 @@ win32:CONFIG(debug, debug|release) {
 # Normal setup
 QT += 			widgets network xml
 RESOURCES +=		*.qrc
-LIBS +=			-lz
+LIBS +=			-lz -lgif
 
 # mac plist doesn't update reliably,
 # try clean & rebuild if it doesn't work
@@ -92,6 +92,12 @@ nogui {
 noxml {
  !build_pass:message("Compiling without ORA support.")
  QT -= xml
+}
+
+nogif {
+ !build_pass:message("Compiling without gif export support.")
+ DEFINES +=		PARUPAINT_NOGIF
+ LIBS -=		-lgif
 }
 
 noffmpeg {

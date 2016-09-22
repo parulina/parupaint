@@ -848,7 +848,7 @@ void ParupaintWindow::doJoinPassword(const QString & password)
 
 void ParupaintWindow::doQuickSave()
 {
-	QString filepath = this->saveDir().path() + "/.png";
+	QString filepath = this->saveDir().path() + (scene->canvas()->totalFrameCount() > 1 ? "/.gif" : "/.png");
 	qDebug() << "doQuickSave" << filepath;
 
 	QFileInfo fi(this->doSaveAs(filepath));
