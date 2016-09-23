@@ -433,10 +433,12 @@ ParupaintFrame * ParupaintVisualCanvas::currentCanvasFrame()
 
 void ParupaintVisualCanvas::setPreview(bool b)
 {
-	if(b){
-		this->addCurrentLayerFrame(0, 0, true);
-	}
 	this->canvas_preview = b;
+	if(!b){
+		this->addCurrentLayerFrame(0, 0, true);
+	} else {
+		this->redraw();
+	}
 }
 bool ParupaintVisualCanvas::isPreview()
 {
