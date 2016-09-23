@@ -197,7 +197,13 @@ bool ParupaintVisualCanvas::isPlaying()
 void ParupaintVisualCanvas::nextFrame()
 {
 	int fc = 1;
-	if(this->currentFrame() == this->totalFrameCount()-1) fc = -this->totalFrameCount();
+	int lim = this->totalFrameCount();
+	ParupaintLayer * layer = this->layerAt(current_layer);
+	if(layer){
+		lim = layer->frameCount();
+	}
+
+	if(this->currentFrame() == lim-1) fc = -lim;
 	this->addCurrentLayerFrame(0, fc, false);
 }
 
