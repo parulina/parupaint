@@ -661,7 +661,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 					}
 				}
 
-				scene->canvas()->addCurrentLayerFrame(ll, ff);
+				scene->canvas()->addCurrentLayerFrame(ll, ff, (ll ? true : false));
 
 				ParupaintBrush * brush = brushes->brush();
 				brush->setLayerFrame(
