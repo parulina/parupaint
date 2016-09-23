@@ -16,6 +16,8 @@
 
 #include "parupaintFlayerControl.h"
 
+const QColor highlight_color("#75653A");
+
 ParupaintFlayerPainter::ParupaintFlayerPainter(QObject * parent) :
 	QStyledItemDelegate(parent)
 {
@@ -24,17 +26,24 @@ void ParupaintFlayerPainter::paint(QPainter *painter, const QStyleOptionViewItem
 {
 	QStyleOptionViewItem opt(option);
 	opt.state &= ~QStyle::State_Selected;
+	opt.rect.adjust(0, 0, -1, 0);
 	QStyledItemDelegate::paint(painter, opt, index);
 
-	if(option.state & QStyle::State_Selected){
-		painter->save();
 
-		painter->setPen(QPen(Qt::white, 1));
-		painter->setCompositionMode(QPainter::CompositionMode_Difference);
-		painter->drawRect(option.rect.adjusted(2, 2, -2, -2));
+	painter->save();
 
-		painter->restore();
+	painter->setCompositionMode(QPainter::CompositionMode_Difference);
+	painter->setPen(QPen(Qt::white, 1));
+
+	if(index.data(Qt::BackgroundRole).value<QColor>() != Qt::transparent){
+		painter->drawLine(QLineF(option.rect.topRight(), option.rect.bottomRight()));
 	}
+
+	if(option.state & QStyle::State_Selected){
+		painter->drawRect(opt.rect.adjusted(2, 2, -2, -2));
+		painter->drawText(opt.rect, Qt::AlignCenter, "×");
+	}
+	painter->restore();
 }
 
 ParupaintFixedViewport::ParupaintFixedViewport(QWidget * parent) : 
@@ -52,6 +61,22 @@ bool ParupaintFixedViewport::viewportEvent(QEvent * event)
 		emit contentsScrolledBy(dif.x(), dif.y());
 	}
 	return this->QAbstractScrollArea::viewportEvent(event);
+}
+
+ParupaintFlayerTopHeader::ParupaintFlayerTopHeader(QWidget * parent) :
+	QHeaderView(Qt::Horizontal, parent)
+{
+	this->setSectionResizeMode(QHeaderView::Fixed);
+	this->setContentsMargins(0, 0, 0, 0);
+	this->setDefaultSectionSize(40);
+	this->setHighlightSections(false);
+}
+void ParupaintFlayerTopHeader::paintSection(QPainter *painter, const QRect & rect, int logicalIndex) const
+{
+	if(this->currentIndex().column() != logicalIndex) return;
+
+	painter->fillRect(rect, highlight_color);
+	this->QHeaderView::paintSection(painter, rect, logicalIndex);
 }
 
 ParupaintFlayerControlHeader::ParupaintFlayerControlHeader(QWidget * parent) :
@@ -79,7 +104,6 @@ void ParupaintFlayerControlHeader::fixControlPositions()
 void ParupaintFlayerControlHeader::paintSection(QPainter *painter, const QRect & rect, int logicalIndex) const
 {
 	if(this->currentIndex().row() == logicalIndex){
-		const QColor highlight_color("#75653A");
 		painter->fillRect(rect, highlight_color);
 	}
 	this->QHeaderView::paintSection(painter, rect, logicalIndex);
@@ -115,7 +139,6 @@ void ParupaintFlayerControlHeader::layoutChange(const QList<QPersistentModelInde
 		this->setIndexWidget(this->model()->index(i, -1), control);
 
 		control->show();
-
 		layer_controls << control;
 	}
 	this->fixControlPositions();
@@ -155,13 +178,8 @@ ParupaintFlayer::ParupaintFlayer(QWidget * parent) : QTableView(parent)
 	this->setTabKeyNavigation(false);
 	this->setShowGrid(false);
 
-	QHeaderView * horizontal_header = this->horizontalHeader();
-	horizontal_header->setSectionResizeMode(QHeaderView::Fixed);
-	horizontal_header->setContentsMargins(0, 0, 0, 0);
-	horizontal_header->setFixedHeight(10);
-	horizontal_header->setHighlightSections(false);
-
 	this->setVerticalHeader(new ParupaintFlayerControlHeader(this));
+	this->setHorizontalHeader(new ParupaintFlayerTopHeader(this));
 }
 
 // FIXME a way to sort the rows in reverse order would be wonderful
@@ -250,10 +268,14 @@ void ParupaintFlayer::mouseReleaseEvent(QMouseEvent * event)
 
 void ParupaintFlayer::resizeEvent(QResizeEvent * event)
 {
-	qDebug() << event;
-
-	bool small_view = (event->size().height() <= 20);
-	this->setHorizontalScrollBarPolicy(small_view ? Qt::ScrollBarAlwaysOff : Qt::ScrollBarAlwaysOn);
+	bool small_view = (this->height() <= 30);
+	if(small_view){
+		this->horizontalHeader()->setMaximumHeight(10);
+		this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	} else {
+		this->horizontalHeader()->setMaximumHeight(50);
+		this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+	}
 
 	this->QTableView::resizeEvent(event);
 }

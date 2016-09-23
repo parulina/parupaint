@@ -39,7 +39,7 @@ QVariant ParupaintCanvasModel::headerData(int section, Qt::Orientation orientati
 		if(role == LayerNameRole) return layer->name();
 
 	} else if(orientation == Qt::Horizontal){
-		if(role == Qt::DisplayRole) return QVariant("Frame " + QString::number(section+1));
+		if(role == Qt::DisplayRole) return "↓";
 	}
 	return QVariant();
 }
@@ -49,8 +49,17 @@ QVariant ParupaintCanvasModel::data(const QModelIndex & index, int role) const
 	ParupaintPanvas * panvas = qobject_cast<ParupaintPanvas*>(this->parent());
 	if(!panvas) return QVariant();
 
-	if(role == Qt::SizeHintRole){
-		return QSize(60, 20);
+	if(role == Qt::FontRole){
+		QFont font;
+		font.setPointSize(12);
+		font.setBold(false);
+		return font;
+	}
+	if(role == Qt::ForegroundRole){
+		return QColor(Qt::black);
+	}
+	if(role == Qt::TextAlignmentRole){
+		return Qt::AlignVCenter;
 	}
 
 	ParupaintLayer * layer = panvas->layerAt((this->rowCount() > 0 ? this->rowCount()-1 : 0) - index.row());
@@ -58,10 +67,35 @@ QVariant ParupaintCanvasModel::data(const QModelIndex & index, int role) const
 
 	ParupaintFrame * frame = layer->frameAt(index.column());
 
-	if(role == Qt::BackgroundRole){
-		if(frame && layer->isFrameExtended(frame)) return QBrush(QColor("#99a9cc"));
-		else if(frame && !layer->isFrameExtended(frame)) return QBrush(QColor("#DDD"));
-		else return QBrush(QColor(Qt::transparent));
+	if(frame && layer->isFrameExtended(frame)){
+		// use index.column here instead of frame... frame will only result in base frame and always _LEFT
+		switch(layer->frameExtendedDirection(index.column())){
+			// start of extended
+			case FRAME_EXTENDED_LEFT:
+				{
+					if(role == Qt::DisplayRole)
+						return "<";
+					if(role == Qt::BackgroundRole)
+						return QBrush(QColor("#9F93B4"));
+				}
+			case FRAME_EXTENDED_RIGHT:
+					if(role == Qt::DisplayRole)
+						return ">";
+			case FRAME_EXTENDED_MIDDLE:
+				{
+					if(role == Qt::DisplayRole)
+						return "=";
+					if(role == Qt::BackgroundRole)
+						return QBrush(QColor("#9488A8"));
+				}
+		}
+	}
+	else if(frame && !layer->isFrameExtended(frame)){
+		if(role == Qt::BackgroundRole)
+			return QBrush(QColor("#DDD"));
+	} else{
+		if(role == Qt::BackgroundRole)
+			return QBrush(QColor(Qt::transparent));
 	}
 	return QVariant();
 }

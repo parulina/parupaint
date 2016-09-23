@@ -30,6 +30,7 @@ ParupaintScrollBar::ParupaintScrollBar(Qt::Orientation orientation, QWidget * pa
 	this->setObjectName("ScrollBar");
 	this->setCursor(Qt::OpenHandCursor);
 	this->setUseDirection(direction);
+	this->setAutoFillBackground(false);
 }
 // Don't move the scrollbars internally
 // move them by yourself

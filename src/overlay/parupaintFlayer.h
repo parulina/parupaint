@@ -28,6 +28,15 @@ Q_OBJECT
 	public: Q_SIGNAL void contentsScrolledBy(qreal, qreal);
 };
 
+class ParupaintFlayerTopHeader : public QHeaderView
+{
+Q_OBJECT
+	protected:
+	void paintSection(QPainter *painter, const QRect & rect, int logicalIndex) const;
+	public:
+	ParupaintFlayerTopHeader(QWidget * = nullptr);
+};
+
 class ParupaintFlayerControlHeader : public QHeaderView
 {
 Q_OBJECT
