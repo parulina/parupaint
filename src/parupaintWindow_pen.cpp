@@ -113,7 +113,7 @@ void ParupaintWindow::OnPenMove(const penInfo& info)
 	scene->updateMainCursor(current_brush);
 
 	if(scene->canvas()->hasPastePreview()){
-		scene->canvas()->setPastePreviewPosition(scene->canvas()->matrix().map(info.pos));
+		scene->canvas()->setPastePreviewPosition(scene->canvas()->matrix().map(info.pos) - paste_offset);
 	}
 
 	bool send_update = false;

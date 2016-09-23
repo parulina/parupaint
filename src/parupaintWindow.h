@@ -56,6 +56,7 @@ Q_OBJECT
 	QTimer * 	overlay_button_timeout;
 
 	QPointF 	current_pen, origin_pen;
+	QPointF 	paste_offset;
 	qreal 		origin_zoom;
 	QString 	local_server;
 

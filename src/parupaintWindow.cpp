@@ -442,6 +442,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 		ParupaintBrush * brush = brushes->brush();
 		if(scene->canvas()->hasPastePreview()){
 			scene->canvas()->setPastePreview();
+			paste_offset = QPointF();
 		} else if(brush){
 			if(brush->pattern() != ParupaintBrushPattern::BrushPatternNone){
 
@@ -511,6 +512,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 				if(clip){
 					clip->setImage(img);
 				}
+				paste_offset = brushes->brush()->position();
 			}
 		} else if(shortcut_name == "paste"){
 			if(view->hasFocus()){
@@ -528,7 +530,7 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 									w = scene->canvas()->dimensions().width(),
 									h = scene->canvas()->dimensions().height();
 
-								qreal x = p.x(), y = p.y(),
+								qreal x = p.x() - paste_offset.x(), y = p.y() - paste_offset.y(),
 								      x2 = ((x + img.width()) > w) ?  (x < 0 ? w : w-x) : (x + img.width()),
 								      y2 = ((y + img.height()) > h) ? (y < 0 ? h : h-y) : (y + img.height());
 
@@ -539,8 +541,12 @@ void ParupaintWindow::keyPressEvent(QKeyEvent * event)
 									client->doPasteImage(l, f, (x > 0 ? x : 0), (y > 0 ? y : 0), cut_img);
 								}
 							}
+							paste_offset = QPointF();
 						} else {
-							scene->canvas()->setPastePreview(img, p);
+							if(paste_offset.isNull()){
+								paste_offset = img.rect().center();
+							}
+							scene->canvas()->setPastePreview(img, (p - paste_offset));
 						}
 					}
 				}
