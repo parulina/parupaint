@@ -7,6 +7,7 @@
 #include <QFile> // stylesheet
 #include <QDebug>
 #include <QTabWidget>
+#include <QTabBar>
 
 #include "../widget/parupaintScrollBar.h"
 
@@ -24,18 +25,9 @@ ParupaintInfoBarText::ParupaintInfoBarText(QWidget * parent) : QTextBrowser(pare
 	this->setHorizontalScrollBar(new ParupaintScrollBar(Qt::Horizontal, this));
 }
 
-ParupaintInfoBarTutorial::ParupaintInfoBarTutorial(QWidget * parent) : QTextBrowser(parent)
+QSize ParupaintInfoBarText::minimumSizeHint() const
 {
-	this->document()->setDocumentMargin(2);
-	this->document()->setDefaultStyleSheet(stylesheet);
-	this->setFocusPolicy(Qt::ClickFocus);
-	this->setOpenLinks(true);
-	this->setOpenExternalLinks(true);
-	this->setTextInteractionFlags(Qt::LinksAccessibleByMouse | Qt::TextSelectableByMouse);
-	this->setVerticalScrollBar(new ParupaintScrollBar(Qt::Vertical, this));
-	this->setHorizontalScrollBar(new ParupaintScrollBar(Qt::Horizontal, this));
-	this->setHtml(QStringLiteral(
-	));
+	return QSize(0, 0);
 }
 
 ParupaintInfoBarTabWidget::ParupaintInfoBarTabWidget(QWidget * parent) :
@@ -44,6 +36,25 @@ ParupaintInfoBarTabWidget::ParupaintInfoBarTabWidget(QWidget * parent) :
 	// for some reason setting background color through QSS
 	// doesn't even work.....
 	this->setFocusPolicy(Qt::NoFocus);
+	//this fucks up the tab key for some reason...
+	//checked focus policy but tabwidget already has it nofocus
+	//??? no idea what's going on
+	//this->setStyleSheet("QTabWidget::tab-bar { alignment:center; }");
+	connect(this, &QTabWidget::currentChanged, this, &ParupaintInfoBarTabWidget::currentChange);
+}
+
+void ParupaintInfoBarTabWidget::currentChange()
+{
+	QTextBrowser * widget = qobject_cast<QTextBrowser*>(this->currentWidget());
+	if(widget){
+		int h = this->tabBar()->height() + widget->document()->size().height() + widget->document()->documentMargin();
+		this->setMaximumHeight(h);
+	}
+}
+
+void ParupaintInfoBarTabWidget::showEvent(QShowEvent*)
+{
+	this->currentChange();
 }
 
 QSize ParupaintInfoBarTabWidget::minimumSizeHint() const
@@ -94,9 +105,13 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QFrame(parent)
 		box->setContentsMargins(0, 0, 0, 0);
 
 		info_status = new ParupaintInfoBarStatus(this);
+		info_server = new ParupaintInfoBarText;
 		info_text = new ParupaintInfoBarText;
 		info_tutorial = new ParupaintInfoBarText;
 
+		info_server->setHtml(QStringLiteral(
+		"<p><span class=\"notice\"><i>This is your local server.</i></span>"
+		));
 		info_text->setHtml(QStringLiteral(
 		 "<p class=\"about\">"
 			"<h3>PARUPAINT</h3>"
@@ -116,13 +131,14 @@ ParupaintInfoBar::ParupaintInfoBar(QWidget * parent) : QFrame(parent)
 		 "</p>"
 		));
 
-
-		ParupaintInfoBarTabWidget * tab_widget = new ParupaintInfoBarTabWidget(this);
+		tab_widget = new ParupaintInfoBarTabWidget(this);
+			tab_widget->addTab(info_server, "server info");
 			tab_widget->addTab(info_text, "parupaint");
 			tab_widget->addTab(info_tutorial, "quick start");
 
-		box->addWidget(tab_widget, 1, Qt::AlignTop);
-		box->addWidget(info_status, 0, Qt::AlignBottom);
+		box->addWidget(tab_widget, 0, Qt::AlignTop);
+		box->addWidget(info_status, 0, Qt::AlignTop);
+		box->addStretch(1);
 
 	this->setLayout(box);
 }

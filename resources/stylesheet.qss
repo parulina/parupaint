@@ -96,7 +96,7 @@ QCheckBox::indicator{
 
 
 /* theme color */
-ParupaintWindow, ParupaintInfoBar {
+ParupaintWindow{
 	color:white;
 	background:#222;
 }
@@ -122,6 +122,8 @@ QLabel, QComboBox, QSpinBox, QDoubleSpinBox {
 
 
 
+ParupaintInfoBarTabWidget,
+ParupaintInfoBarTabWidget QTabBar,
 ParupaintInfoBarText,
 ParupaintInfoBarStatus {
 	background:#333;

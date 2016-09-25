@@ -11,13 +11,9 @@ class ParupaintInfoBarText : public QTextBrowser
 Q_OBJECT
 	public:
 	ParupaintInfoBarText(QWidget * = nullptr);
-};
 
-class ParupaintInfoBarTutorial : public QTextBrowser
-{
-Q_OBJECT
-	public:
-	ParupaintInfoBarTutorial(QWidget * = nullptr);
+	protected:
+	QSize minimumSizeHint() const;
 };
 
 class ParupaintInfoBarTabWidget : public QTabWidget
@@ -28,6 +24,10 @@ Q_OBJECT
 
 	protected:
 	QSize minimumSizeHint() const;
+	void showEvent(QShowEvent*);
+
+	public slots:
+	void currentChange();
 };
 
 class ParupaintInfoBarStatus : public QFrame
@@ -47,6 +47,8 @@ Q_OBJECT
 class ParupaintInfoBar : public QFrame
 {
 Q_OBJECT
+	ParupaintInfoBarTabWidget * tab_widget;
+	ParupaintInfoBarText * info_server;
 	ParupaintInfoBarText * info_text;
 	ParupaintInfoBarText * info_tutorial;
 	ParupaintInfoBarStatus * info_status;
