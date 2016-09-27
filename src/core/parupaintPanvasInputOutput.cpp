@@ -34,6 +34,14 @@
 #include <string.h>
 #endif
 
+int BitSize(int n){
+	int i;
+	for(i = 1; i <= 8; i++){
+		if((1 << i) >= n) break;
+	}
+	return (i);
+}
+
 QImage convertToIndexed8(const QImage & img, bool * uses_alpha = nullptr)
 {
 	QList<QRgb> colors;
@@ -98,6 +106,8 @@ bool ParupaintPanvasInputOutput::savePanvas(ParupaintPanvas * panvas, QString & 
 		return ParupaintPanvasInputOutput::saveImage(panvas, file.absoluteFilePath(), errorStr);
 	} else if(filepath.endsWith(".gif")){
 		return ParupaintPanvasInputOutput::exportGIF(panvas, file.absoluteFilePath(), errorStr);
+	} else if(filepath.endsWith(".zip")){
+		return ParupaintPanvasInputOutput::exportZIPSequence(panvas, file.absoluteFilePath(), errorStr);
 	} else if(filepath.endsWith(".ppa")){
 		return ParupaintPanvasInputOutput::savePPA(panvas, file.absoluteFilePath(), errorStr);
 	} else {
@@ -158,15 +168,29 @@ bool ParupaintPanvasInputOutput::savePPA(ParupaintPanvas * panvas, const QString
 
 	return true;
 }
-int BitSize(int n){
-	int i;
-	for(i = 1; i <= 8; i++){
-		if((1 << i) >= n) break;
+
+
+bool ParupaintPanvasInputOutput::exportZIPSequence(ParupaintPanvas * panvas, const QString & filename, QString & errorStr)
+{
+	Q_ASSERT(panvas);
+	if(filename.isEmpty())
+		return (errorStr = "Enter a filename to save to.").isEmpty();
+
+	KZip archive(filename);
+	if(!archive.open(QIODevice::WriteOnly))
+		return (errorStr = "Failed open ZIP sequence for writing").isEmpty();
+
+	int frame = 0;
+	foreach(const QImage & image, panvas->mergedImageFrames(true)){
+		QByteArray bytes = imageToByteArray(image);
+		archive.writeFile(QString("%1/%2_%3.png").arg(QFileInfo(filename).baseName()).arg(QFileInfo(filename).baseName()).arg(frame, 3, 10, QChar('0')), bytes);
+		frame++;
 	}
-	return (i);
+
+	archive.close();
+
+	return true;
 }
-
-
 bool ParupaintPanvasInputOutput::exportGIF(ParupaintPanvas * panvas, const QString & filename, QString & errorStr)
 {
 	Q_ASSERT(panvas);

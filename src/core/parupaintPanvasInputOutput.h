@@ -10,6 +10,7 @@ class ParupaintPanvasInputOutput
 	static bool savePanvas(ParupaintPanvas * panvas, QString & filename, QString & errorStr);
 	static bool saveImage(ParupaintPanvas * panvas, const QString & filename, QString & errorStr);
 	static bool savePPA(ParupaintPanvas * panvas, const QString & filename, QString & errorStr);
+	static bool exportZIPSequence(ParupaintPanvas * panvas, const QString & filename, QString & errorStr);
 	static bool exportGIF(ParupaintPanvas * panvas, const QString & filename, QString & errorStr);
 	static bool exportAV(ParupaintPanvas * panvas, const QString & filename, QString & errorStr);
 
